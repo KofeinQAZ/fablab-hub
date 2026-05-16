@@ -14,16 +14,125 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          created_at: string
+          end_time: string
+          equipment_id: string
+          id: string
+          material_used: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          equipment_id: string
+          id?: string
+          material_used?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          equipment_id?: string
+          id?: string
+          material_used?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment: {
+        Row: {
+          category: Database["public"]["Enums"]["equipment_category"]
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          status: Database["public"]["Enums"]["equipment_status"]
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["equipment_category"]
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          status?: Database["public"]["Enums"]["equipment_status"]
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["equipment_category"]
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          status?: Database["public"]["Enums"]["equipment_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["app_role"]
+          safety_briefing_passed: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          safety_briefing_passed?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          safety_briefing_passed?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "student" | "admin"
+      booking_status: "pending" | "active" | "cancelled" | "completed"
+      equipment_category: "stationary" | "portable"
+      equipment_status: "active" | "maintenance"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +259,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["student", "admin"],
+      booking_status: ["pending", "active", "cancelled", "completed"],
+      equipment_category: ["stationary", "portable"],
+      equipment_status: ["active", "maintenance"],
+    },
   },
 } as const
