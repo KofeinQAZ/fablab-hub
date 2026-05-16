@@ -22,6 +22,8 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [defaultTab, setDefaultTab] = useState<"signin" | "signup">("signin");
+  const [returnTo, setReturnTo] = useState("/booking");
 
   const htmlTagPattern = /<[^>]*>/;
 
@@ -52,10 +54,18 @@ function LoginPage() {
   });
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("mode");
+      const target = params.get("returnTo");
+      if (mode === "signup") setDefaultTab("signup");
+      if (target && target.startsWith("/")) setReturnTo(target);
+    }
+
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/booking" });
+      if (data.session) navigate({ to: returnTo as never });
     });
-  }, [navigate]);
+  }, [navigate, returnTo]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +86,7 @@ function LoginPage() {
         await ensureProfile(userData.user.id, userData.user.email);
       }
       toast.success("Вход выполнен");
-      navigate({ to: "/booking" });
+      navigate({ to: returnTo as never });
     } finally {
       setSignInLoading(false);
     }
@@ -114,7 +124,7 @@ function LoginPage() {
         if (profileError) return toast.error(profileError.message);
       }
       toast.success("Аккаунт создан. Проверьте email при необходимости.");
-      navigate({ to: "/booking" });
+      navigate({ to: returnTo as never });
     } finally {
       setSignUpLoading(false);
     }
@@ -133,7 +143,7 @@ function LoginPage() {
           </div>
         </div>
         <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <Tabs defaultValue="signin">
+          <Tabs value={defaultTab} onValueChange={(value) => setDefaultTab(value as "signin" | "signup")}>
             <CardHeader>
               <CardTitle>Добро пожаловать</CardTitle>
               <CardDescription>Войдите или зарегистрируйтесь, чтобы продолжить.</CardDescription>

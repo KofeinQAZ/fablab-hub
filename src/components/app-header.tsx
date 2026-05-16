@@ -26,37 +26,37 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
   const isAdmin = profile?.role === "admin";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/70 backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/70 backdrop-blur-xl">
+      <div className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between gap-4 px-4 py-2 md:px-6">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-blue-700 shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#005BAB] shadow-sm">
             <Wrench className="h-4 w-4 text-white" />
           </div>
           <div className="min-w-0">
-            <div className="truncate text-sm font-extrabold leading-tight text-blue-700">FabLab Satbayev</div>
-            <div className="text-[10px] uppercase tracking-widest text-slate-500 leading-tight">FabLab Platform</div>
+            <div className="truncate text-sm font-extrabold leading-tight text-slate-900">FabLab Satbayev</div>
+            <div className="text-[10px] uppercase leading-tight tracking-[0.2em] text-slate-500">FabLab Platform</div>
           </div>
         </Link>
-        <nav className="hidden items-center gap-4 text-sm font-medium text-slate-600 md:flex">
-          <Link to="/" className="[&.active]:text-blue-700 hover:text-blue-700">Главная</Link>
-          <Link to="/projects" className="[&.active]:text-blue-700 hover:text-blue-700">Проекты & Команды</Link>
-          <Link to="/courses" className="[&.active]:text-blue-700 hover:text-blue-700">Обучение</Link>
-          <Link to="/booking" className="[&.active]:text-blue-700 hover:text-blue-700">Бронирование</Link>
+        <nav className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white/80 px-2 py-1 text-sm font-medium text-slate-600 md:flex">
+          <Link to="/" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Главная</Link>
+          <Link to="/projects" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Проекты & Команды</Link>
+          <Link to="/courses" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Обучение</Link>
+          <Link to="/booking" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Бронирование</Link>
         </nav>
         {profile ? (
           <div className="flex items-center gap-2">
             {profile.safety_briefing_passed ? (
-              <Badge className="hidden gap-1 rounded-xl border-0 bg-green-100 text-green-700 sm:inline-flex">
+              <Badge className="hidden gap-1 rounded-xl border border-green-100 bg-green-50 text-[11px] text-green-700 sm:inline-flex">
                 <ShieldCheck className="h-3 w-3" /> Инструктаж пройден
               </Badge>
             ) : (
-              <Badge className="hidden gap-1 rounded-xl border-0 bg-red-100 text-red-700 sm:inline-flex">
+              <Badge className="hidden gap-1 rounded-xl border border-red-100 bg-red-50 text-[11px] text-red-700 sm:inline-flex">
                 <ShieldAlert className="h-3 w-3" /> Не пройден
               </Badge>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-10 rounded-2xl px-2 text-slate-700 hover:bg-slate-100">
+                <Button variant="ghost" className="h-10 rounded-2xl border border-slate-100 px-2 text-slate-700 hover:bg-slate-100">
                   <Avatar className="h-7 w-7">
                     <AvatarFallback className="bg-blue-100 text-blue-700">
                       {profile.name.slice(0, 1).toUpperCase()}
@@ -89,9 +89,21 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
             </DropdownMenu>
           </div>
         ) : (
-          <Button onClick={() => navigate({ to: "/login" })} className="h-10 rounded-2xl bg-blue-700 hover:bg-blue-800">
-            Войти
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate({ to: "/login" })}
+              className="h-10 rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+            >
+              Войти
+            </Button>
+            <Button
+              onClick={() => navigate({ to: "/login", search: { mode: "signup" } as never })}
+              className="h-10 rounded-2xl bg-[#005BAB] hover:bg-blue-800"
+            >
+              Регистрация
+            </Button>
+          </div>
         )}
       </div>
     </header>

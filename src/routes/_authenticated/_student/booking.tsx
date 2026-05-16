@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +31,7 @@ function BookingPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto grid w-full max-w-6xl gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+      <main className="mx-auto grid w-full max-w-7xl gap-6 p-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, idx) => (
           <Skeleton key={idx} className="h-64 rounded-3xl" />
         ))}
@@ -39,31 +39,39 @@ function BookingPage() {
     );
   }
 
-  if (!authData) return <Navigate to="/login" />;
-
   const stationary = (equipment ?? []).filter((item) => item.category === "stationary");
   const portable = (equipment ?? []).filter((item) => item.category === "portable");
   const firstActivePortable = portable.find((item) => item.status === "active") ?? null;
 
   return (
     <>
-      <main className="mx-auto w-full max-w-6xl p-4 md:p-6">
-        <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle>Бронирование оборудования</CardTitle>
-            <p className="text-sm text-slate-600">
+      <main className="mx-auto w-full max-w-7xl p-4 md:p-8">
+        <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl">
+          <CardHeader className="space-y-2 p-8 pb-6">
+            <CardTitle className="text-3xl font-black text-slate-900">Бронирование оборудования</CardTitle>
+            <p className="text-xs text-slate-600 md:text-sm">
               Выберите категорию, откройте карточку оборудования и оформите бронь через модальное окно.
             </p>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="stationary" className="space-y-4">
-              <TabsList className="grid w-full max-w-md grid-cols-2 rounded-2xl">
-                <TabsTrigger value="stationary" className="rounded-xl">Станки</TabsTrigger>
-                <TabsTrigger value="portable" className="rounded-xl">Инвентарь</TabsTrigger>
+          <CardContent className="p-8 pt-0">
+            <Tabs defaultValue="stationary" className="space-y-6">
+              <TabsList className="grid h-auto w-full max-w-lg grid-cols-2 rounded-2xl border border-slate-100 bg-slate-50 p-1.5">
+                <TabsTrigger
+                  value="stationary"
+                  className="h-11 rounded-xl text-sm font-semibold text-slate-600 transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                >
+                  Станки
+                </TabsTrigger>
+                <TabsTrigger
+                  value="portable"
+                  className="h-11 rounded-xl text-sm font-semibold text-slate-600 transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                >
+                  Инвентарь
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="stationary">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {equipmentLoading
                     ? Array.from({ length: 6 }).map((_, idx) => <Skeleton key={idx} className="h-64 rounded-3xl" />)
                     : stationary.map((item) => (
@@ -72,16 +80,16 @@ function BookingPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="portable" className="space-y-4">
-                <Card className="rounded-3xl border border-blue-700 bg-gradient-to-br from-blue-700 to-blue-500 text-white shadow-sm">
-                  <CardContent className="flex flex-col gap-4 p-5">
+              <TabsContent value="portable" className="space-y-6">
+                <Card className="rounded-3xl border border-slate-100 bg-gradient-to-br from-[#005BAB] via-blue-700 to-blue-500 text-white shadow-sm transition-all hover:shadow-xl">
+                  <CardContent className="flex flex-col gap-5 p-8">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
                         <QrCode className="h-7 w-7" />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-widest text-blue-100">Portable Inventory</p>
-                        <p className="text-lg font-semibold">Сканировать инвентарь</p>
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-blue-100">Portable Inventory</p>
+                        <p className="text-2xl font-black">Сканировать инвентарь</p>
                       </div>
                     </div>
                     <Button
@@ -94,7 +102,7 @@ function BookingPage() {
                   </CardContent>
                 </Card>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {equipmentLoading
                     ? Array.from({ length: 6 }).map((_, idx) => <Skeleton key={idx} className="h-64 rounded-3xl" />)
                     : portable.map((item) => (
@@ -110,8 +118,8 @@ function BookingPage() {
       <EquipmentDetailDialog
         open={!!selected}
         equipment={selected}
-        userId={authData.userId}
-        safetyBriefingPassed={authData.profile.safety_briefing_passed}
+        userId={authData?.userId ?? null}
+        safetyBriefingPassed={authData?.profile.safety_briefing_passed ?? false}
         onClose={() => setSelected(null)}
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ["equipment", "booking"] });

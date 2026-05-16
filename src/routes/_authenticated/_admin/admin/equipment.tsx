@@ -168,18 +168,18 @@ function AdminEquipmentPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <CardHeader>
+    <div className="space-y-8">
+      <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl">
+        <CardHeader className="p-8 pb-6">
           <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-base">Оборудование (Полный CRUD)</CardTitle>
-            <Button onClick={openCreate} className="h-10 rounded-2xl bg-blue-700 hover:bg-blue-800">
+            <CardTitle className="text-2xl font-black text-slate-900">Оборудование (Полный CRUD)</CardTitle>
+            <Button onClick={openCreate} className="h-11 rounded-2xl bg-[#005BAB] hover:bg-blue-800">
               <Plus className="mr-2 h-4 w-4" />
               Добавить оборудование
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="overflow-x-auto p-8 pt-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -199,7 +199,7 @@ function AdminEquipmentPage() {
                   <TableCell className="max-w-[300px] truncate">{item.description || "—"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => openEdit(item)}>Редактировать</Button>
+                      <Button size="sm" variant="outline" className="border-slate-200" onClick={() => openEdit(item)}>Редактировать</Button>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -223,7 +223,7 @@ function AdminEquipmentPage() {
       </Card>
 
       <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
-        <DialogContent className="rounded-3xl border border-slate-200 bg-white">
+        <DialogContent className="rounded-3xl border border-slate-100 bg-white">
           <DialogHeader>
             <DialogTitle>{editingEquipment ? "Редактировать оборудование" : "Добавить оборудование"}</DialogTitle>
             <DialogDescription>Данные сохраняются в Supabase таблицу equipment.</DialogDescription>
@@ -275,7 +275,7 @@ function AdminEquipmentPage() {
               Отмена
             </Button>
             <Button
-              className="h-11 rounded-2xl bg-blue-700 hover:bg-blue-800"
+              className="h-11 rounded-2xl bg-[#005BAB] hover:bg-blue-800"
               onClick={() => saveEquipment.mutate()}
               disabled={saveEquipment.isPending}
             >

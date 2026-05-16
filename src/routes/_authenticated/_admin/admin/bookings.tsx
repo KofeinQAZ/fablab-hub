@@ -73,29 +73,40 @@ function AdminBookingsPage() {
   const activeBookings = (bookings ?? []).filter((booking) => booking.status === "active");
 
   return (
-    <div className="space-y-6">
-      <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">Pending-запросы на инвентарь</CardTitle>
+    <div className="space-y-8">
+      <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl">
+        <CardHeader className="p-8 pb-5">
+          <CardTitle className="text-2xl font-black text-slate-900">Pending-запросы на инвентарь</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-8 pt-0">
           {pendingRequests.length === 0 ? (
             <p className="text-sm text-slate-500">Нет ожидающих запросов.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {pendingRequests.map((booking) => (
-                <div key={booking.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <div key={booking.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium">{booking.equipment?.name ?? "Equipment"}</div>
+                    <div className="text-sm font-semibold text-slate-900">{booking.equipment?.name ?? "Equipment"}</div>
                     <div className="text-xs text-slate-500">
                       {profilesById.get(booking.user_id) ?? "Student"} • {formatDateTime(booking.start_time)} → {formatDateTime(booking.end_time)}
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={() => updateBooking.mutate({ id: booking.id, status: "active" })}>
+                    <Button
+                      size="sm"
+                      className="bg-[#005BAB] hover:bg-blue-800"
+                      onClick={() => updateBooking.mutate({ id: booking.id, status: "active" })}
+                      disabled={updateBooking.isPending}
+                    >
                       <Check className="mr-1 h-4 w-4" /> Approve
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => updateBooking.mutate({ id: booking.id, status: "cancelled" })}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-slate-200"
+                      onClick={() => updateBooking.mutate({ id: booking.id, status: "cancelled" })}
+                      disabled={updateBooking.isPending}
+                    >
                       <X className="mr-1 h-4 w-4" /> Reject
                     </Button>
                   </div>
@@ -106,11 +117,11 @@ function AdminBookingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">Активные брони</CardTitle>
+      <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl">
+        <CardHeader className="p-8 pb-5">
+          <CardTitle className="text-2xl font-black text-slate-900">Активные брони</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="overflow-x-auto p-8 pt-0">
           {bookingsLoading ? (
             <Skeleton className="h-40" />
           ) : activeBookings.length === 0 ? (
@@ -134,9 +145,14 @@ function AdminBookingsPage() {
                     <TableCell>{profilesById.get(booking.user_id) ?? "—"}</TableCell>
                     <TableCell className="text-xs">{formatDateTime(booking.start_time)}</TableCell>
                     <TableCell className="text-xs">{formatDateTime(booking.end_time)}</TableCell>
-                    <TableCell><Badge>{booking.status}</Badge></TableCell>
+                    <TableCell><Badge className="rounded-xl border border-blue-100 bg-blue-50 text-blue-700">{booking.status}</Badge></TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => updateBooking.mutate({ id: booking.id, status: "cancelled" })}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => updateBooking.mutate({ id: booking.id, status: "cancelled" })}
+                        disabled={updateBooking.isPending}
+                      >
                         <Ban className="mr-1 h-4 w-4" /> Отменить
                       </Button>
                     </TableCell>

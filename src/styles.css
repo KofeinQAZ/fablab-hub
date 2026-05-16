@@ -144,3 +144,19 @@
     min-height: 100vh;
   }
 }
+
+@keyframes partners-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@layer utilities {
+  .animate-partners-marquee {
+    animation: partners-marquee 28s linear infinite;
+    will-change: transform;
+  }
+}

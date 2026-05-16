@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,8 +42,6 @@ function PortablePage() {
     );
   }
 
-  if (!authData) return <Navigate to="/login" />;
-
   const firstActivePortable = equipment?.find((item) => item.status === "active") ?? null;
 
   return (
@@ -82,8 +80,8 @@ function PortablePage() {
       <EquipmentDetailDialog
         open={!!selected}
         equipment={selected}
-        userId={authData.userId}
-        safetyBriefingPassed={authData.profile.safety_briefing_passed}
+        userId={authData?.userId ?? null}
+        safetyBriefingPassed={authData?.profile.safety_briefing_passed ?? false}
         onClose={() => setSelected(null)}
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ["equipment", "portable"] });

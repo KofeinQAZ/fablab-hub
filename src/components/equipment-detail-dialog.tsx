@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { QrCode, Wrench } from "lucide-react";
 import { z } from "zod";
+import { getEquipmentImageUrl } from "@/lib/equipment-images";
 
 type EquipmentCategory = "stationary" | "portable";
 type EquipmentStatus = "active" | "maintenance";
@@ -98,11 +100,12 @@ export function EquipmentDetailDialog({
 }: {
   open: boolean;
   equipment: EquipmentDetails | null;
-  userId: string;
+  userId: string | null;
   safetyBriefingPassed: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const navigate = useNavigate();
   const [slot, setSlot] = useState(STATIONARY_SLOTS[1].value);
   const [material, setMaterial] = useState(MATERIALS[0]);
   const [duration, setDuration] = useState(PORTABLE_DURATIONS[1].value);
@@ -141,6 +144,7 @@ export function EquipmentDetailDialog({
   const createBooking = useMutation({
     mutationFn: async () => {
       if (!bookingPayload || !equipment) throw new Error("Equipment is not selected");
+      if (!userId) throw new Error("AUTH_REQUIRED");
       const validatedPayload = bookingInsertSchema.parse(bookingPayload);
       const { error } = await supabase.from("bookings").insert(validatedPayload);
       if (error) throw error;
@@ -155,6 +159,13 @@ export function EquipmentDetailDialog({
       onClose();
     },
     onError: (error: Error) => {
+      if (error.message === "AUTH_REQUIRED") {
+        const returnTo = typeof window !== "undefined"
+          ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+          : "/booking";
+        navigate({ to: "/login", search: { returnTo } as never });
+        return;
+      }
       if (error instanceof z.ZodError) {
         toast.error(error.issues[0]?.message ?? "Проверьте корректность данных");
         return;
@@ -165,6 +176,8 @@ export function EquipmentDetailDialog({
 
   const isStationary = equipment?.category === "stationary";
   const isBlocked = !!equipment && (equipment.status === "maintenance" || (isStationary && !safetyBriefingPassed));
+  const isGuest = !userId;
+  const imageSrc = equipment ? getEquipmentImageUrl(equipment.name, equipment.image_url) : null;
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
@@ -181,8 +194,14 @@ export function EquipmentDetailDialog({
 
         <div className="space-y-4">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-            {equipment?.image_url ? (
-              <img src={equipment.image_url} alt={equipment.name} className="h-52 w-full object-cover" />
+            {imageSrc ? (
+              <img
+                src={imageSrc}
+                alt={equipment?.name ?? "Equipment image"}
+                className="h-52 w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
               <div className="flex h-52 w-full items-center justify-center">
                 {isStationary ? <Wrench className="h-12 w-12 text-slate-400" /> : <QrCode className="h-12 w-12 text-slate-400" />}
@@ -262,10 +281,12 @@ export function EquipmentDetailDialog({
           </Button>
           <Button
             onClick={() => createBooking.mutate()}
-            disabled={createBooking.isPending || !equipment || isBlocked}
+            disabled={createBooking.isPending || !equipment || (isBlocked && !isGuest)}
             className="h-12 rounded-2xl bg-blue-700 text-white hover:bg-blue-800"
           >
-            {createBooking.isPending
+            {isGuest
+              ? "Войдите, чтобы забронировать"
+              : createBooking.isPending
               ? "Отправка..."
               : isStationary
                 ? safetyBriefingPassed
