@@ -78,11 +78,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "FabLab Satbayev — Equipment Booking" },
       { name: "description", content: "Book FabLab equipment and check out portable inventory." },
       { name: "author", content: "FabLab Satbayev" },
-      { property: "og:title", content: "FabLab Satbayev" },
-      { property: "og:description", content: "Equipment booking & portable inventory." },
+      { property: "og:title", content: "FabLab Satbayev — Equipment Booking" },
+      { property: "og:description", content: "Book FabLab equipment and check out portable inventory." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "FabLab Satbayev — Equipment Booking" },
+      { name: "twitter:description", content: "Book FabLab equipment and check out portable inventory." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8a7fa7d3-24ef-4aa2-9ab0-ae4aa41064be/id-preview-43ea031b--e9c4b7c5-3f7e-4f3b-af23-34f956a6f91a.lovable.app-1778925007401.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8a7fa7d3-24ef-4aa2-9ab0-ae4aa41064be/id-preview-43ea031b--e9c4b7c5-3f7e-4f3b-af23-34f956a6f91a.lovable.app-1778925007401.png" },
     ],
     links: [
       {
