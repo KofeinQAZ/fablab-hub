@@ -10,73 +10,228 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicProjectsRouteImport } from './routes/_public/projects'
+import { Route as PublicCoursesRouteImport } from './routes/_public/courses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/_student'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
+import { Route as AuthenticatedStudentStationaryRouteImport } from './routes/_authenticated/_student/stationary'
+import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/_student/profile'
+import { Route as AuthenticatedStudentPortableRouteImport } from './routes/_authenticated/_student/portable'
+import { Route as AuthenticatedStudentBookingRouteImport } from './routes/_authenticated/_student/booking'
+import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
+import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_authenticated/_admin/admin/index'
+import { Route as AuthenticatedAdminAdminStatisticsRouteImport } from './routes/_authenticated/_admin/admin/statistics'
+import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
+import { Route as AuthenticatedAdminAdminBookingsRouteImport } from './routes/_authenticated/_admin/admin/bookings'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicProjectsRoute = PublicProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicCoursesRoute = PublicCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => PublicRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
+  id: '/_student',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStudentStationaryRoute =
+  AuthenticatedStudentStationaryRouteImport.update({
+    id: '/stationary',
+    path: '/stationary',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentProfileRoute =
+  AuthenticatedStudentProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentPortableRoute =
+  AuthenticatedStudentPortableRouteImport.update({
+    id: '/portable',
+    path: '/portable',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentBookingRoute =
+  AuthenticatedStudentBookingRouteImport.update({
+    id: '/booking',
+    path: '/booking',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminAdminIndexRoute =
+  AuthenticatedAdminAdminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminStatisticsRoute =
+  AuthenticatedAdminAdminStatisticsRouteImport.update({
+    id: '/statistics',
+    path: '/statistics',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminEquipmentRoute =
+  AuthenticatedAdminAdminEquipmentRouteImport.update({
+    id: '/equipment',
+    path: '/equipment',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminBookingsRoute =
+  AuthenticatedAdminAdminBookingsRouteImport.update({
+    id: '/bookings',
+    path: '/bookings',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/courses': typeof PublicCoursesRoute
+  '/projects': typeof PublicProjectsRoute
+  '/admin': typeof AuthenticatedAdminAdminRouteWithChildren
+  '/booking': typeof AuthenticatedStudentBookingRoute
+  '/portable': typeof AuthenticatedStudentPortableRoute
+  '/profile': typeof AuthenticatedStudentProfileRoute
+  '/stationary': typeof AuthenticatedStudentStationaryRoute
+  '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
+  '/admin/': typeof AuthenticatedAdminAdminIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/courses': typeof PublicCoursesRoute
+  '/projects': typeof PublicProjectsRoute
+  '/booking': typeof AuthenticatedStudentBookingRoute
+  '/portable': typeof AuthenticatedStudentPortableRoute
+  '/profile': typeof AuthenticatedStudentProfileRoute
+  '/stationary': typeof AuthenticatedStudentStationaryRoute
+  '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
+  '/admin': typeof AuthenticatedAdminAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_public': typeof PublicRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/_admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/_student': typeof AuthenticatedStudentRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_public/courses': typeof PublicCoursesRoute
+  '/_public/projects': typeof PublicProjectsRoute
+  '/_public/': typeof PublicIndexRoute
+  '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRouteWithChildren
+  '/_authenticated/_student/booking': typeof AuthenticatedStudentBookingRoute
+  '/_authenticated/_student/portable': typeof AuthenticatedStudentPortableRoute
+  '/_authenticated/_student/profile': typeof AuthenticatedStudentProfileRoute
+  '/_authenticated/_student/stationary': typeof AuthenticatedStudentStationaryRoute
+  '/_authenticated/_admin/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/_authenticated/_admin/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/_authenticated/_admin/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
+  '/_authenticated/_admin/admin/': typeof AuthenticatedAdminAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/admin' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/courses'
+    | '/projects'
+    | '/admin'
+    | '/booking'
+    | '/portable'
+    | '/profile'
+    | '/stationary'
+    | '/admin/bookings'
+    | '/admin/equipment'
+    | '/admin/statistics'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/admin' | '/dashboard'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/courses'
+    | '/projects'
+    | '/booking'
+    | '/portable'
+    | '/profile'
+    | '/stationary'
+    | '/admin/bookings'
+    | '/admin/equipment'
+    | '/admin/statistics'
+    | '/admin'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated'
+    | '/_public'
     | '/login'
-    | '/_authenticated/admin'
+    | '/_authenticated/_admin'
+    | '/_authenticated/_student'
     | '/_authenticated/dashboard'
+    | '/_public/courses'
+    | '/_public/projects'
+    | '/_public/'
+    | '/_authenticated/_admin/admin'
+    | '/_authenticated/_student/booking'
+    | '/_authenticated/_student/portable'
+    | '/_authenticated/_student/profile'
+    | '/_authenticated/_student/stationary'
+    | '/_authenticated/_admin/admin/bookings'
+    | '/_authenticated/_admin/admin/equipment'
+    | '/_authenticated/_admin/admin/statistics'
+    | '/_authenticated/_admin/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
@@ -89,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -96,12 +258,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/projects': {
+      id: '/_public/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof PublicProjectsRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/courses': {
+      id: '/_public/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof PublicCoursesRouteImport
+      parentRoute: typeof PublicRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -110,23 +286,145 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
+    '/_authenticated/_student': {
+      id: '/_authenticated/_student'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedStudentRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/_admin': {
+      id: '/_authenticated/_admin'
+      path: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/_student/stationary': {
+      id: '/_authenticated/_student/stationary'
+      path: '/stationary'
+      fullPath: '/stationary'
+      preLoaderRoute: typeof AuthenticatedStudentStationaryRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/_student/profile': {
+      id: '/_authenticated/_student/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/_student/portable': {
+      id: '/_authenticated/_student/portable'
+      path: '/portable'
+      fullPath: '/portable'
+      preLoaderRoute: typeof AuthenticatedStudentPortableRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/_student/booking': {
+      id: '/_authenticated/_student/booking'
+      path: '/booking'
+      fullPath: '/booking'
+      preLoaderRoute: typeof AuthenticatedStudentBookingRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/_admin/admin': {
+      id: '/_authenticated/_admin/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminAdminRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/_admin/admin/': {
+      id: '/_authenticated/_admin/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/statistics': {
+      id: '/_authenticated/_admin/admin/statistics'
+      path: '/statistics'
+      fullPath: '/admin/statistics'
+      preLoaderRoute: typeof AuthenticatedAdminAdminStatisticsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/equipment': {
+      id: '/_authenticated/_admin/admin/equipment'
+      path: '/equipment'
+      fullPath: '/admin/equipment'
+      preLoaderRoute: typeof AuthenticatedAdminAdminEquipmentRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/bookings': {
+      id: '/_authenticated/_admin/admin/bookings'
+      path: '/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AuthenticatedAdminAdminBookingsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
     }
   }
 }
 
+interface AuthenticatedAdminAdminRouteChildren {
+  AuthenticatedAdminAdminBookingsRoute: typeof AuthenticatedAdminAdminBookingsRoute
+  AuthenticatedAdminAdminEquipmentRoute: typeof AuthenticatedAdminAdminEquipmentRoute
+  AuthenticatedAdminAdminStatisticsRoute: typeof AuthenticatedAdminAdminStatisticsRoute
+  AuthenticatedAdminAdminIndexRoute: typeof AuthenticatedAdminAdminIndexRoute
+}
+
+const AuthenticatedAdminAdminRouteChildren: AuthenticatedAdminAdminRouteChildren =
+  {
+    AuthenticatedAdminAdminBookingsRoute: AuthenticatedAdminAdminBookingsRoute,
+    AuthenticatedAdminAdminEquipmentRoute:
+      AuthenticatedAdminAdminEquipmentRoute,
+    AuthenticatedAdminAdminStatisticsRoute:
+      AuthenticatedAdminAdminStatisticsRoute,
+    AuthenticatedAdminAdminIndexRoute: AuthenticatedAdminAdminIndexRoute,
+  }
+
+const AuthenticatedAdminAdminRouteWithChildren =
+  AuthenticatedAdminAdminRoute._addFileChildren(
+    AuthenticatedAdminAdminRouteChildren,
+  )
+
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAdminRoute: typeof AuthenticatedAdminAdminRouteWithChildren
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAdminRoute: AuthenticatedAdminAdminRouteWithChildren,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedStudentRouteChildren {
+  AuthenticatedStudentBookingRoute: typeof AuthenticatedStudentBookingRoute
+  AuthenticatedStudentPortableRoute: typeof AuthenticatedStudentPortableRoute
+  AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
+  AuthenticatedStudentStationaryRoute: typeof AuthenticatedStudentStationaryRoute
+}
+
+const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
+  AuthenticatedStudentBookingRoute: AuthenticatedStudentBookingRoute,
+  AuthenticatedStudentPortableRoute: AuthenticatedStudentPortableRoute,
+  AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
+  AuthenticatedStudentStationaryRoute: AuthenticatedStudentStationaryRoute,
+}
+
+const AuthenticatedStudentRouteWithChildren =
+  AuthenticatedStudentRoute._addFileChildren(AuthenticatedStudentRouteChildren)
+
 interface AuthenticatedRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedStudentRoute: typeof AuthenticatedStudentRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedStudentRoute: AuthenticatedStudentRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
 }
 
@@ -134,11 +432,36 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface PublicRouteChildren {
+  PublicCoursesRoute: typeof PublicCoursesRoute
+  PublicProjectsRoute: typeof PublicProjectsRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicCoursesRoute: PublicCoursesRoute,
+  PublicProjectsRoute: PublicProjectsRoute,
+  PublicIndexRoute: PublicIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
