@@ -19,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
+import { z } from "zod";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/equipment")({
   component: AdminEquipmentPage,
@@ -33,6 +34,32 @@ type Equipment = {
   description?: string | null;
   specs?: string | null;
 };
+
+const htmlTagPattern = /<[^>]*>/;
+
+const equipmentFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Название слишком короткое")
+    .max(120, "Название слишком длинное")
+    .refine((value) => !htmlTagPattern.test(value), "Название содержит недопустимые символы"),
+  category: z.enum(["stationary", "portable"]),
+  status: z.enum(["active", "maintenance"]),
+  image_url: z
+    .string()
+    .trim()
+    .max(500, "Ссылка на изображение слишком длинная")
+    .refine((value) => value === "" || /^https?:\/\/.+/i.test(value), "Введите корректный URL изображения"),
+  description: z
+    .string()
+    .max(500, "Описание не должно превышать 500 символов")
+    .refine((value) => !htmlTagPattern.test(value), "Описание содержит недопустимые символы"),
+  specs: z
+    .string()
+    .max(500, "Параметры не должны превышать 500 символов")
+    .refine((value) => !htmlTagPattern.test(value), "Параметры содержат недопустимые символы"),
+});
 
 function AdminEquipmentPage() {
   const qc = useQueryClient();
@@ -58,13 +85,14 @@ function AdminEquipmentPage() {
 
   const saveEquipment = useMutation({
     mutationFn: async () => {
+      const validated = equipmentFormSchema.parse(form);
       const payload = {
-        name: form.name,
-        category: form.category,
-        status: form.status,
-        image_url: form.image_url || null,
-        description: form.description || null,
-        specs: form.specs || null,
+        name: validated.name,
+        category: validated.category,
+        status: validated.status,
+        image_url: validated.image_url || null,
+        description: validated.description || null,
+        specs: validated.specs || null,
       };
 
       const table = supabase.from("equipment");
@@ -90,7 +118,13 @@ function AdminEquipmentPage() {
       qc.invalidateQueries({ queryKey: ["equipment", "stationary"] });
       qc.invalidateQueries({ queryKey: ["equipment", "portable"] });
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: (error: Error) => {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0]?.message ?? "Проверьте корректность полей");
+        return;
+      }
+      toast.error(error.message);
+    },
   });
 
   const deleteEquipment = useMutation({
@@ -240,8 +274,12 @@ function AdminEquipmentPage() {
             <Button variant="ghost" className="h-11 rounded-2xl" onClick={() => setCatalogOpen(false)}>
               Отмена
             </Button>
-            <Button className="h-11 rounded-2xl bg-blue-700 hover:bg-blue-800" onClick={() => saveEquipment.mutate()}>
-              Сохранить
+            <Button
+              className="h-11 rounded-2xl bg-blue-700 hover:bg-blue-800"
+              onClick={() => saveEquipment.mutate()}
+              disabled={saveEquipment.isPending}
+            >
+              {saveEquipment.isPending ? "Сохранение..." : "Сохранить"}
             </Button>
           </DialogFooter>
         </DialogContent>

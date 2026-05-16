@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Wrench } from "lucide-react";
+import { z } from "zod";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -16,10 +17,39 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [signInLoading, setSignInLoading] = useState(false);
+  const [signUpLoading, setSignUpLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+
+  const htmlTagPattern = /<[^>]*>/;
+
+  const signInSchema = z.object({
+    email: z.string().email("Введите корректный email"),
+    password: z
+      .string()
+      .min(1, "Введите пароль")
+      .max(128, "Пароль слишком длинный")
+      .refine((value) => !htmlTagPattern.test(value), "Пароль содержит недопустимые символы"),
+  });
+
+  const signUpSchema = z.object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Имя слишком короткое")
+      .max(80, "Имя слишком длинное")
+      .refine((value) => !htmlTagPattern.test(value), "Имя содержит недопустимые символы"),
+    email: z.string().email("Введите корректный email"),
+    password: z
+      .string()
+      .min(8, "Минимум 8 символов")
+      .max(128, "Пароль слишком длинный")
+      .refine((value) => /\d/.test(value), "Пароль должен содержать цифру")
+      .refine((value) => /[^A-Za-z0-9]/.test(value), "Пароль должен содержать спецсимвол")
+      .refine((value) => !htmlTagPattern.test(value), "Пароль содержит недопустимые символы"),
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -29,43 +59,65 @@ function LoginPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData.user) {
-      await ensureProfile(userData.user.id, userData.user.email);
+    if (signInLoading) return;
+
+    const validated = signInSchema.safeParse({ email, password });
+    if (!validated.success) {
+      toast.error(validated.error.issues[0]?.message ?? "Проверьте корректность полей");
+      return;
     }
-    toast.success("Вход выполнен");
-    navigate({ to: "/booking" });
+
+    setSignInLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword(validated.data);
+      if (error) return toast.error(error.message);
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await ensureProfile(userData.user.id, userData.user.email);
+      }
+      toast.success("Вход выполнен");
+      navigate({ to: "/booking" });
+    } finally {
+      setSignInLoading(false);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/booking`,
-        data: { name },
-      },
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData.user) {
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        id: userData.user.id,
-        name: name || userData.user.email?.split("@")[0] || "Student",
-        role: "student",
-        safety_briefing_passed: false,
-      });
-      if (profileError) return toast.error(profileError.message);
+    if (signUpLoading) return;
+
+    const validated = signUpSchema.safeParse({ name, email, password });
+    if (!validated.success) {
+      toast.error(validated.error.issues[0]?.message ?? "Проверьте корректность полей");
+      return;
     }
-    toast.success("Аккаунт создан. Проверьте email при необходимости.");
-    navigate({ to: "/booking" });
+
+    setSignUpLoading(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: validated.data.email,
+        password: validated.data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/booking`,
+          data: { name: validated.data.name },
+        },
+      });
+      if (error) return toast.error(error.message);
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { error: profileError } = await supabase.from("profiles").upsert({
+          id: userData.user.id,
+          name: validated.data.name || userData.user.email?.split("@")[0] || "Student",
+          role: "student",
+          safety_briefing_passed: false,
+        });
+        if (profileError) return toast.error(profileError.message);
+      }
+      toast.success("Аккаунт создан. Проверьте email при необходимости.");
+      navigate({ to: "/booking" });
+    } finally {
+      setSignUpLoading(false);
+    }
   };
 
   return (
@@ -100,9 +152,16 @@ function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
                     <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-2xl" />
+                    <p className="text-xs text-slate-500">
+                      Безопасный пароль: минимум 8 символов, цифра и спецсимвол.
+                    </p>
                   </div>
-                  <Button type="submit" className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800" disabled={loading}>
-                    {loading ? "Вход..." : "Войти"}
+                  <Button
+                    type="submit"
+                    className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800"
+                    disabled={signInLoading}
+                  >
+                    {signInLoading ? "Вход..." : "Войти"}
                   </Button>
                 </form>
               </TabsContent>
@@ -118,10 +177,17 @@ function LoginPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password-su">Password</Label>
-                    <Input id="password-su" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-2xl" />
+                    <Input id="password-su" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-2xl" />
+                    <p className="text-xs text-slate-500">
+                      Минимум 8 символов, минимум одна цифра и один спецсимвол.
+                    </p>
                   </div>
-                  <Button type="submit" className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800" disabled={loading}>
-                    {loading ? "Создание..." : "Создать аккаунт"}
+                  <Button
+                    type="submit"
+                    className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800"
+                    disabled={signUpLoading}
+                  >
+                    {signUpLoading ? "Создание..." : "Создать аккаунт"}
                   </Button>
                 </form>
               </TabsContent>

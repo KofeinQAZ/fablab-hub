@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { QrCode, Wrench } from "lucide-react";
+import { z } from "zod";
 
 type EquipmentCategory = "stationary" | "portable";
 type EquipmentStatus = "active" | "maintenance";
@@ -43,6 +44,42 @@ const PORTABLE_DURATIONS = [
   { value: "2", label: "2 часа" },
   { value: "3", label: "3 часа" },
 ] as const;
+
+const htmlTagPattern = /<[^>]*>/;
+
+const bookingInsertSchema = z
+  .object({
+    user_id: z.string().uuid(),
+    equipment_id: z.string().uuid(),
+    start_time: z.string().datetime(),
+    end_time: z.string().datetime(),
+    material_used: z
+      .string()
+      .max(120, "Материал слишком длинный")
+      .refine((value) => !htmlTagPattern.test(value), "Материал содержит недопустимые символы")
+      .nullable(),
+    status: z.enum(["pending", "active", "cancelled", "completed"]),
+  })
+  .superRefine((value, ctx) => {
+    const start = new Date(value.start_time).getTime();
+    const end = new Date(value.end_time).getTime();
+    const now = Date.now();
+    if (Number.isNaN(start) || Number.isNaN(end)) return;
+    if (start < now - 60_000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Время бронирования не может быть в прошлом",
+        path: ["start_time"],
+      });
+    }
+    if (end <= start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Время окончания должно быть позже начала",
+        path: ["end_time"],
+      });
+    }
+  });
 
 function statusBadge(status: EquipmentStatus) {
   if (status === "active") {
@@ -104,7 +141,8 @@ export function EquipmentDetailDialog({
   const createBooking = useMutation({
     mutationFn: async () => {
       if (!bookingPayload || !equipment) throw new Error("Equipment is not selected");
-      const { error } = await supabase.from("bookings").insert(bookingPayload);
+      const validatedPayload = bookingInsertSchema.parse(bookingPayload);
+      const { error } = await supabase.from("bookings").insert(validatedPayload);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -117,6 +155,10 @@ export function EquipmentDetailDialog({
       onClose();
     },
     onError: (error: Error) => {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0]?.message ?? "Проверьте корректность данных");
+        return;
+      }
       toast.error(error.message);
     },
   });

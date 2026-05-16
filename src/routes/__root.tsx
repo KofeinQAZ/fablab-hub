@@ -10,6 +10,7 @@ import {
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { GlobalErrorBoundary } from "@/components/global-error-boundary";
 
 import appCss from "../styles.css?url";
 
@@ -125,8 +126,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster />
+      <GlobalErrorBoundary>
+        <Outlet />
+        <Toaster />
+      </GlobalErrorBoundary>
     </QueryClientProvider>
   );
 }
