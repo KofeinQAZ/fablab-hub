@@ -39,8 +39,6 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
         </Link>
         <nav className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white/80 px-2 py-1 text-sm font-medium text-slate-600 md:flex">
           <Link to="/" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Главная</Link>
-          <Link to="/projects" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Проекты & Команды</Link>
-          <Link to="/courses" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Обучение</Link>
           <Link to="/booking" className="rounded-xl px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-700 [&.active]:bg-blue-50 [&.active]:text-blue-700">Бронирование</Link>
         </nav>
         {profile ? (

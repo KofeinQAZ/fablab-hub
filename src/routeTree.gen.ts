@@ -13,8 +13,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
-import { Route as PublicProjectsRouteImport } from './routes/_public/projects'
-import { Route as PublicCoursesRouteImport } from './routes/_public/courses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/_student'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
@@ -44,16 +42,6 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicProjectsRoute = PublicProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicCoursesRoute = PublicCoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
   getParentRoute: () => PublicRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -127,8 +115,6 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/courses': typeof PublicCoursesRoute
-  '/projects': typeof PublicProjectsRoute
   '/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
@@ -143,8 +129,6 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/courses': typeof PublicCoursesRoute
-  '/projects': typeof PublicProjectsRoute
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
   '/profile': typeof AuthenticatedStudentProfileRoute
@@ -162,8 +146,6 @@ export interface FileRoutesById {
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/_student': typeof AuthenticatedStudentRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_public/courses': typeof PublicCoursesRoute
-  '/_public/projects': typeof PublicProjectsRoute
   '/_public/': typeof PublicIndexRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/_authenticated/_student/booking': typeof AuthenticatedStudentBookingRoute
@@ -181,8 +163,6 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
-    | '/courses'
-    | '/projects'
     | '/admin'
     | '/booking'
     | '/portable'
@@ -197,8 +177,6 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
-    | '/courses'
-    | '/projects'
     | '/booking'
     | '/portable'
     | '/profile'
@@ -215,8 +193,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin'
     | '/_authenticated/_student'
     | '/_authenticated/dashboard'
-    | '/_public/courses'
-    | '/_public/projects'
     | '/_public/'
     | '/_authenticated/_admin/admin'
     | '/_authenticated/_student/booking'
@@ -263,20 +239,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/projects': {
-      id: '/_public/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof PublicProjectsRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/courses': {
-      id: '/_public/courses'
-      path: '/courses'
-      fullPath: '/courses'
-      preLoaderRoute: typeof PublicCoursesRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_authenticated/dashboard': {
@@ -433,14 +395,10 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface PublicRouteChildren {
-  PublicCoursesRoute: typeof PublicCoursesRoute
-  PublicProjectsRoute: typeof PublicProjectsRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
-  PublicCoursesRoute: PublicCoursesRoute,
-  PublicProjectsRoute: PublicProjectsRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 

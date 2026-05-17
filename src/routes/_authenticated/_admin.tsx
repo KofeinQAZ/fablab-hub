@@ -26,10 +26,10 @@ function AdminLayout() {
                   📊 Статистика
                 </Link>
                 <Link to="/admin/equipment" className={itemClass} activeProps={{ className: `${itemClass} ${activeClass}` }}>
-                  🛠 Оборудование
+                  🛠 Управление оборудованием
                 </Link>
                 <Link to="/admin/bookings" className={itemClass} activeProps={{ className: `${itemClass} ${activeClass}` }}>
-                  📅 Бронирования
+                  📅 Управление бронями
                 </Link>
               </nav>
             </aside>
