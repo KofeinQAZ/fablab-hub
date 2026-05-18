@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, RefreshCcw, Trash2 } from "lucide-react";
 import { z } from "zod";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/equipment")({
@@ -141,6 +141,27 @@ function AdminEquipmentPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const toggleEquipmentStatus = useMutation({
+    mutationFn: async ({ id, nextStatus }: { id: string; nextStatus: Equipment["status"] }) => {
+      const { error } = await supabase
+        .from("equipment")
+        .update({ status: nextStatus })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      toast.success(
+        variables.nextStatus === "maintenance"
+          ? "Оборудование переведено в ремонт"
+          : "Оборудование снова активно",
+      );
+      qc.invalidateQueries({ queryKey: ["admin-equipment"] });
+      qc.invalidateQueries({ queryKey: ["equipment", "stationary"] });
+      qc.invalidateQueries({ queryKey: ["equipment", "portable"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const openCreate = () => {
     setEditingEquipment(null);
     setForm({
@@ -195,7 +216,27 @@ function AdminEquipmentPage() {
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell className="capitalize">{item.category}</TableCell>
-                  <TableCell>{item.status}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className={
+                        item.status === "active"
+                          ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
+                          : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                      }
+                      onClick={() =>
+                        toggleEquipmentStatus.mutate({
+                          id: item.id,
+                          nextStatus: item.status === "active" ? "maintenance" : "active",
+                        })
+                      }
+                      disabled={toggleEquipmentStatus.isPending}
+                    >
+                      <RefreshCcw className="mr-1 h-3.5 w-3.5" />
+                      {item.status === "active" ? "active" : "maintenance"}
+                    </Button>
+                  </TableCell>
                   <TableCell className="max-w-[300px] truncate">{item.description || "—"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">

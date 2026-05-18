@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { QrCode, Wrench } from "lucide-react";
 import { z } from "zod";
@@ -32,20 +31,9 @@ export type EquipmentDetails = {
   specs?: string | null;
 };
 
-const STATIONARY_SLOTS = [
-  { value: "08:00", label: "08:00 - 10:00" },
-  { value: "10:00", label: "10:00 - 12:00" },
-  { value: "12:00", label: "12:00 - 14:00" },
-  { value: "14:00", label: "14:00 - 16:00" },
-  { value: "16:00", label: "16:00 - 18:00" },
-] as const;
-
-const MATERIALS = ["Свой материал", "Университетский ABS", "Университетский PLA"] as const;
-const PORTABLE_DURATIONS = [
-  { value: "1", label: "1 час" },
-  { value: "2", label: "2 часа" },
-  { value: "3", label: "3 часа" },
-] as const;
+const DATE_BUTTON_DAYS = 7;
+const START_HOURS = [10, 11, 12, 13, 14, 15, 16, 17, 18] as const;
+const DURATION_HOURS = [1, 2, 3] as const;
 
 const htmlTagPattern = /<[^>]*>/;
 
@@ -106,40 +94,47 @@ export function EquipmentDetailDialog({
   onSuccess: () => void;
 }) {
   const navigate = useNavigate();
-  const [slot, setSlot] = useState(STATIONARY_SLOTS[1].value);
-  const [material, setMaterial] = useState(MATERIALS[0]);
-  const [duration, setDuration] = useState(PORTABLE_DURATIONS[1].value);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [startHour, setStartHour] = useState<number>(10);
+  const [durationHours, setDurationHours] = useState<number>(2);
+
+  const dayOptions = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat("ru-RU", { weekday: "short", day: "numeric" });
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return Array.from({ length: DATE_BUTTON_DAYS }, (_, offset) => {
+      const date = new Date(now);
+      date.setDate(now.getDate() + offset);
+      return {
+        date,
+        label: formatter.format(date).replace(".", ""),
+      };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    setSelectedDayIndex(0);
+    setStartHour(10);
+    setDurationHours(equipment?.category === "portable" ? 1 : 2);
+  }, [open, equipment?.id, equipment?.category]);
 
   const bookingPayload = useMemo(() => {
     if (!equipment) return null;
-    const now = new Date();
-
-    if (equipment.category === "stationary") {
-      const [h, m] = slot.split(":").map(Number);
-      const start = new Date();
-      start.setHours(h, m, 0, 0);
-      const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-      return {
-        user_id: userId,
-        equipment_id: equipment.id,
-        start_time: start.toISOString(),
-        end_time: end.toISOString(),
-        material_used: material,
-        status: "active" as const,
-      };
-    }
-
-    const hours = Number(duration);
-    const end = new Date(now.getTime() + hours * 60 * 60 * 1000);
+    const selectedDate = dayOptions[selectedDayIndex]?.date ?? dayOptions[0]?.date;
+    if (!selectedDate) return null;
+    const start = new Date(selectedDate);
+    start.setHours(startHour, 0, 0, 0);
+    const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
     return {
       user_id: userId,
       equipment_id: equipment.id,
-      start_time: now.toISOString(),
+      start_time: start.toISOString(),
       end_time: end.toISOString(),
       material_used: null,
-      status: "pending" as const,
+      status: equipment.category === "portable" ? ("pending" as const) : ("active" as const),
     };
-  }, [duration, equipment, material, slot, userId]);
+  }, [dayOptions, durationHours, equipment, selectedDayIndex, startHour, userId]);
 
   const createBooking = useMutation({
     mutationFn: async () => {
@@ -178,6 +173,13 @@ export function EquipmentDetailDialog({
   const isBlocked = !!equipment && (equipment.status === "maintenance" || (isStationary && !safetyBriefingPassed));
   const isGuest = !userId;
   const imageSrc = equipment ? getEquipmentImageUrl(equipment.name, equipment.image_url) : null;
+  const nowTimestamp = Date.now();
+
+  const isPastStartHour = (date: Date, hour: number) => {
+    const slotDate = new Date(date);
+    slotDate.setHours(hour, 0, 0, 0);
+    return slotDate.getTime() < nowTimestamp - 60_000;
+  };
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
@@ -188,7 +190,9 @@ export function EquipmentDetailDialog({
             {equipment ? statusBadge(equipment.status) : null}
           </div>
           <DialogDescription>
-            {isStationary ? "Выберите слот и материал для брони." : "Оформите запрос на выдачу инвентаря."}
+            {isStationary
+              ? "Выберите дату, время старта и длительность брони."
+              : "Выберите дату, время старта и длительность запроса на выдачу."}
           </DialogDescription>
         </DialogHeader>
 
@@ -218,60 +222,85 @@ export function EquipmentDetailDialog({
             </p>
           </div>
 
-          {isStationary ? (
-            <>
-              <div className="space-y-2">
-                <Label>Время (2-часовые слоты)</Label>
-                <Select value={slot} onValueChange={setSlot}>
-                  <SelectTrigger className="h-12 rounded-2xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATIONARY_SLOTS.map((slotItem) => (
-                      <SelectItem key={slotItem.value} value={slotItem.value}>
-                        {slotItem.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Материал</Label>
-                <Select value={material} onValueChange={setMaterial}>
-                  <SelectTrigger className="h-12 rounded-2xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MATERIALS.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {!safetyBriefingPassed && (
-                <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  Нужен инструктаж
-                </p>
-              )}
-            </>
-          ) : (
-            <div className="space-y-2">
-              <Label>Длительность</Label>
-              <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger className="h-12 rounded-2xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PORTABLE_DURATIONS.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-2">
+            <Label>Дата</Label>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {dayOptions.map((day, index) => {
+                const selected = selectedDayIndex === index;
+                return (
+                  <Button
+                    key={day.date.toISOString()}
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSelectedDayIndex(index)}
+                    className={`h-12 min-w-[92px] rounded-2xl border text-sm ${
+                      selected
+                        ? "border-blue-700 bg-blue-700 text-white hover:bg-blue-800"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
+                    }`}
+                  >
+                    {day.label}
+                  </Button>
+                );
+              })}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Время начала</Label>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+              {START_HOURS.map((hour) => {
+                const selected = startHour === hour;
+                const selectedDate = dayOptions[selectedDayIndex]?.date;
+                const disabled = !selectedDate || isPastStartHour(selectedDate, hour);
+                return (
+                  <Button
+                    key={hour}
+                    type="button"
+                    variant="outline"
+                    disabled={disabled}
+                    onClick={() => setStartHour(hour)}
+                    className={`h-11 rounded-2xl border ${
+                      selected
+                        ? "border-blue-700 bg-blue-50 text-blue-700"
+                        : "border-slate-200 bg-white text-slate-700"
+                    }`}
+                  >
+                    {`${hour.toString().padStart(2, "0")}:00`}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Длительность</Label>
+            <div className="flex flex-wrap gap-2">
+              {DURATION_HOURS.map((hours) => {
+                const selected = durationHours === hours;
+                return (
+                  <Button
+                    key={hours}
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDurationHours(hours)}
+                    className={`h-11 rounded-full px-4 ${
+                      selected
+                        ? "border-lime-400 bg-lime-100 text-lime-700 hover:bg-lime-200"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-lime-300 hover:text-lime-700"
+                    }`}
+                  >
+                    {hours} {hours === 1 ? "час" : hours < 5 ? "часа" : "часов"}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {!safetyBriefingPassed && isStationary && (
+            <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              Нужен инструктаж
+            </p>
           )}
         </div>
 
