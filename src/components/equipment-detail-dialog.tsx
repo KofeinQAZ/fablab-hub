@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { QrCode, Wrench } from "lucide-react";
+import { QrCode, Wrench, X } from "lucide-react";
 import { z } from "zod";
 import { getEquipmentImageUrl } from "@/lib/equipment-images";
 
@@ -187,8 +187,23 @@ export function EquipmentDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className="inset-0 left-0 top-0 mx-0 flex h-[100dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 bg-white p-0 sm:left-1/2 sm:top-1/2 sm:mx-4 sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border sm:border-slate-200 [&>button]:right-3 [&>button]:top-3 [&>button]:rounded-xl [&>button]:p-2 [&>button_svg]:h-5 [&>button_svg]:w-5">
-        <DialogHeader className="sticky top-0 z-10 border-b border-slate-100 bg-white/80 px-4 pb-4 pt-6 backdrop-blur-md sm:static sm:border-none sm:bg-transparent sm:px-6 sm:pb-2 sm:pt-6">
+      <DialogContent className="inset-0 left-0 top-0 mx-0 flex h-[100dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 bg-white p-0 sm:left-1/2 sm:top-1/2 sm:mx-4 sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border sm:border-slate-200 [&>button]:hidden">
+        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-100 bg-white/90 px-4 py-3 backdrop-blur-md">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-slate-900">{equipment?.name ?? "Оборудование"}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Закрыть"
+            className="rounded-full bg-slate-100 p-2 text-slate-500 transition-all hover:bg-slate-200 active:scale-95"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 sm:p-6 sm:pb-6">
+          <DialogHeader className="mb-4 border-b border-slate-100 pb-4 sm:border-none sm:pb-0">
             <div className="flex items-center justify-between gap-2">
               <DialogTitle>{equipment?.name ?? "Оборудование"}</DialogTitle>
               {equipment ? statusBadge(equipment.status) : null}
@@ -200,7 +215,6 @@ export function EquipmentDetailDialog({
             </DialogDescription>
           </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 sm:p-6 sm:pb-6">
           <div className="w-full h-48 sm:h-64 rounded-xl overflow-hidden bg-slate-100 shrink-0 mb-4">
             {!imageSrc || imageLoadFailed ? (
               <div className="flex h-full w-full items-center justify-center text-slate-400">
