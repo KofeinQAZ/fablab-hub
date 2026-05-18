@@ -8,7 +8,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -97,6 +96,7 @@ export function EquipmentDetailDialog({
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [startHour, setStartHour] = useState<number>(10);
   const [durationHours, setDurationHours] = useState<number>(2);
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
 
   const dayOptions = useMemo(() => {
     const formatter = new Intl.DateTimeFormat("ru-RU", { weekday: "short", day: "numeric" });
@@ -118,6 +118,10 @@ export function EquipmentDetailDialog({
     setStartHour(10);
     setDurationHours(equipment?.category === "portable" ? 1 : 2);
   }, [open, equipment?.id, equipment?.category]);
+
+  useEffect(() => {
+    setImageLoadFailed(false);
+  }, [equipment?.id, equipment?.image_url, open]);
 
   const bookingPayload = useMemo(() => {
     if (!equipment) return null;
@@ -183,33 +187,34 @@ export function EquipmentDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white">
-        <DialogHeader>
-          <div className="flex items-center justify-between gap-2">
-            <DialogTitle>{equipment?.name ?? "Оборудование"}</DialogTitle>
-            {equipment ? statusBadge(equipment.status) : null}
-          </div>
-          <DialogDescription>
-            {isStationary
-              ? "Выберите дату, время старта и длительность брони."
-              : "Выберите дату, время старта и длительность запроса на выдачу."}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="inset-0 left-0 top-0 mx-0 flex h-[100dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 bg-white p-0 sm:left-1/2 sm:top-1/2 sm:mx-4 sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border sm:border-slate-200 [&>button]:right-3 [&>button]:top-3 [&>button]:rounded-xl [&>button]:p-2 [&>button_svg]:h-5 [&>button_svg]:w-5">
+        <DialogHeader className="sticky top-0 z-10 border-b border-slate-100 bg-white/80 px-4 pb-4 pt-6 backdrop-blur-md sm:static sm:border-none sm:bg-transparent sm:px-6 sm:pb-2 sm:pt-6">
+            <div className="flex items-center justify-between gap-2">
+              <DialogTitle>{equipment?.name ?? "Оборудование"}</DialogTitle>
+              {equipment ? statusBadge(equipment.status) : null}
+            </div>
+            <DialogDescription>
+              {isStationary
+                ? "Выберите дату, время старта и длительность брони."
+                : "Выберите дату, время старта и длительность запроса на выдачу."}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-            {imageSrc ? (
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 sm:p-6 sm:pb-6">
+          <div className="w-full h-48 sm:h-64 rounded-xl overflow-hidden bg-slate-100 shrink-0 mb-4">
+            {!imageSrc || imageLoadFailed ? (
+              <div className="flex h-full w-full items-center justify-center text-slate-400">
+                {isStationary ? <Wrench className="h-12 w-12" /> : <QrCode className="h-12 w-12" />}
+              </div>
+            ) : (
               <img
                 src={imageSrc}
                 alt={equipment?.name ?? "Equipment image"}
-                className="h-52 w-full object-cover"
+                className="w-full h-full object-cover"
                 loading="lazy"
                 decoding="async"
+                onError={() => setImageLoadFailed(true)}
               />
-            ) : (
-              <div className="flex h-52 w-full items-center justify-center">
-                {isStationary ? <Wrench className="h-12 w-12 text-slate-400" /> : <QrCode className="h-12 w-12 text-slate-400" />}
-              </div>
             )}
           </div>
 
@@ -222,9 +227,9 @@ export function EquipmentDetailDialog({
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div className="mt-4 space-y-2">
             <Label>Дата</Label>
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap gap-2">
               {dayOptions.map((day, index) => {
                 const selected = selectedDayIndex === index;
                 return (
@@ -233,7 +238,7 @@ export function EquipmentDetailDialog({
                     type="button"
                     variant="outline"
                     onClick={() => setSelectedDayIndex(index)}
-                    className={`h-12 min-w-[92px] rounded-2xl border text-sm ${
+                    className={`min-h-[44px] rounded-2xl border px-4 py-3 text-sm ${
                       selected
                         ? "border-blue-700 bg-blue-700 text-white hover:bg-blue-800"
                         : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
@@ -248,7 +253,7 @@ export function EquipmentDetailDialog({
 
           <div className="space-y-2">
             <Label>Время начала</Label>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
               {START_HOURS.map((hour) => {
                 const selected = startHour === hour;
                 const selectedDate = dayOptions[selectedDayIndex]?.date;
@@ -260,7 +265,7 @@ export function EquipmentDetailDialog({
                     variant="outline"
                     disabled={disabled}
                     onClick={() => setStartHour(hour)}
-                    className={`h-11 rounded-2xl border ${
+                    className={`min-h-[44px] rounded-2xl border px-4 py-3 ${
                       selected
                         ? "border-blue-700 bg-blue-50 text-blue-700"
                         : "border-slate-200 bg-white text-slate-700"
@@ -284,7 +289,7 @@ export function EquipmentDetailDialog({
                     type="button"
                     variant="outline"
                     onClick={() => setDurationHours(hours)}
-                    className={`h-11 rounded-full px-4 ${
+                    className={`min-h-[44px] rounded-full px-4 py-3 ${
                       selected
                         ? "border-lime-400 bg-lime-100 text-lime-700 hover:bg-lime-200"
                         : "border-slate-200 bg-white text-slate-700 hover:border-lime-300 hover:text-lime-700"
@@ -304,26 +309,25 @@ export function EquipmentDetailDialog({
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="h-12 rounded-2xl">
-            Закрыть
-          </Button>
-          <Button
-            onClick={() => createBooking.mutate()}
-            disabled={createBooking.isPending || !equipment || (isBlocked && !isGuest)}
-            className="h-12 rounded-2xl bg-blue-700 text-white hover:bg-blue-800"
-          >
-            {isGuest
-              ? "Войдите, чтобы забронировать"
-              : createBooking.isPending
-              ? "Отправка..."
-              : isStationary
-                ? safetyBriefingPassed
-                  ? "Забронировать"
-                  : "Нужен инструктаж"
-                : "Запросить выдачу (Check-out)"}
-          </Button>
-        </DialogFooter>
+        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-100 bg-white p-4 sm:static sm:mt-6 sm:border-none sm:bg-transparent sm:p-0">
+          <div className="mx-auto w-full sm:mx-0">
+            <Button
+              onClick={() => createBooking.mutate()}
+              disabled={createBooking.isPending || !equipment || (isBlocked && !isGuest)}
+              className="h-14 w-full rounded-2xl bg-blue-700 text-lg text-white hover:bg-blue-800"
+            >
+              {isGuest
+                ? "Войдите, чтобы забронировать"
+                : createBooking.isPending
+                ? "Отправка..."
+                : isStationary
+                  ? safetyBriefingPassed
+                    ? "Подтвердить"
+                    : "Нужен инструктаж"
+                  : "Подтвердить"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
