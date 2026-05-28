@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/app-header";
 import { AdminRouteGuard } from "@/components/admin-route-guard";
+import { ClipboardList, Calendar } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_admin")({
   component: AdminLayout,
@@ -31,6 +32,18 @@ function AdminLayout() {
                 <Link to="/admin/bookings" className={itemClass} activeProps={{ className: `${itemClass} ${activeClass}` }}>
                   📅 Управление бронями
                 </Link>
+                <Link to="/admin/schedule" className={itemClass} activeProps={{ className: `${itemClass} ${activeClass}` }}>
+              <span className="inline-flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Мое расписание
+              </span>
+            </Link>
+            <Link to="/admin/requests" className={itemClass} activeProps={{ className: `${itemClass} ${activeClass}` }}>
+              <span className="inline-flex items-center gap-2">
+                <ClipboardList className="h-4 w-4" />
+                Управление заявками
+              </span>
+            </Link>
               </nav>
             </aside>
             <main className="min-w-0 w-full flex-1 py-1">

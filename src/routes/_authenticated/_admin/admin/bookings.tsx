@@ -18,60 +18,64 @@ type Booking = {
   start_time: string;
   end_time: string;
   status: "pending" | "active" | "cancelled" | "completed";
-  equipment: { id: string; name: string; category: "stationary" | "portable"; status: "active" | "maintenance" } | null;
-  profile?: { name: string | null } | null;
+  equipment: { id: string; name: string; category: string } | null;
+  profiles: { name: string } | null; // Поменяй тут с profile на profiles
 };
 
 type Profile = { id: string; name: string };
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("ru-RU", {
-    timeZone: "UTC",
     hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function AdminBookingsPage() {
   const qc = useQueryClient();
 
-  const { data: bookings, isLoading: bookingsLoading } = useQuery({
+  const { data: bookings, isLoading: bookingsLoading, refetch } = useQuery({
     queryKey: ["admin-bookings"],
     queryFn: async () => {
-      // Preferred query: bookings + joined student profile + joined equipment
-      const joinedQuery = await supabase
+      // 1. Проверяем текущую сессию (на всякий случай)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // 2. Делаем запрос
+      const { data, error } = await (supabase as any)
         .from("bookings")
-        .select(
-          "id,user_id,start_time,end_time,status,equipment:equipment_id(id,name,category,status),profile:profiles!bookings_user_id_fkey(name)",
-        )
+        .select(`
+          id,
+          user_id,
+          start_time,
+          end_time,
+          status,
+          equipment (
+            id,
+            name,
+            category
+          ),
+          profiles (
+            name
+          )
+        `)
         .in("status", ["pending", "active"])
         .order("start_time", { ascending: true });
 
-      if (!joinedQuery.error) {
-        return (joinedQuery.data as Booking[]) ?? [];
+      if (error) {
+        console.error("Ошибка загрузки броней:", error);
+        throw error;
       }
-
-      // Fallback for projects where FK bookings.user_id -> profiles.id is not present
-      const basicQuery = await supabase
-        .from("bookings")
-        .select("id,user_id,start_time,end_time,status,equipment:equipment_id(id,name,category,status)")
-        .in("status", ["pending", "active"])
-        .order("start_time", { ascending: true });
-
-      if (basicQuery.error) throw basicQuery.error;
-      return (basicQuery.data as Booking[]) ?? [];
+      
+      console.log("Загруженные брони:", data); // Открой консоль (F12), чтобы увидеть данные
+      return data as any[];
     },
   });
 
-  const { data: profiles } = useQuery({
-    queryKey: ["admin-profiles"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id,name");
-      if (error) throw error;
-      return (data as Profile[]) ?? [];
-    },
-  });
-
-  const profilesById = new Map((profiles ?? []).map((item) => [item.id, item.name]));
 
   const updateBooking = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: Booking["status"] }) => {
@@ -86,18 +90,19 @@ function AdminBookingsPage() {
 
   const pendingRequests = (bookings ?? []).filter((booking) => booking.status === "pending");
   const activeBookings = (bookings ?? []).filter((booking) => booking.status === "active");
-  const getStudentName = (booking: Booking) =>
-    booking.profile?.name
-    ?? profilesById.get(booking.user_id)
-    ?? "Student";
-
+  const getStudentName = (booking: any) => {
+    // Supabase возвращает profiles либо как объект, либо как массив из одного элемента
+    const p = Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles;
+    return p?.name ?? "Студент";
+  };
   return (
     <div className="space-y-8">
+      {/* Карточка Pending (Ожидают выдачи) */}
       <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl">
-        <CardHeader className="p-8 pb-5">
+        <CardHeader className="p-6 pb-5">
           <CardTitle className="text-2xl font-black text-slate-900">Ожидают выдачи (Pending)</CardTitle>
         </CardHeader>
-        <CardContent className="p-8 pt-0">
+        <CardContent className="p-6 pt-0">
           {bookingsLoading ? (
             <Skeleton className="h-32 rounded-2xl" />
           ) : pendingRequests.length === 0 ? (
@@ -105,35 +110,33 @@ function AdminBookingsPage() {
           ) : (
             <div className="space-y-3">
               {pendingRequests.map((booking) => (
-                <div key={booking.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <div key={booking.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-100 p-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      {booking.equipment?.name ?? "Equipment"}
-                      <Badge className="rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
-                        pending
-                      </Badge>
+                      {booking.equipment?.name ?? "Оборудование"}
+                      <Badge className="rounded-xl border border-amber-200 bg-amber-50 text-amber-700">pending</Badge>
                     </div>
                     <div className="mt-1 text-xs text-slate-500">
-                      {getStudentName(booking)} • {formatDateTime(booking.start_time)} → {formatDateTime(booking.end_time)}
+                      {getStudentName(booking)} — {formatDateTime(booking.start_time)}
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
+                    <Button 
+                      size="sm" 
                       className="bg-[#005BAB] hover:bg-blue-800"
                       onClick={() => updateBooking.mutate({ id: booking.id, status: "active" })}
                       disabled={updateBooking.isPending}
                     >
-                      <Check className="mr-1 h-4 w-4" /> Выдать (Approve)
+                      Выдать (Approve)
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
                       className="border-slate-200"
                       onClick={() => updateBooking.mutate({ id: booking.id, status: "cancelled" })}
                       disabled={updateBooking.isPending}
                     >
-                      <X className="mr-1 h-4 w-4" /> Отклонить
+                      Отклонить
                     </Button>
                   </div>
                 </div>
@@ -143,37 +146,33 @@ function AdminBookingsPage() {
         </CardContent>
       </Card>
 
+      {/* Карточка Active (Активные сейчас) */}
       <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl">
-        <CardHeader className="p-8 pb-5">
+        <CardHeader className="p-6 pb-5">
           <CardTitle className="text-2xl font-black text-slate-900">Активные сейчас</CardTitle>
         </CardHeader>
-        <CardContent className="p-8 pt-0">
+        <CardContent className="p-6 pt-0">
           {bookingsLoading ? (
-            <Skeleton className="h-40 rounded-2xl" />
+            <Skeleton className="h-32 rounded-2xl" />
           ) : activeBookings.length === 0 ? (
             <p className="text-sm text-slate-500">Сейчас нет активных броней.</p>
           ) : (
             <div className="space-y-3">
               {activeBookings.map((booking) => (
-                <div key={booking.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-4">
+                <div key={booking.id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 p-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      {booking.equipment?.name ?? "Equipment"}
-                      <Badge className="rounded-xl border border-green-200 bg-green-50 text-green-700">
-                        active
-                      </Badge>
+                      {booking.equipment?.name}
+                      <Badge className="rounded-xl border border-green-200 bg-green-50 text-green-700">active</Badge>
                     </div>
                     <div className="mt-1 text-xs text-slate-500">
-                      {getStudentName(booking)}
-                    </div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {formatDateTime(booking.start_time)} → {formatDateTime(booking.end_time)}
+                      {getStudentName(booking)} — {formatDateTime(booking.start_time)}
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-slate-500 hover:text-red-600"
                     onClick={() => updateBooking.mutate({ id: booking.id, status: "cancelled" })}
                     disabled={updateBooking.isPending}
                   >

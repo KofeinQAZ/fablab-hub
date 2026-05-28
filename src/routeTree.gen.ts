@@ -23,6 +23,8 @@ import { Route as AuthenticatedStudentBookingRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_authenticated/_admin/admin/index'
 import { Route as AuthenticatedAdminAdminStatisticsRouteImport } from './routes/_authenticated/_admin/admin/statistics'
+import { Route as AuthenticatedAdminAdminScheduleRouteImport } from './routes/_authenticated/_admin/admin/schedule'
+import { Route as AuthenticatedAdminAdminRequestsRouteImport } from './routes/_authenticated/_admin/admin/requests'
 import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
 import { Route as AuthenticatedAdminAdminBookingsRouteImport } from './routes/_authenticated/_admin/admin/bookings'
 
@@ -98,6 +100,18 @@ const AuthenticatedAdminAdminStatisticsRoute =
     path: '/statistics',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
+const AuthenticatedAdminAdminScheduleRoute =
+  AuthenticatedAdminAdminScheduleRouteImport.update({
+    id: '/schedule',
+    path: '/schedule',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminRequestsRoute =
+  AuthenticatedAdminAdminRequestsRouteImport.update({
+    id: '/requests',
+    path: '/requests',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
 const AuthenticatedAdminAdminEquipmentRoute =
   AuthenticatedAdminAdminEquipmentRouteImport.update({
     id: '/equipment',
@@ -122,6 +136,8 @@ export interface FileRoutesByFullPath {
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
+  '/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
   '/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
   '/admin/': typeof AuthenticatedAdminAdminIndexRoute
 }
@@ -135,6 +151,8 @@ export interface FileRoutesByTo {
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
+  '/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
   '/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
   '/admin': typeof AuthenticatedAdminAdminIndexRoute
 }
@@ -154,6 +172,8 @@ export interface FileRoutesById {
   '/_authenticated/_student/stationary': typeof AuthenticatedStudentStationaryRoute
   '/_authenticated/_admin/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
   '/_authenticated/_admin/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/_authenticated/_admin/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
+  '/_authenticated/_admin/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
   '/_authenticated/_admin/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
   '/_authenticated/_admin/admin/': typeof AuthenticatedAdminAdminIndexRoute
 }
@@ -170,6 +190,8 @@ export interface FileRouteTypes {
     | '/stationary'
     | '/admin/bookings'
     | '/admin/equipment'
+    | '/admin/requests'
+    | '/admin/schedule'
     | '/admin/statistics'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -183,6 +205,8 @@ export interface FileRouteTypes {
     | '/stationary'
     | '/admin/bookings'
     | '/admin/equipment'
+    | '/admin/requests'
+    | '/admin/schedule'
     | '/admin/statistics'
     | '/admin'
   id:
@@ -201,6 +225,8 @@ export interface FileRouteTypes {
     | '/_authenticated/_student/stationary'
     | '/_authenticated/_admin/admin/bookings'
     | '/_authenticated/_admin/admin/equipment'
+    | '/_authenticated/_admin/admin/requests'
+    | '/_authenticated/_admin/admin/schedule'
     | '/_authenticated/_admin/admin/statistics'
     | '/_authenticated/_admin/admin/'
   fileRoutesById: FileRoutesById
@@ -311,6 +337,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminStatisticsRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
+    '/_authenticated/_admin/admin/schedule': {
+      id: '/_authenticated/_admin/admin/schedule'
+      path: '/schedule'
+      fullPath: '/admin/schedule'
+      preLoaderRoute: typeof AuthenticatedAdminAdminScheduleRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/requests': {
+      id: '/_authenticated/_admin/admin/requests'
+      path: '/requests'
+      fullPath: '/admin/requests'
+      preLoaderRoute: typeof AuthenticatedAdminAdminRequestsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
     '/_authenticated/_admin/admin/equipment': {
       id: '/_authenticated/_admin/admin/equipment'
       path: '/equipment'
@@ -331,6 +371,8 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminAdminRouteChildren {
   AuthenticatedAdminAdminBookingsRoute: typeof AuthenticatedAdminAdminBookingsRoute
   AuthenticatedAdminAdminEquipmentRoute: typeof AuthenticatedAdminAdminEquipmentRoute
+  AuthenticatedAdminAdminRequestsRoute: typeof AuthenticatedAdminAdminRequestsRoute
+  AuthenticatedAdminAdminScheduleRoute: typeof AuthenticatedAdminAdminScheduleRoute
   AuthenticatedAdminAdminStatisticsRoute: typeof AuthenticatedAdminAdminStatisticsRoute
   AuthenticatedAdminAdminIndexRoute: typeof AuthenticatedAdminAdminIndexRoute
 }
@@ -340,6 +382,8 @@ const AuthenticatedAdminAdminRouteChildren: AuthenticatedAdminAdminRouteChildren
     AuthenticatedAdminAdminBookingsRoute: AuthenticatedAdminAdminBookingsRoute,
     AuthenticatedAdminAdminEquipmentRoute:
       AuthenticatedAdminAdminEquipmentRoute,
+    AuthenticatedAdminAdminRequestsRoute: AuthenticatedAdminAdminRequestsRoute,
+    AuthenticatedAdminAdminScheduleRoute: AuthenticatedAdminAdminScheduleRoute,
     AuthenticatedAdminAdminStatisticsRoute:
       AuthenticatedAdminAdminStatisticsRoute,
     AuthenticatedAdminAdminIndexRoute: AuthenticatedAdminAdminIndexRoute,
