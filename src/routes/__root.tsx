@@ -1,18 +1,17 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
   createRootRouteWithContext,
   useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalErrorBoundary } from "@/components/global-error-boundary";
 
-import appCss from "../styles.css?url";
+// В Vite SPA стили импортируются просто так (без ?url)
+import "../styles.css";
 
 function NotFoundComponent() {
   return (
@@ -71,55 +70,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+// Создаем роут с нужным контекстом
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "FabLab Satbayev — Equipment Booking" },
-      { name: "description", content: "Book FabLab equipment and check out portable inventory." },
-      { name: "author", content: "FabLab Satbayev" },
-      { property: "og:title", content: "FabLab Satbayev — Equipment Booking" },
-      { property: "og:description", content: "Book FabLab equipment and check out portable inventory." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "FabLab Satbayev — Equipment Booking" },
-      { name: "twitter:description", content: "Book FabLab equipment and check out portable inventory." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8a7fa7d3-24ef-4aa2-9ab0-ae4aa41064be/id-preview-43ea031b--e9c4b7c5-3f7e-4f3b-af23-34f956a6f91a.lovable.app-1778925007401.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8a7fa7d3-24ef-4aa2-9ab0-ae4aa41064be/id-preview-43ea031b--e9c4b7c5-3f7e-4f3b-af23-34f956a6f91a.lovable.app-1778925007401.png" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body suppressHydrationWarning>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
+  // Слушатель авторизации Supabase (ТВОЙ КОД - ВАЖНО!)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       router.invalidate();
@@ -129,11 +91,9 @@ function RootComponent() {
   }, [router, queryClient]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <GlobalErrorBoundary>
-        <Outlet />
-        <Toaster />
-      </GlobalErrorBoundary>
-    </QueryClientProvider>
+    <GlobalErrorBoundary>
+      <Outlet />
+      <Toaster />
+    </GlobalErrorBoundary>
   );
 }

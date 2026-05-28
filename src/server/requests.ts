@@ -8,9 +8,8 @@ export async function submitAccessRequest({ data }: { data: { type: 'safety_brie
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new Error('Unauthorized');
 
-  // Проверяем, нет ли уже активной заявки
-  // @ts-ignore - игнорируем ошибку локальных типов, в БД колонка есть
-  const { data: existing } = await supabase
+  // Приводим к any, чтобы TS не ругался на новую таблицу в БД
+  const { data: existing } = await (supabase as any)
     .from('access_requests')
     .select('id')
     .eq('user_id', user.id)
@@ -23,8 +22,7 @@ export async function submitAccessRequest({ data }: { data: { type: 'safety_brie
   }
 
   // Создаем заявку 
-  // @ts-ignore
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from('access_requests')
     .insert({
       user_id: user.id,
@@ -41,8 +39,7 @@ export async function approveAccessRequest({ data }: { data: { requestId: string
   const { requestId } = data;
 
   // Получаем саму заявку
-  // @ts-ignore
-  const { data: request, error: reqError } = await supabase
+  const { data: request, error: reqError } = await (supabase as any)
     .from('access_requests')
     .select('*')
     .eq('id', requestId)
@@ -51,8 +48,7 @@ export async function approveAccessRequest({ data }: { data: { requestId: string
   if (reqError || !request) throw new Error('Заявка не найдена');
 
   // 1. Меняем статус заявки на approved 
-  // @ts-ignore
-  const { error: updateReqError } = await supabase
+  const { error: updateReqError } = await (supabase as any)
     .from('access_requests')
     .update({ status: 'approved', updated_at: new Date().toISOString() })
     .eq('id', requestId);
@@ -67,8 +63,7 @@ export async function approveAccessRequest({ data }: { data: { requestId: string
     profileUpdate = { role: 'resident', safety_briefing_passed: true };
   }
 
-  // @ts-ignore
-  const { error: profileError } = await supabase
+  const { error: profileError } = await (supabase as any)
     .from('profiles')
     .update(profileUpdate)
     .eq('id', request.user_id);
