@@ -1,131 +1,175 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { EquipmentBentoCard } from "@/components/equipment-bento-card";
-import { EquipmentDetailDialog, type EquipmentDetails } from "@/components/equipment-detail-dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QrCode } from "lucide-react";
-import { useCurrentProfile } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EquipmentDetailDialog, EquipmentDetails } from "@/components/equipment-detail-dialog";
+import { Lock, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_student/booking")({
   component: BookingPage,
 });
 
 function BookingPage() {
-  const queryClient = useQueryClient();
-  const { data: authData, isLoading } = useCurrentProfile();
-  const [selected, setSelected] = useState<EquipmentDetails | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentDetails | null>(null);
+  const [category, setCategory] = useState<"stationary" | "portable">("stationary");
 
-  const { data: equipment, isLoading: equipmentLoading } = useQuery({
-    queryKey: ["equipment", "booking"],
+  // Загружаем профиль юзера для ТБ И РОЛИ
+  const { data: profile } = useQuery({
+    queryKey: ["user-profile-briefing"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("equipment").select("*").order("name");
-      if (error) throw error;
-      return (data as EquipmentDetails[]) ?? [];
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data } = await supabase.from("profiles").select("id, safety_briefing_passed, role").eq("id", user?.id).single();
+      return data;
     },
   });
 
-  if (isLoading) {
-    return (
-      <main className="mx-auto grid w-full max-w-7xl gap-6 p-6 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, idx) => (
-          <Skeleton key={idx} className="h-64 rounded-3xl" />
-        ))}
-      </main>
-    );
-  }
+  // Загружаем оборудование
+  const { data: equipment = [], isLoading } = useQuery({
+    queryKey: ["equipment-gallery", category],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("equipment")
+        .select("*")
+        .eq("category", category);
+      if (error) throw error;
+      return data as EquipmentDetails[];
+    },
+  });
 
-  const stationary = (equipment ?? []).filter((item) => item.category === "stationary");
-  const portable = (equipment ?? []).filter((item) => item.category === "portable");
-  const firstActivePortable = portable.find((item) => item.status === "active") ?? null;
+  // МАГИЯ QR-КОДА: Автоматическое открытие при сканировании
+  useEffect(() => {
+    if (equipment.length > 0) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrEquipmentId = urlParams.get("equipmentId");
+      
+      if (qrEquipmentId) {
+        const foundItem = equipment.find((item: any) => item.id === qrEquipmentId);
+        if (foundItem) {
+          setSelectedEquipment(foundItem);
+          // Чистим URL, чтобы при закрытии модалки она не открывалась снова
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    }
+  }, [equipment]);
+
+  // Функция проверки доступа
+  const checkAccess = (accessType: string) => {
+    if (!profile) return { hasAccess: false, reason: "Необходима авторизация" };
+    if (profile.role === 'admin') return { hasAccess: true };
+
+    switch (accessType) {
+      case 'basic': 
+        return { hasAccess: true };
+      case 'independent': 
+      case 'mentor_required': 
+        return profile.safety_briefing_passed 
+          ? { hasAccess: true } 
+          : { hasAccess: false, reason: "Требуется сдача ТБ" };
+      case 'resident_only': 
+        return profile.role === 'resident' 
+          ? { hasAccess: true } 
+          : { hasAccess: false, reason: "Только для Резидентов" };
+      default: 
+        return { hasAccess: true };
+    }
+  };
 
   return (
-    <>
-      <main className="mx-auto w-full max-w-7xl p-4 md:p-8">
-        <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl">
-          <CardHeader className="space-y-2 p-8 pb-6">
-            <CardTitle className="text-3xl font-black text-slate-900">Бронирование оборудования</CardTitle>
-            <p className="text-xs text-slate-600 md:text-sm">
-              Выберите категорию, откройте карточку оборудования и оформите бронь через модальное окно.
-            </p>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-            <Tabs defaultValue="stationary" className="space-y-6">
-              <TabsList className="grid h-auto w-full max-w-lg grid-cols-2 rounded-2xl border border-slate-100 bg-slate-50 p-1.5">
-                <TabsTrigger
-                  value="stationary"
-                  className="h-11 rounded-xl text-sm font-semibold text-slate-600 transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-                >
-                  Станки
-                </TabsTrigger>
-                <TabsTrigger
-                  value="portable"
-                  className="h-11 rounded-xl text-sm font-semibold text-slate-600 transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-                >
-                  Инвентарь
-                </TabsTrigger>
-              </TabsList>
+    <main className="mx-auto max-w-7xl p-4 md:p-8 space-y-8">
+      <div className="space-y-4">
+        <h1 className="text-4xl font-black text-slate-900">Бронирование оборудования</h1>
+        <p className="text-slate-500 max-w-2xl">
+          Выберите категорию, изучите уровни доступа и оформите бронь на нужный станок или инвентарь.
+        </p>
+      </div>
 
-              <TabsContent value="stationary">
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {equipmentLoading
-                    ? Array.from({ length: 6 }).map((_, idx) => <Skeleton key={idx} className="h-64 rounded-3xl" />)
-                    : stationary.map((item) => (
-                        <EquipmentBentoCard key={item.id} equipment={item} onOpen={() => setSelected(item)} />
-                      ))}
+      <Tabs defaultValue="stationary" onValueChange={(v) => setCategory(v as any)} className="w-full max-w-md">
+        <TabsList className="grid w-full grid-cols-2 rounded-2xl h-12 bg-slate-100 p-1">
+          <TabsTrigger value="stationary" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold">Станки</TabsTrigger>
+          <TabsTrigger value="portable" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold">Инвентарь</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => <div key={i} className="h-64 rounded-[32px] bg-slate-100 animate-pulse" />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {equipment.map((item: any) => {
+            const accessType = item.access_type || 'basic';
+            const { hasAccess, reason } = checkAccess(accessType);
+
+            return (
+              <Card key={item.id} className="group relative overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 transition-all hover:-translate-y-1 hover:shadow-2xl flex flex-col">
+                <div className={`h-40 flex items-center justify-center text-white text-3xl font-black p-6 relative ${
+                  item.status === 'maintenance' ? 'bg-red-500' : 'bg-blue-600'
+                }`}>
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.name} className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+                  ) : null}
+                  <span className="relative z-10 text-center line-clamp-2 leading-tight drop-shadow-md">{item.name.split(' — ')[0]}</span>
                 </div>
-              </TabsContent>
 
-              <TabsContent value="portable" className="space-y-6">
-                <Card className="rounded-3xl border border-slate-100 bg-gradient-to-br from-[#005BAB] via-blue-700 to-blue-500 text-white shadow-sm transition-all hover:shadow-xl">
-                  <CardContent className="flex flex-col gap-5 p-8">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
-                        <QrCode className="h-7 w-7" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-blue-100">Portable Inventory</p>
-                        <p className="text-2xl font-black">Сканировать инвентарь</p>
-                      </div>
-                    </div>
-                    <Button
-                      className="h-14 rounded-2xl bg-yellow-300 text-base font-bold text-slate-900 hover:bg-yellow-200"
-                      onClick={() => setSelected(firstActivePortable)}
-                      disabled={!firstActivePortable}
-                    >
-                      Сканировать инвентарь (Check-out)
+                <CardContent className="p-6 flex flex-col flex-1">
+                  <h3 className="font-bold text-lg text-slate-900 leading-tight mb-2">{item.name}</h3>
+                  
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
+                    <Badge className={`border-none ${item.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                      {item.status === 'active' ? '🟢 Активен' : '🔴 Обслуживание'}
+                    </Badge>
+                    
+                    {accessType === 'basic' && <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">Общий</Badge>}
+                    {accessType === 'independent' && <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">Нужен ТБ</Badge>}
+                    {accessType === 'mentor_required' && <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">С ментором</Badge>}
+                    {accessType === 'resident_only' && <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">Резиденты</Badge>}
+                  </div>
+                  
+                  <p className="text-sm text-slate-500 line-clamp-2 mb-6 flex-1">
+                    {item.description || "Надежное оборудование для ваших проектов."}
+                  </p>
+
+                  {item.status === 'maintenance' ? (
+                    <Button disabled className="w-full h-12 rounded-2xl bg-slate-100 text-slate-500 font-bold border-none">
+                      <AlertCircle className="w-4 h-4 mr-2" /> В ремонте
                     </Button>
-                  </CardContent>
-                </Card>
-
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {equipmentLoading
-                    ? Array.from({ length: 6 }).map((_, idx) => <Skeleton key={idx} className="h-64 rounded-3xl" />)
-                    : portable.map((item) => (
-                        <EquipmentBentoCard key={item.id} equipment={item} onOpen={() => setSelected(item)} />
-                      ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </main>
+                  ) : hasAccess ? (
+                    <Button 
+                      onClick={() => setSelectedEquipment(item)}
+                      className="w-full h-12 rounded-2xl bg-slate-100 text-blue-700 border border-blue-200 hover:bg-blue-50 font-bold"
+                    >
+                      Выбрать время
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => toast.error(reason)}
+                      variant="secondary"
+                      className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold border-none cursor-not-allowed"
+                    >
+                      <Lock className="w-4 h-4 mr-2" /> {reason}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       <EquipmentDetailDialog
-        open={!!selected}
-        equipment={selected}
-        userId={authData?.userId ?? null}
-        safetyBriefingPassed={authData?.profile.safety_briefing_passed ?? false}
-        onClose={() => setSelected(null)}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["equipment", "booking"] });
-          queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
-        }}
+        open={!!selectedEquipment}
+        equipment={selectedEquipment}
+        userId={profile?.id || null}
+        safetyBriefingPassed={profile?.safety_briefing_passed || false}
+        onClose={() => setSelectedEquipment(null)}
+        onSuccess={() => setSelectedEquipment(null)}
       />
-    </>
+    </main>
   );
 }

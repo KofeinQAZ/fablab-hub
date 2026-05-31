@@ -13,6 +13,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
+import { Route as AuthenticatedNewsRouteImport } from './routes/_authenticated/news'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/_student'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
@@ -25,6 +27,8 @@ import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminAdminStatisticsRouteImport } from './routes/_authenticated/_admin/admin/statistics'
 import { Route as AuthenticatedAdminAdminScheduleRouteImport } from './routes/_authenticated/_admin/admin/schedule'
 import { Route as AuthenticatedAdminAdminRequestsRouteImport } from './routes/_authenticated/_admin/admin/requests'
+import { Route as AuthenticatedAdminAdminProjectsRouteImport } from './routes/_authenticated/_admin/admin/projects'
+import { Route as AuthenticatedAdminAdminNewsRouteImport } from './routes/_authenticated/_admin/admin/news'
 import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
 import { Route as AuthenticatedAdminAdminBookingsRouteImport } from './routes/_authenticated/_admin/admin/bookings'
 
@@ -45,6 +49,16 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublicRoute,
+} as any)
+const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedNewsRoute = AuthenticatedNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
@@ -112,6 +126,18 @@ const AuthenticatedAdminAdminRequestsRoute =
     path: '/requests',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
+const AuthenticatedAdminAdminProjectsRoute =
+  AuthenticatedAdminAdminProjectsRouteImport.update({
+    id: '/projects',
+    path: '/projects',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminNewsRoute =
+  AuthenticatedAdminAdminNewsRouteImport.update({
+    id: '/news',
+    path: '/news',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
 const AuthenticatedAdminAdminEquipmentRoute =
   AuthenticatedAdminAdminEquipmentRouteImport.update({
     id: '/equipment',
@@ -129,6 +155,8 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/news': typeof AuthenticatedNewsRoute
+  '/projects': typeof AuthenticatedProjectsRoute
   '/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
@@ -136,6 +164,8 @@ export interface FileRoutesByFullPath {
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
+  '/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
   '/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
   '/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
@@ -145,12 +175,16 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/news': typeof AuthenticatedNewsRoute
+  '/projects': typeof AuthenticatedProjectsRoute
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
   '/profile': typeof AuthenticatedStudentProfileRoute
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
+  '/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
   '/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
   '/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
@@ -164,6 +198,8 @@ export interface FileRoutesById {
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/_student': typeof AuthenticatedStudentRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/news': typeof AuthenticatedNewsRoute
+  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_public/': typeof PublicIndexRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/_authenticated/_student/booking': typeof AuthenticatedStudentBookingRoute
@@ -172,6 +208,8 @@ export interface FileRoutesById {
   '/_authenticated/_student/stationary': typeof AuthenticatedStudentStationaryRoute
   '/_authenticated/_admin/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
   '/_authenticated/_admin/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
+  '/_authenticated/_admin/admin/news': typeof AuthenticatedAdminAdminNewsRoute
+  '/_authenticated/_admin/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/_authenticated/_admin/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
   '/_authenticated/_admin/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
   '/_authenticated/_admin/admin/statistics': typeof AuthenticatedAdminAdminStatisticsRoute
@@ -183,6 +221,8 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/news'
+    | '/projects'
     | '/admin'
     | '/booking'
     | '/portable'
@@ -190,6 +230,8 @@ export interface FileRouteTypes {
     | '/stationary'
     | '/admin/bookings'
     | '/admin/equipment'
+    | '/admin/news'
+    | '/admin/projects'
     | '/admin/requests'
     | '/admin/schedule'
     | '/admin/statistics'
@@ -199,12 +241,16 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/news'
+    | '/projects'
     | '/booking'
     | '/portable'
     | '/profile'
     | '/stationary'
     | '/admin/bookings'
     | '/admin/equipment'
+    | '/admin/news'
+    | '/admin/projects'
     | '/admin/requests'
     | '/admin/schedule'
     | '/admin/statistics'
@@ -217,6 +263,8 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin'
     | '/_authenticated/_student'
     | '/_authenticated/dashboard'
+    | '/_authenticated/news'
+    | '/_authenticated/projects'
     | '/_public/'
     | '/_authenticated/_admin/admin'
     | '/_authenticated/_student/booking'
@@ -225,6 +273,8 @@ export interface FileRouteTypes {
     | '/_authenticated/_student/stationary'
     | '/_authenticated/_admin/admin/bookings'
     | '/_authenticated/_admin/admin/equipment'
+    | '/_authenticated/_admin/admin/news'
+    | '/_authenticated/_admin/admin/projects'
     | '/_authenticated/_admin/admin/requests'
     | '/_authenticated/_admin/admin/schedule'
     | '/_authenticated/_admin/admin/statistics'
@@ -266,6 +316,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRoute
+    }
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/news': {
+      id: '/_authenticated/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof AuthenticatedNewsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -351,6 +415,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminRequestsRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
+    '/_authenticated/_admin/admin/projects': {
+      id: '/_authenticated/_admin/admin/projects'
+      path: '/projects'
+      fullPath: '/admin/projects'
+      preLoaderRoute: typeof AuthenticatedAdminAdminProjectsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/news': {
+      id: '/_authenticated/_admin/admin/news'
+      path: '/news'
+      fullPath: '/admin/news'
+      preLoaderRoute: typeof AuthenticatedAdminAdminNewsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
     '/_authenticated/_admin/admin/equipment': {
       id: '/_authenticated/_admin/admin/equipment'
       path: '/equipment'
@@ -371,6 +449,8 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminAdminRouteChildren {
   AuthenticatedAdminAdminBookingsRoute: typeof AuthenticatedAdminAdminBookingsRoute
   AuthenticatedAdminAdminEquipmentRoute: typeof AuthenticatedAdminAdminEquipmentRoute
+  AuthenticatedAdminAdminNewsRoute: typeof AuthenticatedAdminAdminNewsRoute
+  AuthenticatedAdminAdminProjectsRoute: typeof AuthenticatedAdminAdminProjectsRoute
   AuthenticatedAdminAdminRequestsRoute: typeof AuthenticatedAdminAdminRequestsRoute
   AuthenticatedAdminAdminScheduleRoute: typeof AuthenticatedAdminAdminScheduleRoute
   AuthenticatedAdminAdminStatisticsRoute: typeof AuthenticatedAdminAdminStatisticsRoute
@@ -382,6 +462,8 @@ const AuthenticatedAdminAdminRouteChildren: AuthenticatedAdminAdminRouteChildren
     AuthenticatedAdminAdminBookingsRoute: AuthenticatedAdminAdminBookingsRoute,
     AuthenticatedAdminAdminEquipmentRoute:
       AuthenticatedAdminAdminEquipmentRoute,
+    AuthenticatedAdminAdminNewsRoute: AuthenticatedAdminAdminNewsRoute,
+    AuthenticatedAdminAdminProjectsRoute: AuthenticatedAdminAdminProjectsRoute,
     AuthenticatedAdminAdminRequestsRoute: AuthenticatedAdminAdminRequestsRoute,
     AuthenticatedAdminAdminScheduleRoute: AuthenticatedAdminAdminScheduleRoute,
     AuthenticatedAdminAdminStatisticsRoute:
@@ -426,12 +508,16 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedStudentRoute: typeof AuthenticatedStudentRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedNewsRoute: typeof AuthenticatedNewsRoute
+  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedStudentRoute: AuthenticatedStudentRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedNewsRoute: AuthenticatedNewsRoute,
+  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

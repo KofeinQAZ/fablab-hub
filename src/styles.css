@@ -160,3 +160,19 @@
     will-change: transform;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-qr-card, #printable-qr-card * {
+    visibility: visible;
+  }
+  #printable-qr-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+  }
+}
