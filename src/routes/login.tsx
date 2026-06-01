@@ -123,12 +123,10 @@ function LoginPage() {
         });
         if (profileError) return toast.error(profileError.message);
       }
-      toast.success("Аккаунт создан. Проверьте email при необходимости.");
-      navigate({ to: returnTo as never });
-    } finally {
-      setSignUpLoading(false);
-    }
-  };
+      toast.success("✅ Аккаунт успешно создан!", {
+  description: "Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!",
+  duration: 10000, 
+});
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">
