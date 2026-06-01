@@ -124,9 +124,15 @@ function LoginPage() {
         if (profileError) return toast.error(profileError.message);
       }
       toast.success("✅ Аккаунт успешно создан!", {
-  description: "Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!",
-  duration: 10000, 
-});
+      description: "Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!",
+      duration: 10000,
+    });
+  } catch (error: any) {
+    toast.error(error.message || "Произошла ошибка при регистрации");
+  } finally {
+    // Если у тебя была какая-то загрузка, она выключается тут
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">
