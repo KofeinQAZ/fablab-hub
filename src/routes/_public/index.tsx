@@ -123,7 +123,7 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* --- 🔥 НОВЫЙ БЛОК: ФОТОГАЛЕРЕЯ ФАБЛАБА (В СТИЛЕ BENTO-GRID) 🔥 --- */}
+      {/* --- 🔥 ФОТОГАЛЕРЕЯ ФАБЛАБА (В СТИЛЕ BENTO-GRID) 🔥 --- */}
       <section className="max-w-7xl mx-auto px-6 py-12 z-10 relative">
         <div className="text-center mb-16">
           <Badge text="Атмосфера" />
@@ -134,7 +134,6 @@ function LandingPage() {
         {/* Асимметричная сетка картинок */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          {/* Фото 1: Широкое (2 колонки) */}
           <div className="md:col-span-2 relative h-[400px] rounded-[2rem] overflow-hidden group border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-500">
             <img 
               src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80" 
@@ -149,7 +148,6 @@ function LandingPage() {
             </div>
           </div>
 
-          {/* Фото 2: Квадратное (1 колонка) */}
           <div className="relative h-[400px] rounded-[2rem] overflow-hidden group border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-500">
             <img 
               src="https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80" 
@@ -164,7 +162,6 @@ function LandingPage() {
             </div>
           </div>
 
-          {/* Фото 3: Квадратное (1 колонка) */}
           <div className="relative h-[320px] rounded-[2rem] overflow-hidden group border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-500">
             <img 
               src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" 
@@ -179,7 +176,6 @@ function LandingPage() {
             </div>
           </div>
 
-          {/* Фото 4: Широкое (2 колонки) */}
           <div className="md:col-span-2 relative h-[320px] rounded-[2rem] overflow-hidden group border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-500">
             <img 
               src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80" 
@@ -238,26 +234,50 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* --- 6. МИНИМАЛИСТИЧНЫЙ ФУТЕР/КОНТАКТЫ --- */}
-      <footer className="border-t border-slate-200 bg-white pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      {/* --- 6. ПРЕМИАЛЬНЫЙ ТЕМНЫЙ ФУТЕР --- */}
+      <footer className="bg-slate-950 pt-20 pb-10 mt-12 rounded-t-[3rem] relative overflow-hidden">
+        {/* Декоративное свечение в футере */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-600/20 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 relative z-10">
+          
+          {/* Логотип и описание */}
           <div>
-            <div className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-4">
-              <Wrench className="w-6 h-6 text-blue-600" /> FabLab Satbayev
+            <div className="flex items-center gap-3 text-2xl font-bold text-white mb-6">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <Wrench className="w-5 h-5 text-white" />
+              </div>
+              FabLab Satbayev
             </div>
-            <p className="text-slate-500 text-sm">Твои идеи. Наше оборудование.</p>
+            <p className="text-slate-400 text-base leading-relaxed max-w-sm">
+              Место, где студенческие идеи превращаются в реальные прототипы и успешные стартапы.
+            </p>
           </div>
-          <div className="flex flex-col gap-3 text-sm text-slate-600">
-            <h4 className="font-bold text-slate-900 mb-2">Контакты</h4>
-            <a href="#" className="hover:text-blue-600 flex items-center gap-2"><Phone className="w-4 h-4"/> +7 (700) 000-00-00</a>
-            <a href="#" className="hover:text-blue-600 flex items-center gap-2"><Mail className="w-4 h-4"/> fablab@satbayev.university</a>
+          
+          {/* Контакты */}
+          <div className="flex flex-col gap-4 text-base text-slate-400">
+            <h4 className="font-bold text-white mb-2 text-lg">Контакты</h4>
+            <a href="#" className="hover:text-blue-400 flex items-center gap-3 transition-colors">
+              <Phone className="w-5 h-5 text-slate-500" /> +7 (700) 000-00-00
+            </a>
+            <a href="mailto:fablab@satbayev.university" className="hover:text-blue-400 flex items-center gap-3 transition-colors">
+              <Mail className="w-5 h-5 text-slate-500" /> fablab@satbayev.university
+            </a>
           </div>
-          <div className="flex flex-col gap-3 text-sm text-slate-600">
-            <h4 className="font-bold text-slate-900 mb-2">Адрес</h4>
-            <p className="flex items-start gap-2"><MapPin className="w-4 h-4 shrink-0 mt-0.5"/> г. Алматы, ул. Сатпаева 22<br/>Satbayev University</p>
+          
+          {/* Адрес */}
+          <div className="flex flex-col gap-4 text-base text-slate-400">
+            <h4 className="font-bold text-white mb-2 text-lg">Адрес</h4>
+            <p className="flex items-start gap-3">
+              <MapPin className="w-5 h-5 shrink-0 mt-1 text-slate-500" /> 
+              <span>г. Алматы, ул. Сатпаева 22<br/>Satbayev University, Главный корпус</span>
+            </p>
           </div>
+
         </div>
-        <div className="max-w-7xl mx-auto px-6 text-center text-slate-400 text-sm border-t border-slate-100 pt-8">
+        
+        {/* Копирайт */}
+        <div className="max-w-7xl mx-auto px-6 text-center text-slate-500 text-sm border-t border-slate-800 pt-8 relative z-10">
           © {new Date().getFullYear()} FabLab Satbayev Platform. All rights reserved.
         </div>
       </footer>
@@ -277,7 +297,7 @@ function Badge({ text }: { text: string }) {
 function PerkCard({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
     <div className="flex flex-col group">
-      <div className="w-12 h-12 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors duration-300 shadow-sm">
+      <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors duration-300 shadow-sm">
         <Icon className="w-6 h-6 text-slate-600 group-hover:text-white transition-colors" />
       </div>
       <h4 className="text-xl font-bold text-slate-900 mb-2">{title}</h4>
