@@ -209,20 +209,34 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
                 const { disabled, reason } = getSlotStatus(h);
                 const isActive = startHour === h;
                 
+                // Check if selectedDate is today and hour is in the past
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const isToday = selectedDate.getTime() === today.getTime();
+                const currentHour = now.getHours();
+                const isPastHour = isToday && h <= currentHour;
+                
+                // If hour is in the past, it should be disabled and show "Прошедшее время"
+                const isFinallyDisabled = disabled || isPastHour;
+                const finalReason = isPastHour ? 'past_hour' : reason;
+                
                 return (
-                  <button key={h} disabled={disabled} onClick={() => setStartHour(h)}
+                  <button key={h} disabled={isFinallyDisabled} onClick={() => !isFinallyDisabled && setStartHour(h)}
                     className={`h-12 sm:h-14 rounded-2xl font-bold text-sm transition-all border-2 flex flex-col items-center justify-center relative ${
-                      reason === 'busy' 
+                      finalReason === 'busy' 
                         ? "bg-red-500 border-red-500 text-white opacity-90 cursor-not-allowed" 
-                        : reason === 'no_mentor'
+                        : finalReason === 'no_mentor'
                         ? "bg-slate-50 border-slate-100 text-slate-300 opacity-60 cursor-not-allowed"
+                        : finalReason === 'past_hour'
+                        ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
                         : isActive 
                           ? (isMentorRequired ? "bg-amber-50 border-amber-500 text-amber-700" : "bg-blue-50 border-blue-600 text-blue-700")
                           : "bg-white border-slate-100 text-slate-700 hover:border-blue-300"
                     }`}>
                     {h}:00
-                    {reason === 'busy' && <span className="text-[8px] font-black uppercase">Занято</span>}
-                    {reason === 'no_mentor' && <span className="text-[8px] font-bold uppercase">Нет ментора</span>}
+                    {finalReason === 'busy' && <span className="text-[8px] font-black uppercase">Занято</span>}
+                    {finalReason === 'no_mentor' && <span className="text-[8px] font-bold uppercase">Нет ментора</span>}
+                    {finalReason === 'past_hour' && <span className="text-[8px] font-bold uppercase">Прошло</span>}
                   </button>
                 );
               })}
