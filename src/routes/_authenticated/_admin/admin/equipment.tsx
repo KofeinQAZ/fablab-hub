@@ -144,8 +144,18 @@ function AdminEquipmentPage() {
 
   const deleteEquipment = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("equipment").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("equipment")
+        .delete()
+        .eq("id", id)
+        .select();
+
       if (error) throw error;
+
+      // SECURITY: Check for silent RLS denial (empty result with 200 OK)
+      if (!data || data.length === 0) {
+        throw new Error("Ошибка удаления: у вас нет прав для этого действия");
+      }
     },
     onSuccess: () => {
       toast.success("Оборудование удалено");
@@ -156,11 +166,18 @@ function AdminEquipmentPage() {
 
   const toggleEquipmentStatus = useMutation({
     mutationFn: async ({ id, nextStatus }: { id: string; nextStatus: Equipment["status"] }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("equipment")
         .update({ status: nextStatus })
-        .eq("id", id);
+        .eq("id", id)
+        .select();
+
       if (error) throw error;
+
+      // SECURITY: Check for silent RLS denial (empty result with 200 OK)
+      if (!data || data.length === 0) {
+        throw new Error("Ошибка обновления: у вас нет прав для этого действия");
+      }
     },
     onSuccess: (_data, variables) => {
       toast.success(variables.nextStatus === "maintenance" ? "В ремонте" : "Активно");

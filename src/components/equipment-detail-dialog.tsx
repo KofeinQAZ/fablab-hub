@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { X, Clock, Info } from "lucide-react";
+import { createBookingSchema } from "@/lib/booking-schemas";
 
 export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSuccess }: any) {
   const qc = useQueryClient();
@@ -102,15 +103,33 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
       start.setHours(startHour, 0, 0, 0);
       const end = new Date(start.getTime() + durationHours * 3600000);
 
-      const { error } = await supabase.from("bookings").insert({
+      // SECURITY: Validate booking times against schema before submission
+      const validationResult = createBookingSchema.safeParse({
+        startTime: start,
+        endTime: end,
+        durationHours,
+        materialUsed: "",
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.issues[0];
+        throw new Error(firstError?.message || "Booking validation failed");
+      }
+
+      const { data, error } = await supabase.from("bookings").insert({
         user_id: userId,
         equipment_id: equipment.id,
         start_time: start.toISOString(),
         end_time: end.toISOString(),
         status: isMentorRequired ? "pending" : "active", 
-      });
+      }).select();
 
       if (error) throw new Error("Это время уже занято! Обновите страницу.");
+      
+      // SECURITY: Check for silent RLS denial (empty result with 200 OK)
+      if (!data || data.length === 0) {
+        throw new Error("У вас нет прав для выполнения этого действия");
+      }
     },
     onSuccess: () => {
       toast.success(isMentorRequired ? "Заявка отправлена ментору!" : "Бронь успешно создана!");

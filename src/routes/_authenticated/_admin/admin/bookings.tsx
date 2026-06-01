@@ -63,8 +63,18 @@ function AdminBookingsPage() {
   const updateBooking = useMutation({
     mutationFn: async ({ booking, status }: { booking: Booking; status: Booking["status"] }) => {
       // 1. Обновляем статус в таблице bookings
-      const { error } = await supabase.from("bookings").update({ status }).eq("id", booking.id);
+      const { data, error } = await supabase
+        .from("bookings")
+        .update({ status })
+        .eq("id", booking.id)
+        .select();
+
       if (error) throw error;
+
+      // SECURITY: Check for silent RLS denial (empty result with 200 OK)
+      if (!data || data.length === 0) {
+        throw new Error("У вас нет прав для этого действия");
+      }
 
       // 2. Формируем текст уведомления
       let title = "";
