@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AppHeader } from "@/components/app-header";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { X, Calendar, User, Wrench, ArrowRight, Search, FileText, Zap } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { X, Calendar, User, Wrench, ArrowRight, Search, FileText, Zap, Newspaper, Heading, Type, Image as ImageIcon, Youtube } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/news")({
   component: NewsFeedPage,
@@ -79,52 +79,52 @@ function NewsFeedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-blue-600 selection:text-white">
       <AppHeader profile={profile} />
 
       {isLoading ? (
-        <div className="p-20 text-center text-xl font-bold text-slate-400 animate-pulse">Собираем свежие новости...</div>
+        <div className="p-20 text-center font-black uppercase tracking-widest text-xs text-slate-400 animate-pulse">Собираем свежие новости...</div>
       ) : (
-        <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-10">
+        <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-10 animate-in fade-in duration-500 pb-24">
           
-          {/* СОВРЕМЕННАЯ ШАПКА */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-slate-200">
+          {/* СОВРЕМЕННАЯ БРУТАЛЬНАЯ ШАПКА */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b-4 border-slate-900">
             <div className="space-y-2">
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">Журнал Фаблаба</h1>
-              <p className="text-slate-500 font-medium">Полезные гайды, анонсы и истории из нашей мастерской.</p>
+              <h1 className="text-5xl md:text-6xl font-black text-slate-900 uppercase tracking-tighter">Журнал</h1>
+              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm">Полезные гайды, анонсы и истории лаборатории.</p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
               {/* Поиск */}
               <div className="relative w-full sm:w-64 shrink-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <Input 
-                  placeholder="Поиск по статьям..." 
-                  className="pl-9 h-12 rounded-2xl bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-100"
+                  placeholder="ПОИСК ПО СТАТЬЯМ..." 
+                  className="pl-12 h-14 border-4 border-slate-900 rounded-none font-bold uppercase focus-visible:ring-0 focus-visible:border-blue-600 shadow-[4px_4px_0_#0f172a]"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               
               {/* Переключатель категорий (Табы) */}
-              <div className="flex items-center p-1 bg-slate-200/50 rounded-2xl shrink-0 h-12">
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 shrink-0 h-auto sm:h-14">
                 <button 
                   onClick={() => setFilter('all')}
-                  className={`flex-1 sm:flex-none px-4 h-full flex items-center justify-center rounded-xl text-sm font-bold transition-all ${filter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  className={`flex-1 sm:flex-none px-6 py-3 sm:py-0 border-4 border-slate-900 font-black uppercase tracking-widest text-xs transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none ${filter === 'all' ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}`}
                 >
                   Все
                 </button>
                 <button 
                   onClick={() => setFilter('news')}
-                  className={`flex-1 sm:flex-none px-4 h-full flex items-center gap-2 justify-center rounded-xl text-sm font-bold transition-all ${filter === 'news' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  className={`flex-1 sm:flex-none px-6 py-3 sm:py-0 border-4 border-slate-900 font-black uppercase tracking-widest text-xs transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none flex items-center justify-center gap-2 ${filter === 'news' ? 'bg-blue-600 text-white' : 'bg-white text-slate-900'}`}
                 >
-                  <Zap className="h-4 w-4 text-blue-600" /> Новости
+                  <Zap className="h-4 w-4" /> Новости
                 </button>
                 <button 
                   onClick={() => setFilter('article')}
-                  className={`flex-1 sm:flex-none px-4 h-full flex items-center gap-2 justify-center rounded-xl text-sm font-bold transition-all ${filter === 'article' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  className={`flex-1 sm:flex-none px-6 py-3 sm:py-0 border-4 border-slate-900 font-black uppercase tracking-widest text-xs transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none flex items-center justify-center gap-2 ${filter === 'article' ? 'bg-amber-400 text-slate-900' : 'bg-white text-slate-900'}`}
                 >
-                  <FileText className="h-4 w-4 text-emerald-600" /> Гайды
+                  <FileText className="h-4 w-4" /> Гайды
                 </button>
               </div>
             </div>
@@ -132,17 +132,17 @@ function NewsFeedPage() {
 
           {/* ЕСЛИ НИЧЕГО НЕ НАЙДЕНО */}
           {filteredArticles.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+            <div className="text-center py-20 bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
               <Search className="h-10 w-10 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-700">Ничего не найдено</h3>
-              <p className="text-slate-500 mt-2">Попробуйте изменить запрос или сбросить фильтры.</p>
-              <button onClick={() => { setFilter('all'); setSearchQuery(''); }} className="mt-4 text-blue-600 font-bold hover:underline">
+              <h3 className="text-xl font-black uppercase tracking-tight text-slate-900">Ничего не найдено</h3>
+              <p className="text-slate-500 mt-2 font-medium">Попробуйте изменить запрос или сбросить фильтры.</p>
+              <button onClick={() => { setFilter('all'); setSearchQuery(''); }} className="mt-4 text-blue-600 font-bold uppercase tracking-widest text-xs hover:underline">
                 Сбросить поиск
               </button>
             </div>
           ) : (
-            /* СЕТКА КАРТОЧЕК */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            /* СЕТКА БРУТАЛЬНЫХ КАРТОЧЕК */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredArticles.map((article, index) => {
                 const isFeatured = index === 0 && filter === 'all' && searchQuery === '';
 
@@ -150,35 +150,36 @@ function NewsFeedPage() {
                   <Card 
                     key={article.id} 
                     onClick={() => setSelectedArticle(article)}
-                    className={`group overflow-hidden rounded-[32px] border-none shadow-xl shadow-slate-200/50 bg-white transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-900/10 cursor-pointer flex flex-col ${
-                      isFeatured ? "md:col-span-2 lg:col-span-2 row-span-2" : ""
+                    className={`cursor-pointer border-4 border-slate-900 rounded-none bg-white overflow-hidden flex flex-col hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 group relative ${
+                      isFeatured ? "md:col-span-2 lg:col-span-2 row-span-2 shadow-[8px_8px_0_#2563eb] hover:shadow-[14px_14px_0_#2563eb]" : "shadow-[6px_6px_0_#0f172a] hover:shadow-[12px_12px_0_#005BAB]"
                     }`}
                   >
-                    <div className={`relative w-full bg-slate-100 overflow-hidden shrink-0 ${isFeatured ? "h-72 md:h-[450px]" : "h-56"}`}>
+                    <div className={`relative w-full bg-slate-900 overflow-hidden shrink-0 border-b-4 border-slate-900 ${isFeatured ? "h-72 md:h-[450px]" : "h-56"}`}>
                       {article.image_url ? (
-                        <img src={article.image_url} alt={article.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <img src={article.image_url} alt={article.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400 font-black text-2xl">FABLAB</div>
+                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 font-black text-2xl uppercase tracking-widest">FABLAB</div>
                       )}
                       <div className="absolute top-4 left-4 flex gap-2">
-                        <Badge className="bg-white/95 backdrop-blur text-slate-900 border-none shadow-sm uppercase font-black text-[10px] tracking-wider px-3 py-1">
+                        <span className="bg-white border-2 border-slate-900 text-slate-900 font-black uppercase tracking-widest text-[10px] px-3 py-1.5 shadow-[2px_2px_0_#0f172a]">
                           {article.category === 'news' ? 'Новость' : 'Статья'}
-                        </Badge>
+                        </span>
                       </div>
                     </div>
                     
-                    <CardContent className={`p-6 md:p-8 flex flex-col flex-1 ${isFeatured ? "space-y-4" : "space-y-3"}`}>
+                    <CardContent className="p-6 md:p-8 flex flex-col flex-1 justify-between gap-6">
                       <div className="space-y-3 flex-1">
-                        <h2 className={`font-black text-slate-900 leading-tight group-hover:text-[#005BAB] transition-colors ${isFeatured ? "text-3xl md:text-5xl" : "text-xl"}`}>
+                        <h2 className={`font-black text-slate-900 uppercase tracking-tight leading-tight group-hover:text-blue-600 transition-colors line-clamp-2 ${isFeatured ? "text-3xl md:text-5xl" : "text-xl md:text-2xl"}`}>
                           {article.title}
                         </h2>
-                        <p className={`text-slate-500 line-clamp-3 ${isFeatured ? "text-lg" : "text-sm"}`}>
+                        <p className={`text-slate-600 font-medium leading-relaxed line-clamp-3 ${isFeatured ? "text-lg" : "text-sm"}`}>
                           {article.excerpt}
                         </p>
                       </div>
-                      <div className="pt-6 mt-4 flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        <span className="flex items-center gap-1"><User className="h-3 w-3" /> {article.profiles?.name || 'FabLab'}</span>
-                        <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(article.created_at).toLocaleDateString("ru-RU", { day: 'numeric', month: 'short' })}</span>
+                      
+                      <div className="pt-4 flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-widest border-t-2 border-slate-100">
+                        <span className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-2 py-1"><User className="h-3 w-3 text-blue-600" /> {article.profiles?.name || 'FabLab'}</span>
+                        <span className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-2 py-1"><Calendar className="h-3 w-3 text-amber-600" /> {new Date(article.created_at).toLocaleDateString("ru-RU", { day: 'numeric', month: 'short' })}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -189,42 +190,66 @@ function NewsFeedPage() {
         </main>
       )}
 
-      {/* ОКНО ЧТЕНИЯ СТАТЬИ (Осталось без изменений, так как оно тебе нравится) */}
+      {/* ИСПРАВЛЕННОЕ ОКНО ЧТЕНИЯ СТАТЬИ */}
       <Dialog open={!!selectedArticle} onOpenChange={(open) => !open && setSelectedArticle(null)}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-[32px] border-none shadow-2xl h-[90vh] md:h-[85vh] flex flex-col bg-white">
-          <div className="relative w-full h-48 md:h-72 shrink-0 bg-slate-100">
-            {selectedArticle?.image_url && <img src={selectedArticle.image_url} className="w-full h-full object-cover" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <button onClick={() => setSelectedArticle(null)} className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition">
-              <X className="h-6 w-6" />
-            </button>
-            <div className="absolute bottom-6 left-6 md:bottom-8 md:left-10 pr-6">
-              <Badge className="bg-blue-600 text-white border-none shadow-md uppercase font-black text-[10px] tracking-wider px-3 py-1 mb-3">
-                {selectedArticle?.category === 'news' ? 'Новость' : 'Статья'}
-              </Badge>
-              <DialogTitle className="text-3xl md:text-5xl font-black text-white leading-tight">
-                {selectedArticle?.title}
-              </DialogTitle>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-6 md:p-10 scroll-smooth">
-            <div className="max-w-2xl mx-auto space-y-6">
-              <div className="flex items-center gap-4 pb-6 border-b border-slate-100 text-sm font-bold text-slate-400">
-                <span className="flex items-center gap-2"><User className="h-4 w-4" /> {selectedArticle?.profiles?.name || 'Администрация FabLab'}</span>
-                <span>•</span>
-                <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {selectedArticle && new Date(selectedArticle.created_at).toLocaleDateString("ru-RU", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+        <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl p-0 bg-slate-50 border-4 border-slate-900 rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col h-[85vh] max-h-[85vh] outline-none z-50">
+          
+          <DialogTitle className="sr-only">Просмотр статьи</DialogTitle>
+
+          {/* CLOSE BUTTON - абсолютно позиционировано, зафиксировано сверху */}
+          <button onClick={() => setSelectedArticle(null)} className="absolute top-4 right-4 p-2 bg-white border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] text-slate-900 hover:bg-red-500 hover:text-white transition-colors z-[60]">
+            <X className="h-6 w-6" />
+          </button>
+
+          {/* ВЕСЬ КОНТЕНТ СКРОЛЛИТСЯ ВМЕСТЕ */}
+          <div className="flex-1 overflow-y-auto w-full">
+            
+            {/* КАРТИНКА И ЗАГОЛОВОК */}
+            <div className="relative w-full h-64 md:h-[350px] shrink-0 bg-slate-900 border-b-4 border-slate-900">
+              {selectedArticle?.image_url ? (
+                <img src={selectedArticle.image_url} className="w-full h-full object-cover opacity-70" alt="" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-200"><Newspaper className="h-20 w-20 text-slate-400" /></div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
+              <div className="absolute bottom-6 left-6 md:left-10 md:bottom-10 pr-16">
+                <span className="inline-block bg-white border-2 border-slate-900 text-slate-900 font-black uppercase tracking-widest text-[10px] px-3 py-1.5 shadow-[2px_2px_0_#0f172a] mb-4">
+                  {selectedArticle?.category === 'news' ? 'Новость' : 'Статья'}
+                </span>
+                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white leading-tight">
+                  {selectedArticle?.title}
+                </h2>
               </div>
-              <div className="py-4 space-y-6">
+            </div>
+
+            {/* ОСТАЛЬНОЙ КОНТЕНТ СТАТЬИ */}
+            <div className="p-6 md:p-10 space-y-8 max-w-3xl mx-auto">
+              
+              {/* Мета-данные */}
+              <div className="flex items-center gap-4 pb-6 border-b-4 border-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <span className="flex items-center gap-2 bg-slate-200 px-3 py-1 border-2 border-slate-300"><User className="h-4 w-4" /> {selectedArticle?.profiles?.name || 'Администрация FabLab'}</span>
+                <span className="flex items-center gap-2 bg-slate-200 px-3 py-1 border-2 border-slate-300"><Calendar className="h-4 w-4" /> {selectedArticle && new Date(selectedArticle.created_at).toLocaleDateString("ru-RU", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              </div>
+
+              {/* Краткое описание */}
+              {selectedArticle?.excerpt && (
+                <div className="bg-white border-4 border-slate-900 p-6 shadow-[6px_6px_0_#0f172a] italic font-medium text-lg text-slate-600 border-l-[12px] border-l-blue-600">
+                  {selectedArticle.excerpt}
+                </div>
+              )}
+              
+              {/* Рендеринг блоков */}
+              <div className="space-y-6">
                 {blocks.map((block: any) => {
                   switch(block.type) {
-                    case 'heading': return <h2 key={block.id} className="text-2xl md:text-3xl font-black text-slate-900 mt-8 mb-4">{block.content}</h2>;
-                    case 'paragraph': return <p key={block.id} className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap">{block.content}</p>;
-                    case 'image': return <img key={block.id} src={block.content} className="w-full rounded-2xl shadow-sm my-8" />;
+                    case 'heading': return <h3 key={block.id} className="text-2xl md:text-3xl font-black uppercase tracking-tight text-slate-900 mt-10 mb-4">{block.content}</h3>;
+                    case 'paragraph': return <p key={block.id} className="text-lg text-slate-700 leading-relaxed font-medium mb-6 whitespace-pre-wrap">{block.content}</p>;
+                    case 'image': return <div key={block.id} className="border-4 border-slate-900 bg-white p-2 shadow-[4px_4px_0_#0f172a] my-8"><img src={block.content} className="w-full h-auto object-cover" alt="" /></div>;
                     case 'youtube': {
                       const yId = getYouTubeId(block.content);
-                      if (!yId) return <p key={block.id} className="text-red-500 text-sm">Ошибка: неверная ссылка YouTube</p>;
+                      if (!yId) return <p key={block.id} className="text-red-500 text-xs font-bold uppercase tracking-widest">Ошибка: неверная ссылка YouTube</p>;
                       return (
-                        <div key={block.id} className="aspect-video w-full rounded-2xl overflow-hidden shadow-md my-8 bg-slate-100">
+                        <div key={block.id} className="aspect-video w-full border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] my-8 bg-slate-900">
                           <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${yId}`} allowFullScreen />
                         </div>
                       );
@@ -232,17 +257,17 @@ function NewsFeedPage() {
                     case 'equipment': {
                       const eq = equipmentList.find((e: any) => e.id === block.content);
                       return (
-                        <div key={block.id} className="bg-blue-50/50 border border-blue-100 rounded-[24px] p-6 my-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div key={block.id} className="bg-blue-50 border-4 border-slate-900 p-6 my-8 shadow-[6px_6px_0_#0f172a] flex flex-col md:flex-row gap-4 items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0"><Wrench className="h-6 w-6 text-blue-600" /></div>
+                            <div className="h-12 w-12 bg-white border-2 border-slate-900 flex items-center justify-center shrink-0 shadow-[2px_2px_0_#0f172a]"><Wrench className="h-6 w-6 text-blue-600" /></div>
                             <div>
-                              <h4 className="font-black text-slate-900">{eq?.name || 'Оборудование'}</h4>
-                              <p className="text-sm text-slate-500 mt-1">Доступно для бронирования в мастерской</p>
+                              <h4 className="font-black text-slate-900 uppercase tracking-tight text-base">{eq?.name || 'Оборудование'}</h4>
+                              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Доступно в мастерской</p>
                             </div>
                           </div>
                           <Link to="/booking" className="w-full md:w-auto">
-                            <button className="w-full md:w-auto bg-[#005BAB] text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-800 transition-colors shadow-md shadow-blue-200">
-                              Забронировать <ArrowRight className="h-4 w-4" />
+                            <button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 font-bold uppercase tracking-widest text-xs px-6 py-3 shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                              Забронировать <ArrowRight className="h-4 w-4 inline ml-2" />
                             </button>
                           </Link>
                         </div>

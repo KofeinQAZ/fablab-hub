@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -19,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, RefreshCcw, Trash2, Laptop, Printer, HardHat, Crown, QrCode, Printer as PrintIcon } from "lucide-react";
+import { Plus, RefreshCcw, Trash2, Laptop, Printer, HardHat, Crown, QrCode, Printer as PrintIcon, Wrench, Settings, ShieldAlert, Zap } from "lucide-react";
 import { z } from "zod";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/equipment")({
@@ -65,28 +64,24 @@ const equipmentFormSchema = z.object({
 });
 
 const renderAccessBadge = (accessType: string) => {
+  const baseClasses = "font-black uppercase tracking-widest text-[10px] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]";
   switch (accessType) {
-    case 'basic': return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none"><Laptop className="w-3 h-3 mr-1"/> Общий</Badge>;
-    case 'independent': return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-none"><Printer className="w-3 h-3 mr-1"/> Нужен ТБ</Badge>;
-    case 'mentor_required': return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none"><HardHat className="w-3 h-3 mr-1"/> С ментором</Badge>;
-    case 'resident_only': return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 border-none"><Crown className="w-3 h-3 mr-1"/> Резиденты</Badge>;
-    default: return <Badge variant="outline">Неизвестно</Badge>;
+    case 'basic': return <Badge className={`bg-emerald-400 text-slate-900 ${baseClasses}`}><Laptop className="w-3 h-3 mr-1"/> Общий</Badge>;
+    case 'independent': return <Badge className={`bg-blue-400 text-white ${baseClasses}`}><Printer className="w-3 h-3 mr-1"/> ТБ</Badge>;
+    case 'mentor_required': return <Badge className={`bg-amber-400 text-slate-900 ${baseClasses}`}><HardHat className="w-3 h-3 mr-1"/> С ментором</Badge>;
+    case 'resident_only': return <Badge className={`bg-purple-500 text-white ${baseClasses}`}><Crown className="w-3 h-3 mr-1"/> Резиденты</Badge>;
+    default: return <Badge variant="outline" className={baseClasses}>Неизвестно</Badge>;
   }
 };
 
 function AdminEquipmentPage() {
   const qc = useQueryClient();
   const [catalogOpen, setCatalogOpen] = useState(false);
-  const [qrModalItem, setQrModalItem] = useState<Equipment | null>(null); // Модалка для QR
+  const [qrModalItem, setQrModalItem] = useState<Equipment | null>(null);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [form, setForm] = useState({
-    name: "",
-    category: "stationary" as Equipment["category"],
-    status: "active" as Equipment["status"],
-    access_type: "basic" as Equipment["access_type"],
-    image_url: "",
-    description: "",
-    specs: "",
+    name: "", category: "stationary" as Equipment["category"], status: "active" as Equipment["status"],
+    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", specs: "",
   });
 
   const { data: equipment } = useQuery({
@@ -98,17 +93,24 @@ function AdminEquipmentPage() {
     },
   });
 
+  // ВЫЧИСЛЕНИЕ МЕТРИК ДЛЯ ОБОРУДОВАНИЯ
+  const stats = useMemo(() => {
+    const all = equipment ?? [];
+    const total = all.length;
+    const active = all.filter(e => e.status === 'active').length;
+    const maintenance = all.filter(e => e.status === 'maintenance').length;
+    const strictAccess = all.filter(e => ['mentor_required', 'resident_only'].includes(e.access_type)).length;
+
+    return { total, active, maintenance, strictAccess };
+  }, [equipment]);
+
   const saveEquipment = useMutation({
     mutationFn: async () => {
       const validated = equipmentFormSchema.parse(form);
       const payload = {
-        name: validated.name,
-        category: validated.category,
-        status: validated.status,
-        access_type: validated.access_type,
-        image_url: validated.image_url || null,
-        description: validated.description || null,
-        specs: validated.specs || null,
+        name: validated.name, category: validated.category, status: validated.status,
+        access_type: validated.access_type, image_url: validated.image_url || null,
+        description: validated.description || null, specs: validated.specs || null,
       };
 
       const table = supabase.from("equipment");
@@ -122,40 +124,21 @@ function AdminEquipmentPage() {
       toast.success(editingEquipment ? "Оборудование обновлено" : "Оборудование добавлено");
       setCatalogOpen(false);
       setEditingEquipment(null);
-      setForm({
-        name: "",
-        category: "stationary",
-        status: "active",
-        access_type: "basic",
-        image_url: "",
-        description: "",
-        specs: "",
-      });
+      setForm({ name: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", specs: "" });
       qc.invalidateQueries({ queryKey: ["admin-equipment"] });
     },
     onError: (error: Error) => {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0]?.message ?? "Проверьте корректность полей");
-        return;
-      }
+      if (error instanceof z.ZodError) { toast.error(error.issues[0]?.message ?? "Проверьте корректность полей"); return; }
       toast.error(error.message);
     },
   });
 
+  // УДАЛЕНИЕ (С проверкой RLS)
   const deleteEquipment = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase
-        .from("equipment")
-        .delete()
-        .eq("id", id)
-        .select();
-
+      const { data, error } = await supabase.from("equipment").delete().eq("id", id).select();
       if (error) throw error;
-
-      // SECURITY: Check for silent RLS denial (empty result with 200 OK)
-      if (!data || data.length === 0) {
-        throw new Error("Ошибка удаления: у вас нет прав для этого действия");
-      }
+      if (!data || data.length === 0) throw new Error("Ошибка удаления: у вас нет прав для этого действия");
     },
     onSuccess: () => {
       toast.success("Оборудование удалено");
@@ -164,20 +147,12 @@ function AdminEquipmentPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  // СМЕНА СТАТУСА (С проверкой RLS)
   const toggleEquipmentStatus = useMutation({
     mutationFn: async ({ id, nextStatus }: { id: string; nextStatus: Equipment["status"] }) => {
-      const { data, error } = await supabase
-        .from("equipment")
-        .update({ status: nextStatus })
-        .eq("id", id)
-        .select();
-
+      const { data, error } = await supabase.from("equipment").update({ status: nextStatus }).eq("id", id).select();
       if (error) throw error;
-
-      // SECURITY: Check for silent RLS denial (empty result with 200 OK)
-      if (!data || data.length === 0) {
-        throw new Error("Ошибка обновления: у вас нет прав для этого действия");
-      }
+      if (!data || data.length === 0) throw new Error("Ошибка обновления: у вас нет прав для этого действия");
     },
     onSuccess: (_data, variables) => {
       toast.success(variables.nextStatus === "maintenance" ? "В ремонте" : "Активно");
@@ -195,170 +170,213 @@ function AdminEquipmentPage() {
   const openEdit = (item: Equipment) => {
     setEditingEquipment(item);
     setForm({
-      name: item.name,
-      category: item.category,
-      status: item.status,
-      access_type: item.access_type || "basic",
-      image_url: item.image_url || "",
-      description: item.description || "",
-      specs: item.specs || "",
+      name: item.name, category: item.category, status: item.status,
+      access_type: item.access_type || "basic", image_url: item.image_url || "",
+      description: item.description || "", specs: item.specs || "",
     });
     setCatalogOpen(true);
   };
 
-  // Функция триггера стандартной печати браузера
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="space-y-8">
-      <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-xl print:hidden">
-        <CardHeader className="p-8 pb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <CardTitle className="text-2xl font-black text-slate-900">Оборудование и QR-инвентаризация</CardTitle>
-            <Button onClick={openCreate} className="h-11 rounded-2xl bg-[#005BAB] hover:bg-blue-800 font-bold">
-              <Plus className="mr-2 h-4 w-4" /> Добавить оборудование
-            </Button>
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12 p-2">
+      
+      {/* HEADER SECTION */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b-4 border-slate-900 pb-6 print:hidden">
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Оборудование</h1>
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Управление станками и генерация QR-кодов</p>
+        </div>
+        <Button 
+          onClick={openCreate} 
+          className="bg-blue-600 hover:bg-blue-700 text-white border-4 border-slate-900 px-6 py-6 font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none"
+        >
+          <Plus className="mr-2 h-4 w-4" /> Добавить станок
+        </Button>
+      </div>
+
+      {/* DETAILED STATISTICS BLOCK */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 print:hidden">
+        <div className="bg-white border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-2">
+            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900">Всего позиций</h4>
+            <Wrench className="w-5 h-5 text-blue-600" />
           </div>
-        </CardHeader>
-        <CardContent className="overflow-x-auto p-8 pt-0">
+          <div className="text-4xl font-black text-slate-900">{stats.total}</div>
+        </div>
+
+        <div className="bg-emerald-400 border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between text-slate-900">
+          <div className="flex justify-between items-start mb-2">
+            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900">В строю</h4>
+            <Zap className="w-5 h-5 text-slate-900" />
+          </div>
+          <div className="text-4xl font-black text-slate-900">{stats.active}</div>
+        </div>
+
+        <div className="bg-rose-500 border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between text-white">
+          <div className="flex justify-between items-start mb-2">
+            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-rose-100">На ремонте</h4>
+            <Settings className="w-5 h-5 text-white" />
+          </div>
+          <div className="text-4xl font-black text-white">{stats.maintenance}</div>
+        </div>
+
+        <div className="bg-white border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-2">
+            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900">Сложный доступ</h4>
+            <ShieldAlert className="w-5 h-5 text-amber-500" />
+          </div>
+          <div className="text-4xl font-black text-slate-900">{stats.strictAccess}</div>
+        </div>
+      </div>
+
+      {/* TABLE SECTION */}
+      <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] print:hidden overflow-hidden">
+        <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Название</TableHead>
-                <TableHead>Категория</TableHead>
-                <TableHead>Доступ</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
+            <TableHeader className="bg-slate-900 border-b-4 border-slate-900">
+              <TableRow className="hover:bg-slate-900">
+                <TableHead className="text-white font-black uppercase tracking-widest text-xs py-4">Название</TableHead>
+                <TableHead className="text-white font-black uppercase tracking-widest text-xs py-4">Категория</TableHead>
+                <TableHead className="text-white font-black uppercase tracking-widest text-xs py-4">Доступ</TableHead>
+                <TableHead className="text-white font-black uppercase tracking-widest text-xs py-4">Статус</TableHead>
+                <TableHead className="text-right text-white font-black uppercase tracking-widest text-xs py-4">Действия</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(equipment ?? []).map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-bold text-slate-800">{item.name}</TableCell>
-                  <TableCell className="capitalize text-slate-500 text-xs font-semibold">{item.category}</TableCell>
-                  <TableCell>{renderAccessBadge(item.access_type || 'basic')}</TableCell>
-                  <TableCell>
+                <TableRow key={item.id} className="border-b-2 border-slate-200 hover:bg-slate-50 transition-colors">
+                  <TableCell className="font-black text-slate-900 uppercase tracking-tight py-4">{item.name}</TableCell>
+                  <TableCell className="text-slate-500 text-xs font-bold uppercase tracking-widest py-4">
+                    {item.category === 'stationary' ? 'Стационарный' : 'Портативный'}
+                  </TableCell>
+                  <TableCell className="py-4">{renderAccessBadge(item.access_type || 'basic')}</TableCell>
+                  <TableCell className="py-4">
                     <Button
                       size="sm"
-                      variant="outline"
-                      className={item.status === "active" ? "border-green-200 bg-green-50 text-green-700 rounded-xl" : "border-amber-200 bg-amber-50 text-amber-700 rounded-xl"}
+                      className={`font-black uppercase tracking-widest text-[10px] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all ${
+                        item.status === "active" ? "bg-emerald-400 hover:bg-emerald-500 text-slate-900" : "bg-rose-500 hover:bg-rose-600 text-white"
+                      }`}
                       onClick={() => toggleEquipmentStatus.mutate({ id: item.id, nextStatus: item.status === "active" ? "maintenance" : "active" })}
                     >
-                      <RefreshCcw className="mr-1 h-3.5 w-3.5" />
-                      {item.status}
+                      <RefreshCcw className="mr-2 h-3.5 w-3.5" />
+                      {item.status === "active" ? "В СТРОЮ" : "В РЕМОНТЕ"}
                     </Button>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-4">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" className="border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 rounded-xl" onClick={() => setQrModalItem(item)}>
-                        <QrCode className="mr-1 h-4 w-4" /> QR-код
+                      <Button size="sm" className="bg-white text-slate-900 hover:bg-blue-50 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all" onClick={() => setQrModalItem(item)}>
+                        <QrCode className="mr-1 h-3.5 w-3.5" /> QR
                       </Button>
-                      <Button size="sm" variant="outline" className="border-slate-200 rounded-xl" onClick={() => openEdit(item)}>Редактировать</Button>
-                      <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl" onClick={() => { if (window.confirm(`Удалить "${item.name}"?`)) deleteEquipment.mutate(item.id); }}>
+                      <Button size="sm" className="bg-white text-slate-900 hover:bg-slate-100 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all" onClick={() => openEdit(item)}>
+                        Изменить
+                      </Button>
+                      <Button size="sm" className="bg-white text-red-600 hover:bg-red-50 hover:text-red-700 border-2 border-slate-900 font-black shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all px-3" onClick={() => { if (window.confirm(`Удалить "${item.name}"?`)) deleteEquipment.mutate(item.id); }}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
+              {(equipment ?? []).length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-xs">
+                    Станков пока нет
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* ДИАЛОГ РЕДАКТИРОВАНИЯ / СОЗДАНИЯ */}
+      {/* ДИАЛОГ РЕДАКТИРОВАНИЯ / СОЗДАНИЯ (Брутальный) */}
       <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
-        <DialogContent className="rounded-3xl border border-slate-100 bg-white">
-          <DialogHeader>
-            <DialogTitle>{editingEquipment ? "Редактировать оборудование" : "Добавить оборудование"}</DialogTitle>
-            <DialogDescription>Данные сохраняются в Supabase таблицу equipment.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
+        <DialogContent className="border-4 border-slate-900 bg-white p-0 rounded-none shadow-[8px_8px_0_#0f172a] overflow-hidden">
+          <div className="bg-slate-900 p-6">
+            <DialogTitle className="text-xl font-black uppercase tracking-tighter text-white">
+              {editingEquipment ? "Редактирование" : "Новый станок"}
+            </DialogTitle>
+          </div>
+          <div className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label>Название</Label>
-              <Input className="h-11 rounded-2xl" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} />
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Название</Label>
+              <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-bold" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} />
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Категория</Label>
-                <Select value={form.category} onValueChange={(value) => setForm((prev) => ({ ...prev, category: value as any }))}>
-                  <SelectTrigger className="h-11 rounded-2xl"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="stationary">Stationary</SelectItem><SelectItem value="portable">Portable</SelectItem></SelectContent>
-                </Select>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Категория</Label>
+                <select className="w-full h-12 px-3 border-2 border-slate-900 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value as any }))}>
+                  <option value="stationary">Стационарный</option>
+                  <option value="portable">Портативный</option>
+                </select>
               </div>
               <div className="space-y-2">
-                <Label>Статус</Label>
-                <Select value={form.status} onValueChange={(value) => setForm((prev) => ({ ...prev, status: value as any }))}>
-                  <SelectTrigger className="h-11 rounded-2xl"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="maintenance">Maintenance</SelectItem></SelectContent>
-                </Select>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Статус</Label>
+                <select className="w-full h-12 px-3 border-2 border-slate-900 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={form.status} onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as any }))}>
+                  <option value="active">В строю</option>
+                  <option value="maintenance">В ремонте</option>
+                </select>
               </div>
             </div>
-            <div className="space-y-2 rounded-2xl bg-slate-50 p-3 border border-slate-100">
-              <Label className="font-bold text-slate-800">Уровень доступа (Ограничения)</Label>
-              <Select value={form.access_type} onValueChange={(value) => setForm((prev) => ({ ...prev, access_type: value as any }))}>
-                <SelectTrigger className="h-11 rounded-xl bg-white"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="basic">🟢 Общий (ТБ не обязателен)</SelectItem>
-                  <SelectItem value="independent">🟡 Самостоятельно (Строго после ТБ)</SelectItem>
-                  <SelectItem value="mentor_required">🟠 Опасно (Бронь требует Ментора)</SelectItem>
-                  <SelectItem value="resident_only">🔴 Элита (Только для Резидентов)</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-2 bg-blue-50 border-2 border-blue-200 p-4">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-blue-900">Уровень доступа</Label>
+              <select className="w-full h-12 px-3 border-2 border-blue-300 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={form.access_type} onChange={(e) => setForm((prev) => ({ ...prev, access_type: e.target.value as any }))}>
+                <option value="basic">🟢 Общий (ТБ не обязателен)</option>
+                <option value="independent">🟡 Самостоятельно (Строго после ТБ)</option>
+                <option value="mentor_required">🟠 Опасно (Только с ментором)</option>
+                <option value="resident_only">🔴 Элита (Только для Резидентов)</option>
+              </select>
             </div>
             <div className="space-y-2">
-              <Label>Фото URL</Label>
-              <Input className="h-11 rounded-2xl" value={form.image_url} onChange={(e) => setForm((prev) => ({ ...prev, image_url: e.target.value }))} />
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Фото URL</Label>
+              <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.image_url} onChange={(e) => setForm((prev) => ({ ...prev, image_url: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <Label>Описание</Label>
-              <Textarea className="rounded-2xl" rows={2} value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Параметры</Label>
-              <Textarea className="rounded-2xl" rows={3} value={form.specs} onChange={(e) => setForm((prev) => ({ ...prev, specs: e.target.value }))} />
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Описание</Label>
+              <Textarea className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-20" value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" className="h-11 rounded-2xl" onClick={() => setCatalogOpen(false)}>Отмена</Button>
-            <Button className="h-11 rounded-2xl bg-[#005BAB] hover:bg-blue-800 font-bold" onClick={() => saveEquipment.mutate()} disabled={saveEquipment.isPending}>
+          <div className="p-6 pt-0 flex justify-end gap-3 bg-slate-50 border-t-2 border-slate-200 mt-4">
+            <Button variant="outline" className="border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4" onClick={() => setCatalogOpen(false)}>Отмена</Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4" onClick={() => saveEquipment.mutate()} disabled={saveEquipment.isPending}>
               {saveEquipment.isPending ? "Сохранение..." : "Сохранить"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* МОДАЛКА ПАСПОРТА ПРЕДМЕТА И ПЕЧАТИ QR КОДА */}
       <Dialog open={!!qrModalItem} onOpenChange={(v) => !v && setQrModalItem(null)}>
-        <DialogContent className="rounded-[32px] border border-slate-100 bg-white p-6 max-w-sm mx-auto">
+        <DialogContent className="border-4 border-slate-900 bg-white p-6 rounded-none shadow-[8px_8px_0_#0f172a] max-w-sm mx-auto">
           <DialogHeader className="print:hidden">
-            <DialogTitle className="font-black text-xl text-center">Инвентарный паспорт</DialogTitle>
+            <DialogTitle className="font-black text-2xl uppercase tracking-tighter text-center">QR Паспорт</DialogTitle>
           </DialogHeader>
           
-          {/* СТИЛЬНЫЙ ПЕЧАТНЫЙ ПАСПОРТ (наклейка на вещь) */}
-          <div id="printable-qr-card" className="flex flex-col items-center justify-center p-6 border-4 border-dashed border-slate-300 rounded-2xl bg-white text-center space-y-4 my-2">
-            <div className="text-xs uppercase font-black tracking-widest text-[#005BAB]">FabLab Satbayev</div>
+          <div id="printable-qr-card" className="flex flex-col items-center justify-center p-6 border-4 border-slate-900 bg-white text-center space-y-4 my-2">
+            <div className="text-sm uppercase font-black tracking-widest text-slate-900">FABLAB SATBAYEV</div>
             
             {qrModalItem && (
               <img 
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/booking?equipmentId=' + qrModalItem.id)}`} 
                 alt="Equipment QR Code"
-                className="w-44 h-44 bg-slate-50 p-2 rounded-xl border border-slate-100 shadow-inner"
+                className="w-48 h-48 bg-white p-2 border-4 border-slate-900"
               />
             )}
             
             <div>
-              <div className="font-black text-slate-900 text-sm max-w-[240px] truncate">{qrModalItem?.name}</div>
-              <div className="text-[10px] font-mono text-slate-400 mt-1 uppercase">ID: {qrModalItem?.id.slice(0, 8)}...</div>
+              <div className="font-black text-slate-900 text-lg uppercase tracking-tight max-w-[240px] truncate">{qrModalItem?.name}</div>
+              <div className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">ID: {qrModalItem?.id.split('-')[0]}</div>
             </div>
           </div>
 
-          <DialogFooter className="print:hidden gap-2 flex-col sm:flex-row w-full mt-2">
-            <Button variant="ghost" className="rounded-xl flex-1" onClick={() => setQrModalItem(null)}>Закрыть</Button>
-            <Button className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex-1" onClick={handlePrint}>
-              <PrintIcon className="w-4 h-4 mr-1.5" /> Печать
+          <DialogFooter className="print:hidden gap-3 flex-col sm:flex-row w-full mt-4">
+            <Button variant="outline" className="border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none flex-1 shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all" onClick={() => setQrModalItem(null)}>Закрыть</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none flex-1 shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all" onClick={handlePrint}>
+              <PrintIcon className="w-4 h-4 mr-2" /> Печать
             </Button>
           </DialogFooter>
         </DialogContent>

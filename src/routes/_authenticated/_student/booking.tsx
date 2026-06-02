@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EquipmentDetailDialog, EquipmentDetails } from "@/components/equipment-detail-dialog";
-import { Lock, AlertCircle } from "lucide-react";
+import { Lock, AlertCircle, Laptop, Printer, HardHat, Crown, CheckCircle2, ShieldAlert, Wrench } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_student/booking")({
@@ -70,91 +70,143 @@ function BookingPage() {
       case 'mentor_required': 
         return profile.safety_briefing_passed 
           ? { hasAccess: true } 
-          : { hasAccess: false, reason: "Требуется сдача ТБ" };
+          : { hasAccess: false, reason: "ТРЕБУЕТСЯ СДАЧА ТБ" };
       case 'resident_only': 
         return profile.role === 'resident' 
           ? { hasAccess: true } 
-          : { hasAccess: false, reason: "Только для Резидентов" };
+          : { hasAccess: false, reason: "ТОЛЬКО ДЛЯ РЕЗИДЕНТОВ" };
       default: 
         return { hasAccess: true };
     }
   };
 
+  const renderAccessMarker = (accessType: string) => {
+    const baseStyle = "font-black uppercase tracking-widest text-[10px] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] px-2 py-1 flex items-center gap-1 w-fit";
+    switch (accessType) {
+      case 'basic': return <span className={`bg-emerald-400 text-slate-900 ${baseStyle}`}><Laptop className="w-3 h-3"/> Общий доступ</span>;
+      case 'independent': return <span className={`bg-blue-400 text-white ${baseStyle}`}><Printer className="w-3 h-3"/> Нужен ТБ</span>;
+      case 'mentor_required': return <span className={`bg-amber-400 text-slate-900 ${baseStyle}`}><HardHat className="w-3 h-3"/> Работать с ментором</span>;
+      case 'resident_only': return <span className={`bg-purple-500 text-white ${baseStyle}`}><Crown className="w-3 h-3"/> Резиденты лабы</span>;
+      default: return <span className={`bg-slate-200 text-slate-800 ${baseStyle}`}>Неизвестно</span>;
+    }
+  };
+
   return (
-    <main className="mx-auto max-w-7xl p-4 md:p-8 space-y-8">
-      <div className="space-y-4">
-        <h1 className="text-4xl font-black text-slate-900">Бронирование оборудования</h1>
-        <p className="text-slate-500 max-w-2xl">
-          Выберите категорию, изучите уровни доступа и оформите бронь на нужный станок или инвентарь.
-        </p>
+    <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-10 animate-in fade-in duration-500 pb-24 w-full overflow-hidden">
+      
+      {/* ЗАГОЛОВОК СТРАНИЦЫ */}
+      <div className="border-b-4 border-slate-900 pb-6">
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900 uppercase tracking-tighter">Бронирование</h1>
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm mt-2">Резервирование мощностей и инвентаря FabLab</p>
       </div>
 
-      <Tabs defaultValue="stationary" onValueChange={(v) => setCategory(v as any)} className="w-full max-w-md">
-        <TabsList className="grid w-full grid-cols-2 rounded-2xl h-12 bg-slate-100 p-1">
-          <TabsTrigger value="stationary" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold">Станки</TabsTrigger>
-          <TabsTrigger value="portable" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold">Инвентарь</TabsTrigger>
+      {/* КРАТКАЯ ШПАРГАЛКА ПО ДАШБОРДУ ДОСТУПА ДЛЯ СТУДЕНТА */}
+      <div className="grid grid-cols-1 md:grid-cols-3 border-4 border-slate-900 bg-white shadow-[6px_6px_0_#0f172a]">
+        <div className="p-4 border-b-2 md:border-b-0 md:border-r-2 border-slate-900 flex flex-col justify-center">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ваш статус инструктажа</span>
+          <div className="flex items-center gap-2">
+            {profile?.safety_briefing_passed ? (
+              <span className="bg-emerald-400 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs px-3 py-1 shadow-[2px_2px_0_#0f172a] flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" /> ТБ ПРОЙДЕН
+              </span>
+            ) : (
+              <span className="bg-rose-500 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-xs px-3 py-1 shadow-[2px_2px_0_#0f172a] flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4" /> ИНСТРУКТАЖ НЕ СДАН
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="p-4 border-b-2 md:border-b-0 md:border-r-2 border-slate-900 flex flex-col justify-center">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Уровень роли аккаунта</span>
+          <div className="text-lg font-black uppercase tracking-tight text-slate-900">
+            {profile?.role === 'admin' ? '⚡ АДМИНИСТРАТОР' : profile?.role === 'resident' ? '👑 РЕЗИДЕНТ ЛАБОРАТОРИИ' : '👤 СТУДЕНТ КАМПУСА'}
+          </div>
+        </div>
+        <div className="p-4 bg-slate-900 text-slate-400 text-xs font-medium flex items-center leading-relaxed">
+          Внимание: Бронирование сложного промышленного оборудования (с пометкой ТБ/Ментор) станет доступно сразу после подтверждения вашей заявки администратором.
+        </div>
+      </div>
+
+      {/* ТАБЫ ПЕРЕКЛЮЧЕНИЯ */}
+      <Tabs defaultValue="stationary" onValueChange={(v) => setCategory(v as any)} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2 rounded-none bg-slate-900 p-1 border-4 border-slate-900 shadow-[4px_4px_0_#0f172a]">
+          <TabsTrigger value="stationary" className="rounded-none font-black uppercase tracking-widest text-xs data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-400 py-3">
+            <Wrench className="w-4 h-4 mr-2" /> Станки
+          </TabsTrigger>
+          <TabsTrigger value="portable" className="rounded-none font-black uppercase tracking-widest text-xs data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-400 py-3">
+            <Laptop className="w-4 h-4 mr-2" /> Инвентарь
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
+      {/* ГАЛЕРЕЯ КАРТОЧЕК */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => <div key={i} className="h-64 rounded-[32px] bg-slate-100 animate-pulse" />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[1, 2, 3].map((i) => <div key={i} className="h-96 border-4 border-slate-900 bg-slate-200 animate-pulse" />)}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {equipment.map((item: any) => {
             const accessType = item.access_type || 'basic';
             const { hasAccess, reason } = checkAccess(accessType);
 
             return (
-              <Card key={item.id} className="group relative overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 transition-all hover:-translate-y-1 hover:shadow-2xl flex flex-col">
-                <div className={`h-40 flex items-center justify-center text-white text-3xl font-black p-6 relative ${
-                  item.status === 'maintenance' ? 'bg-red-500' : 'bg-blue-600'
-                }`}>
+              <Card key={item.id} className="border-4 border-slate-900 rounded-none bg-white shadow-[6px_6px_0_#0f172a] hover:shadow-[12px_12px_0_#005BAB] hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 flex flex-col overflow-hidden group">
+                
+                {/* ИСПРАВЛЕННЫЙ БЛОК ОБЛОЖКИ (Текст больше не накладывается на картинку кашей) */}
+                <div className="h-48 bg-slate-900 border-b-4 border-slate-900 relative overflow-hidden shrink-0">
                   {item.image_url ? (
-                    <img src={item.image_url} alt={item.name} className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
-                  ) : null}
-                  <span className="relative z-10 text-center line-clamp-2 leading-tight drop-shadow-md">{item.name.split(' — ')[0]}</span>
+                    <img src={item.image_url} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-700 bg-slate-100 font-black text-xs uppercase tracking-widest">ФОТО ОТСУТСТВУЕТ</div>
+                  )}
+                  
+                  {/* Статус станка плавающим маркером поверх фото */}
+                  <div className="absolute top-4 right-4">
+                    <span className={`font-black uppercase tracking-widest text-[9px] border-2 border-slate-900 px-2 py-1 shadow-[2px_2px_0_#0f172a] ${
+                      item.status === 'active' ? 'bg-emerald-400 text-slate-900' : 'bg-rose-500 text-white'
+                    }`}>
+                      {item.status === 'active' ? 'В СТРОЮ' : 'РЕМОНТ'}
+                    </span>
+                  </div>
                 </div>
 
-                <CardContent className="p-6 flex flex-col flex-1">
-                  <h3 className="font-bold text-lg text-slate-900 leading-tight mb-2">{item.name}</h3>
-                  
-                  <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <Badge className={`border-none ${item.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                      {item.status === 'active' ? '🟢 Активен' : '🔴 Обслуживание'}
-                    </Badge>
+                {/* КОНТЕНТ КАРТОЧКИ */}
+                <CardContent className="p-6 flex flex-col flex-1 justify-between gap-6">
+                  <div className="space-y-4">
+                    <h3 className="font-black text-xl md:text-2xl text-slate-900 uppercase tracking-tight leading-tight line-clamp-2">{item.name}</h3>
                     
-                    {accessType === 'basic' && <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">Общий</Badge>}
-                    {accessType === 'independent' && <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">Нужен ТБ</Badge>}
-                    {accessType === 'mentor_required' && <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">С ментором</Badge>}
-                    {accessType === 'resident_only' && <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">Резиденты</Badge>}
+                    {/* Метка уровня доступа */}
+                    {renderAccessMarker(accessType)}
+                    
+                    <p className="text-sm text-slate-600 font-medium leading-relaxed line-clamp-3">
+                      {item.description || "Надежное промышленное оборудование мастерской для реализации ваших проектов."}
+                    </p>
                   </div>
-                  
-                  <p className="text-sm text-slate-500 line-clamp-2 mb-6 flex-1">
-                    {item.description || "Надежное оборудование для ваших проектов."}
-                  </p>
 
-                  {item.status === 'maintenance' ? (
-                    <Button disabled className="w-full h-12 rounded-2xl bg-slate-100 text-slate-500 font-bold border-none">
-                      <AlertCircle className="w-4 h-4 mr-2" /> В ремонте
-                    </Button>
-                  ) : hasAccess ? (
-                    <Button 
-                      onClick={() => setSelectedEquipment(item)}
-                      className="w-full h-12 rounded-2xl bg-slate-100 text-blue-700 border border-blue-200 hover:bg-blue-50 font-bold"
-                    >
-                      Выбрать время
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={() => toast.error(reason)}
-                      variant="secondary"
-                      className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold border-none cursor-not-allowed"
-                    >
-                      <Lock className="w-4 h-4 mr-2" /> {reason}
-                    </Button>
-                  )}
+                  {/* КНОПКА ДЕЙСТВИЯ (Адаптированная под статус и доступы) */}
+                  <div className="mt-auto pt-4 border-t-2 border-slate-100">
+                    {item.status === 'maintenance' ? (
+                      <Button disabled className="w-full h-14 border-2 border-slate-400 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-xs rounded-none cursor-not-allowed shadow-none">
+                        <AlertCircle className="w-4 h-4 mr-2 shrink-0" /> ТЕХОБСЛУЖИВАНИЕ
+                      </Button>
+                    ) : hasAccess ? (
+                      <Button 
+                        onClick={() => setSelectedEquipment(item)}
+                        className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                      >
+                        ВЫБРАТЬ ВРЕМЯ
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={() => toast.error(reason)}
+                        variant="secondary"
+                        className="w-full h-14 bg-slate-200 hover:bg-slate-200 text-slate-500 border-2 border-slate-300 font-black uppercase tracking-widest text-xs rounded-none cursor-not-allowed shadow-none flex items-center justify-center gap-2"
+                      >
+                        <Lock className="w-4 h-4 shrink-0 text-slate-400" /> {reason}
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -162,6 +214,7 @@ function BookingPage() {
         </div>
       )}
 
+      {/* Окно детального выбора времени и параметров */}
       <EquipmentDetailDialog
         open={!!selectedEquipment}
         equipment={selectedEquipment}

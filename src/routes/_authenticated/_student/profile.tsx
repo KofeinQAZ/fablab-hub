@@ -2,7 +2,6 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +19,7 @@ import { submitAccessRequest } from "@/lib/api";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Rocket, Users, ShieldCheck, ShieldAlert, Pencil, Trash2, Plus, Megaphone, User, Mail, X } from "lucide-react";
+import { Rocket, Users, ShieldCheck, ShieldAlert, Pencil, Trash2, Plus, Megaphone, User, Mail, X, Calendar, Activity, Phone, Clock, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_student/profile")({
   component: ProfilePage,
@@ -31,6 +30,8 @@ interface UserProfileData {
   name: string;
   role: string;
   safety_briefing_passed: boolean;
+  contact_email?: string;
+  contact_telegram?: string;
 }
 
 interface AuthData {
@@ -53,6 +54,11 @@ function ProfilePage() {
   const [briefingDialogOpen, setBriefingDialogOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState("");
 
+  // --- СТЕЙТЫ ДЛЯ КОНТАКТОВ ---
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactTelegram, setContactTelegram] = useState("");
+  const [savingContacts, setSavingContacts] = useState(false)
+
   // --- СТЕЙТЫ ДЛЯ ПРОЕКТОВ ---
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
@@ -61,7 +67,7 @@ function ProfilePage() {
   const [projImage, setProjImage] = useState("");
   const [projLooking, setProjLooking] = useState(false);
   const [projRoles, setProjRoles] = useState("");
-  const [projStatus, setProjStatus] = useState("in_progress"); // ДОБАВЛЕН СТАТУС ПРОЕКТА
+  const [projStatus, setProjStatus] = useState("in_progress");
 
   // --- СТЕЙТЫ ДЛЯ ОБНОВЛЕНИЙ ---
   const [addingUpdateFor, setAddingUpdateFor] = useState<any>(null);
@@ -76,11 +82,14 @@ function ProfilePage() {
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, name, role, safety_briefing_passed")
+        .select("id, name, role, safety_briefing_passed, contact_email, contact_telegram")
         .eq("id", user.id)
         .single();
 
       if (profileError || !profile) return null;
+
+      if (profile.contact_email) setContactEmail(profile.contact_email);
+      if (profile.contact_telegram) setContactTelegram(profile.contact_telegram);
 
       return {
         userId: user.id,
@@ -139,7 +148,7 @@ function ProfilePage() {
     },
   });
 
-  // --- 2. ЛОГИКА ТВОЕГО ОРИГИНАЛЬНОГО ПРОФИЛЯ ---
+  // --- 2. ЛОГИКА СЛОТОВ И ИНСТРУКТАЖЕЙ ---
   const generatedSlots = useMemo(() => {
     if (!availableSchedules) return [];
     const slots = [];
@@ -227,17 +236,45 @@ function ProfilePage() {
     }
   };
 
-  // --- 3. МУТАЦИИ ДЛЯ ПРОЕКТОВ ---
+  // --- 2.5 СОХРАНЕНИЕ КОНТАКТОВ ---
+  const saveContactsMutation = useMutation({
+    mutationFn: async () => {
+      if (!authData?.userId) throw new Error("Ошибка профиля");
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ 
+          contact_email: contactEmail,
+          contact_telegram: contactTelegram
+        })
+        .eq("id", authData.userId)
+        .select();
+      
+      if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Не удалось сохранить контакты");
+    },
+    onSuccess: () => {
+      toast.success("Контакты сохранены!");
+      queryClient.invalidateQueries({ queryKey: ["current-user-profile"] });
+    },
+    onError: (error: Error) => {
+      toast.error("Ошибка сохранения: " + error.message);
+    }
+  });
+
+  const handleSaveContacts = async () => {
+    setSavingContacts(true);
+    try { await saveContactsMutation.mutateAsync(); } finally { setSavingContacts(false); }
+  };
+
+  // --- 3. МУТАЦИИ ПРОЕКТОВ И ЗАЯВОК ---
   const saveProjectMutation = useMutation({
     mutationFn: async () => {
       const rolesArray = projRoles.split(',').map(r => r.trim()).filter(r => r.length > 0);
       const payload = { 
-        title: projTitle, 
-        description: projDesc, 
-        image_url: projImage, 
-        is_looking_for_team: projLooking, 
-        looking_for_roles: projLooking ? rolesArray : [],
-        status: projStatus // ДОБАВЛЕН СТАТУС В PAYLOAD
+        title: projTitle, description: projDesc, image_url: projImage, 
+        is_looking_for_team: projLooking, looking_for_roles: projLooking ? rolesArray : [],
+        status: projStatus 
       };
       if (editingProject) {
         await supabase.from("projects").update(payload).eq("id", editingProject.id);
@@ -263,18 +300,13 @@ function ProfilePage() {
       const { error } = await supabase.from("project_applications").update({ status }).eq("id", app.id);
       if (error) throw error;
 
-      // Генерируем текст в зависимости от решения
       const title = status === 'accepted' ? "🎉 Заявка принята!" : "😔 Заявка отклонена";
       const message = status === 'accepted'
         ? `Автор проекта "${app.projects.title}" принял вашу заявку в команду! Свяжитесь с ним для начала работы.`
         : `Ваша заявка в проект "${app.projects.title}" была отклонена.`;
 
-      // Отправляем пуш заявителю
       await supabase.from("notifications").insert({
-        user_id: app.applicant_id,
-        title,
-        message,
-        type: "project"
+        user_id: app.applicant_id, title, message, type: "project"
       });
     },
     onSuccess: () => { 
@@ -297,208 +329,229 @@ function ProfilePage() {
     setIsCreatingProject(true);
   };
 
-  // --- РЕНДЕР ---
   if (isAuthLoading) {
     return (
-      <main className="mx-auto w-full max-w-3xl p-4 md:p-6">
-        <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <CardContent className="p-6 text-slate-500">Загрузка профиля...</CardContent>
-        </Card>
+      <main className="mx-auto w-full max-w-3xl p-4 md:p-6 text-center font-black uppercase tracking-widest text-xs text-slate-400 py-20">
+        Загрузка личного кабинета...
       </main>
     );
   }
 
   if (!authData) return <Navigate to="/login" />;
 
-  const roleLabel = authData.profile.role === "student" ? "Студент" : "Резидент";
-  const briefingStatus = authData.profile.safety_briefing_passed ? "Пройден" : "Не пройден";
-  const briefingVariant = authData.profile.safety_briefing_passed ? "default" : "destructive";
+  const roleLabel = authData.profile.role === "student" ? "Студент" : authData.profile.role === "resident" ? "Резидент" : "Админ";
+  const briefingStatus = authData.profile.safety_briefing_passed ? "ПРОЙДЕН" : "НЕ ПРОЙДЕН";
 
   const getStatusBadge = (status: string) => {
+    const bStyle = "font-black uppercase tracking-widest text-[9px] border-2 border-slate-900 px-2 py-0.5 shadow-[2px_2px_0_#0f172a]";
     switch (status) {
-      case "pending": return <Badge className="bg-amber-500 hover:bg-amber-600">Ожидает</Badge>;
+      case "pending": return <span className={`bg-amber-400 text-slate-900 ${bStyle}`}>Ожидает</span>;
       case "approved": 
-      case "active": return <Badge className="bg-emerald-500 hover:bg-emerald-600">Активно</Badge>;
-      case "rejected": return <Badge variant="destructive">Отклонено</Badge>;
-      case "cancelled": return <Badge variant="secondary">Отменено</Badge>;
-      case "completed": return <Badge className="bg-blue-500 hover:bg-blue-600">Завершено</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      case "active": return <span className={`bg-emerald-400 text-slate-900 ${bStyle}`}>Активно</span>;
+      case "rejected": return <span className={`bg-rose-500 text-white ${bStyle}`}>Отклонено</span>;
+      case "cancelled": return <span className={`bg-slate-300 text-slate-700 ${bStyle}`}>Отменено</span>;
+      case "completed": return <span className={`bg-blue-500 text-white ${bStyle}`}>Завершено</span>;
+      default: return <span className={`bg-white text-slate-900 ${bStyle}`}>{status}</span>;
     }
   };
 
   return (
-    <main className="mx-auto w-full max-w-5xl p-4 md:p-6 space-y-8">
-      <h1 className="text-4xl font-black text-slate-900 tracking-tight">Личный кабинет</h1>
+    <main className="w-full max-w-5xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500 pb-24 overflow-hidden">
+      
+      {/* HEADER SECTION */}
+      <div className="border-b-4 border-slate-900 pb-6">
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900 uppercase tracking-tighter">Личный кабинет</h1>
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm mt-2">Управление вашим профилем, бронями и проектами</p>
+      </div>
 
-      {/* ТАБЫ НАВИГАЦИИ */}
-      <div className="flex flex-wrap gap-2 p-1 bg-slate-200/50 rounded-2xl w-fit">
-        <button onClick={() => setActiveTab('info')} className={`px-6 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'info' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+      {/* БРУТАЛЬНЫЕ ТАБЫ НАВИГАЦИИ */}
+      <div className="flex flex-col sm:flex-row gap-2 p-1 bg-slate-900 border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] rounded-none w-full sm:w-max">
+        <button 
+          onClick={() => setActiveTab('info')} 
+          className={`px-6 py-3 rounded-none text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'info' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
+        >
           <User className="h-4 w-4 inline-block mr-2" /> Профиль и Брони
         </button>
-        <button onClick={() => setActiveTab('projects')} className={`px-6 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'projects' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+        <button 
+          onClick={() => setActiveTab('projects')} 
+          className={`px-6 py-3 rounded-none text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'projects' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
+        >
           <Rocket className="h-4 w-4 inline-block mr-2" /> Мои проекты
         </button>
-        <button onClick={() => setActiveTab('applications')} className={`px-6 py-3 rounded-xl text-sm font-bold transition-all relative ${activeTab === 'applications' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+        <button 
+          onClick={() => setActiveTab('applications')} 
+          className={`px-6 py-3 rounded-none text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === 'applications' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
+        >
           <Users className="h-4 w-4 inline-block mr-2" /> Заявки в команду
-          {incomingApplications.length > 0 && <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-red-500 border-2 border-white"></span>}
+          {incomingApplications.length > 0 && <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-rose-500 border-2 border-slate-900"></span>}
         </button>
       </div>
 
-      {/* ВКАЛДКА 1: ПРОФИЛЬ И БРОНИ (Полностью твой оригинальный код) */}
+      {/* ======================================================================= */}
+      {/* ВКЛАДКА 1: ПРОФИЛЬ И БРОНИ */}
+      {/* ======================================================================= */}
       {activeTab === 'info' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* User Info Card */}
-            <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm h-full">
-              <CardHeader>
-                <CardTitle className="text-2xl">Профиль пользователя</CardTitle>
-                <CardDescription>Ваша информация в системе</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-600">Имя</p>
-                  <p className="text-lg font-semibold text-slate-900">{authData.profile.name}</p>
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            
+            {/* User Info & Contacts (Единый блок) */}
+            <div className="bg-white border-4 border-slate-900 p-6 shadow-[6px_6px_0_#0f172a] space-y-6">
+              <div>
+                <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-400 mb-1">Студент</h4>
+                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{authData.profile.name}</h2>
+                <p className="text-sm font-bold text-slate-500 mt-1">{authData.email}</p>
+              </div>
+
+              <div className="border-t-2 border-dashed border-slate-200 pt-4 space-y-4">
+                <h3 className="font-black text-xs uppercase tracking-widest text-slate-900">Контакты для связи</h3>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="contact_email" className="text-[9px] font-black uppercase tracking-widest text-slate-400">Email для коллабораций</Label>
+                    <Input id="contact_email" type="email" placeholder="example@email.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="h-11 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm focus-visible:ring-0 focus-visible:border-blue-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="contact_telegram" className="text-[9px] font-black uppercase tracking-widest text-slate-400">Telegram / Ссылка</Label>
+                    <Input id="contact_telegram" placeholder="@username или +7..." value={contactTelegram} onChange={(e) => setContactTelegram(e.target.value)} className="h-11 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm focus-visible:ring-0 focus-visible:border-blue-600" />
+                  </div>
+                  <Button onClick={handleSaveContacts} disabled={savingContacts} className="w-full bg-slate-900 hover:bg-blue-600 text-white font-black uppercase tracking-widest text-xs h-12 rounded-none border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">
+                    {savingContacts ? "Сохранение..." : "Сохранить контакты"}
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-600">Email</p>
-                  <p className="text-lg text-slate-900">{authData.email}</p>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Access Level Card */}
-            <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm h-full">
-              <CardHeader>
-                <CardTitle className="text-2xl">Уровень доступа</CardTitle>
-                <CardDescription>Управление правами доступа</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-slate-600">Текущая роль</p>
-                    <p className="text-lg font-semibold text-slate-900">{roleLabel}</p>
+            <div className="bg-white border-4 border-slate-900 p-6 shadow-[6px_6px_0_#0f172a] flex flex-col justify-between">
+              <div className="space-y-5">
+                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900">Уровни допусков</h3>
+                
+                <div className="flex items-center justify-between border-2 border-slate-900 p-3 bg-slate-50">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Роль в системе</p>
+                    <p className="font-black text-slate-900 uppercase tracking-tight text-sm mt-0.5">{roleLabel}</p>
                   </div>
-                  <Badge className="text-base px-3 py-1" variant="outline">{roleLabel}</Badge>
+                  <span className="bg-blue-600 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a]">{roleLabel}</span>
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-slate-600">Инструктаж (ТБ)</p>
-                    <p className="text-xs text-slate-700 mt-1 max-w-[180px]">
-                      {authData.profile.safety_briefing_passed ? "У вас есть доступ к оборудованию" : "Требуется инструктаж"}
+                <div className="flex items-center justify-between border-2 border-slate-900 p-3 bg-slate-50">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Инструктаж по ТБ</p>
+                    <p className="text-xs font-medium text-slate-600 mt-0.5 truncate max-w-[200px]">
+                      {authData.profile.safety_briefing_passed ? "Доступ к станкам открыт" : "Доступ заблокирован"}
                     </p>
                   </div>
-                  <Badge className="text-base px-3 py-1" variant={briefingVariant}>{briefingStatus}</Badge>
+                  <span className={`border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a] ${authData.profile.safety_briefing_passed ? 'bg-emerald-400 text-slate-900' : 'bg-rose-500 text-white'}`}>
+                    {briefingStatus}
+                  </span>
                 </div>
+              </div>
 
-                <div className="space-y-3 pt-2">
-                  {!authData.profile.safety_briefing_passed && (
-                    <Dialog open={briefingDialogOpen} onOpenChange={setBriefingDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                          Запросить сдачу ТБ
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Запись на инструктаж (ТБ)</DialogTitle>
-                          <p className="text-sm text-slate-500 mt-2">Выберите удобное время для инструктажа.</p>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4 max-h-[50vh] overflow-y-auto pr-2">
-                          {generatedSlots.length === 0 ? (
-                            <p className="text-sm text-slate-500 text-center py-4 bg-slate-50 rounded-lg">
-                              Нет доступных слотов. Попробуйте позже.
-                            </p>
-                          ) : (
-                            generatedSlots.map((day, idx) => (
-                              <div key={idx} className="space-y-2">
-                                <h4 className="text-sm font-semibold text-slate-700 capitalize border-b pb-1">{day.dateStr}</h4>
-                                <div className="flex flex-wrap gap-2 pt-1">
-                                  {day.times.map((time: any, tIdx: number) => (
-                                    <button
-                                      key={tIdx}
-                                      onClick={() => setSelectedTime(time.value)}
-                                      className={`px-3 py-1.5 text-sm rounded-md border transition-all ${
-                                        selectedTime === time.value
-                                          ? "bg-blue-600 text-white border-blue-600 shadow-md transform scale-105"
-                                          : "bg-white text-slate-700 border-slate-200 hover:border-blue-600 hover:text-blue-600"
-                                      }`}
-                                    >
-                                      {time.start} — {time.end}
-                                    </button>
-                                  ))}
-                                </div>
+              <div className="pt-4 border-t-2 border-dashed border-slate-200 mt-6">
+                {!authData.profile.safety_briefing_passed && (
+                  <Dialog open={briefingDialogOpen} onOpenChange={setBriefingDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-xs h-14 border-2 border-slate-900 rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                        Запросить сдачу ТБ
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[85vh] outline-none z-50">
+                      <div className="bg-slate-900 p-5 flex justify-between items-start border-b-4 border-slate-900 text-white">
+                        <DialogTitle className="text-xl font-black uppercase tracking-tighter">Запись на инструктаж</DialogTitle>
+                        <button onClick={() => setBriefingDialogOpen(false)} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a]">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="p-6 overflow-y-auto space-y-5">
+                        {generatedSlots.length === 0 ? (
+                          <p className="text-xs font-bold text-center uppercase tracking-widest text-slate-400 py-6 border-2 border-dashed border-slate-200 bg-slate-50">
+                            Нет доступных слотов на этой неделе
+                          </p>
+                        ) : (
+                          generatedSlots.map((day, idx) => (
+                            <div key={idx} className="space-y-2">
+                              <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 border-b-2 border-slate-200 pb-1">{day.dateStr}</h4>
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {day.times.map((time: any, tIdx: number) => (
+                                  <button
+                                    key={tIdx}
+                                    onClick={() => setSelectedTime(time.value)}
+                                    className={`px-3 py-1.5 text-xs font-bold uppercase border-2 transition-all ${
+                                      selectedTime === time.value
+                                        ? "bg-blue-600 text-white border-slate-900 shadow-[2px_2px_0_#0f172a] translate-x-[1px] translate-y-[1px]"
+                                        : "bg-white text-slate-900 border-slate-900 shadow-[2px_2px_0_#0f172a] hover:bg-slate-50"
+                                    }`}
+                                  >
+                                    {time.start} — {time.end}
+                                  </button>
+                                ))}
                               </div>
-                            ))
-                          )}
-                          <Button 
-                            className="w-full mt-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold" 
-                            onClick={handleRequestSafetyBriefing} 
-                            disabled={submittingForm || !selectedTime}
-                          >
-                            {submittingForm ? "Отправка..." : "Подтвердить запись"}
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                            </div>
+                          ))
+                        )}
+                        <Button 
+                          className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs h-12 rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4" 
+                          onClick={handleRequestSafetyBriefing} 
+                          disabled={submittingForm || !selectedTime}
+                        >
+                          {submittingForm ? "Отправка..." : "ПОДТВЕРДИТЬ ЗАПИСЬ"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
 
-                  {authData.profile.safety_briefing_passed && authData.profile.role === "student" && (
-                    <Button onClick={handleRequestResidency} className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
-                      Заявка на Резидентство
-                    </Button>
-                  )}
+                {authData.profile.safety_briefing_passed && authData.profile.role === "student" && (
+                  <Button onClick={handleRequestResidency} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-widest text-xs h-14 border-2 border-slate-900 rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                    Заявка на Резидентство
+                  </Button>
+                )}
 
-                  {authData.profile.role === "resident" && (
-                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-center">
-                      <p className="text-sm font-medium text-emerald-900">✓ Полный доступ к ресурсам</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent> 
-            </Card>
+                {authData.profile.role === "resident" && (
+                  <div className="border-2 border-emerald-500 bg-emerald-50 p-4 text-center">
+                    <p className="text-xs font-black uppercase tracking-widest text-emerald-900">✓ Доступен полный каталог Фаблаба</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Bookings List Card */}
-          <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-2xl">Мои бронирования</CardTitle>
-              <CardDescription>История и статусы ваших заявок на оборудование</CardDescription>
-            </CardHeader>
-            <CardContent>
+          {/* Bookings List Block */}
+          <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
+            <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900">
+              <h2 className="text-xl font-black uppercase tracking-tight">Мои бронирования</h2>
+            </div>
+            <div className="p-4 md:p-6 space-y-4">
               {isBookingsLoading ? (
-                <p className="text-slate-500 text-center py-4">Загрузка бронирований...</p>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest text-center py-4 animate-pulse">Загрузка расписания...</p>
               ) : !userBookings || userBookings.length === 0 ? (
-                <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                  <p className="text-slate-500 font-medium">У вас пока нет бронирований</p>
-                  <p className="text-sm text-slate-400 mt-1">Зайдите в раздел оборудования, чтобы создать первую бронь.</p>
+                <div className="text-center py-10 border-4 border-dashed border-slate-200 bg-slate-50">
+                  <p className="font-black uppercase tracking-widest text-xs text-slate-400">У вас пока нет активных бронирований</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid gap-4">
                   {userBookings.map((booking) => {
                     const startDate = new Date(booking.start_time);
                     const endDate = new Date(booking.end_time);
-                    const equipName = booking.equipment?.name || "Неизвестное оборудование";
+                    const equipName = booking.equipment?.name || "Станок";
                     
                     return (
-                      <div key={booking.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-200 transition-colors gap-4 shadow-sm">
-                        <div className="space-y-1">
-                          <h4 className="font-semibold text-slate-900 text-lg">{equipName}</h4>
-                          <p className="text-sm text-slate-500 flex items-center gap-2">
-                            <span className="font-medium text-slate-700">{format(startDate, 'd MMMM', { locale: ru })}</span>
-                            <span>•</span>
-                            <span>{format(startDate, 'HH:mm')} — {format(endDate, 'HH:mm')}</span>
-                          </p>
+                      <div key={booking.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 border-slate-900 bg-slate-50 hover:bg-blue-50/40 transition-colors gap-4">
+                        <div className="space-y-2">
+                          <h4 className="font-black text-lg text-slate-900 uppercase tracking-tight">{equipName}</h4>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold uppercase tracking-widest text-slate-500">
+                            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-blue-600" /> {format(startDate, 'd MMMM', { locale: ru })}</span>
+                            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-amber-600" /> {format(startDate, 'HH:mm')} — {format(endDate, 'HH:mm')}</span>
+                          </div>
                         </div>
                         
-                        <div className="flex items-center gap-4 self-start sm:self-auto">
+                        <div className="flex items-center gap-4 self-start sm:self-auto shrink-0">
                           {getStatusBadge(booking.status)}
                           
                           {(booking.status === "pending" || booking.status === "approved" || booking.status === "active") && (
                             <Button 
-                              variant="outline" size="sm" 
+                              variant="outline" 
                               onClick={() => handleCancelBooking(booking.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                              className="border-2 border-slate-900 text-slate-900 hover:bg-red-50 hover:text-red-600 font-bold uppercase tracking-widest text-[10px] px-3 shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
                             >
                               Отменить
                             </Button>
@@ -509,147 +562,188 @@ function ProfilePage() {
                   })}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Residency Dialog */}
+          {/* Residency Request Dialog */}
           <Dialog open={residencyDialogOpen} onOpenChange={setResidencyDialogOpen}>
-            <DialogContent className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-slate-900">Заявка на Резидентство</DialogTitle>
-                <DialogDescription className="text-slate-600">Заполните форму, чтобы подать заявку на статус резидента</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-sm font-medium text-slate-900">Описание вашего проекта <span className="text-red-500">*</span></Label>
-                  <Textarea id="description" placeholder="Расскажите о своём проекте и целях..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[120px] rounded-lg" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cv_url" className="text-sm font-medium text-slate-900">Ссылка на ваше CV <span className="text-red-500">*</span></Label>
-                  <Input id="cv_url" type="url" placeholder="https://drive.google.com/..." value={cvUrl} onChange={(e) => setCvUrl(e.target.value)} className="rounded-lg" />
-                </div>
+            <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[85vh] outline-none z-50">
+              <div className="bg-slate-900 p-5 flex justify-between items-start border-b-4 border-slate-900 text-white">
+                <DialogTitle className="text-xl font-black uppercase tracking-tighter">Заявка на Резидентство</DialogTitle>
+                <button onClick={() => setResidencyDialogOpen(false)} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a]">
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <div className="flex gap-3 pt-4">
-                <Button onClick={() => setResidencyDialogOpen(false)} variant="outline" className="flex-1 rounded-lg">Отмена</Button>
-                <Button onClick={handleSubmitResidencyForm} disabled={submittingForm} className="flex-1 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
-                  {submittingForm ? "Отправка..." : "Отправить"}
-                </Button>
+              <div className="p-6 overflow-y-auto space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Описание проекта *</Label>
+                  <Textarea id="description" placeholder="Расскажите, какой стартап или идею вы планируете разрабатывать..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[120px] border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="cv_url" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ссылка на портфолио / CV *</Label>
+                  <Input id="cv_url" type="url" placeholder="https://drive.google.com/..." value={cvUrl} onChange={(e) => setCvUrl(e.target.value)} className="h-11 border-2 border-slate-900 rounded-none bg-slate-50 font-bold focus-visible:ring-0 focus-visible:border-blue-600" />
+                </div>
+                <div className="flex gap-3 pt-4 border-t-2 border-slate-100 mt-4">
+                  <Button onClick={() => setResidencyDialogOpen(false)} variant="outline" className="flex-1 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">Отмена</Button>
+                  <Button onClick={handleSubmitResidencyForm} disabled={submittingForm} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">
+                    {submittingForm ? "Отправка..." : "ОТПРАВИТЬ"}
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
         </div>
       )}
 
+      {/* ======================================================================= */}
       {/* ВКАЛДКА 2: МОИ ПРОЕКТЫ */}
+      {/* ======================================================================= */}
       {activeTab === 'projects' && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-black text-slate-900">Мои проекты</h2>
-            <Button onClick={() => openProjectForm()} className="bg-[#005BAB] rounded-xl font-bold"><Plus className="h-5 w-5 mr-1" /> Создать проект</Button>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b-2 border-slate-200 pb-4">
+            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Мои стартапы</h2>
+            <Button onClick={() => openProjectForm()} className="bg-blue-600 hover:bg-blue-700 text-white border-4 border-slate-900 px-6 py-6 font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none">
+              <Plus className="h-5 w-5 mr-2" /> Добавить проект
+            </Button>
           </div>
-          {projectsLoading ? <p>Загрузка...</p> : myProjects.length === 0 ? <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-[32px] text-slate-400">Нет проектов</div> : (
+          
+          {projectsLoading ? <p className="text-center font-bold text-slate-400">Загрузка витрины...</p> : myProjects.length === 0 ? <div className="text-center py-16 border-4 border-dashed border-slate-200 bg-white font-bold uppercase tracking-widest text-xs text-slate-400">У вас пока нет созданных проектов</div> : (
             <div className="grid gap-6">
               {myProjects.map((p: any) => (
-                <Card key={p.id} className="rounded-3xl p-6 flex flex-col md:flex-row gap-6 border-slate-100 shadow-sm">
-                  <div className="w-full md:w-48 h-32 bg-slate-100 rounded-2xl overflow-hidden shrink-0">
-                    {p.image_url ? <img src={p.image_url} className="w-full h-full object-cover"/> : <div className="w-full h-full flex items-center justify-center font-black text-slate-300">IMG</div>}
+                <div key={p.id} className="border-4 border-slate-900 bg-white p-4 md:p-6 flex flex-col md:flex-row gap-6 shadow-[6px_6px_0_#0f172a]">
+                  <div className="w-full md:w-48 h-32 border-2 border-slate-900 bg-slate-100 overflow-hidden shrink-0">
+                    {p.image_url ? <img src={p.image_url} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center font-black text-slate-300 uppercase tracking-widest text-xs">МЕДИА</div>}
                   </div>
-                  <div className="flex-1 space-y-3">
-                    <div className="flex justify-between items-start">
-                      <div className="flex flex-col items-start gap-1">
-                        <h3 className="text-xl font-black">{p.title}</h3>
-                        {/* БЕЙДЖ МОДЕРАЦИИ И АРХИВА */}
-                        {p.is_rejected ? (
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 shadow-sm">
-                            ❌ Отклонен (в архиве)
-                          </Badge>
-                        ) : !p.is_approved ? (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 shadow-sm">
-                            ⏳ На модерации (не виден другим)
-                          </Badge>
-                        ) : null}
+                  <div className="flex-1 space-y-3 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight truncate">{p.title}</h3>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {p.is_rejected ? (
+                            <span className="bg-red-100 text-red-700 border border-red-200 font-bold uppercase tracking-widest text-[9px] px-2 py-0.5">❌ Отклонен в архив</span>
+                          ) : !p.is_approved ? (
+                            <span className="bg-amber-100 text-amber-700 border border-amber-200 font-bold uppercase tracking-widest text-[9px] px-2 py-0.5">⏳ На проверке модератора</span>
+                          ) : (
+                            <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold uppercase tracking-widest text-[9px] px-2 py-0.5">🚀 Опубликован</span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-2 shrink-0">
-                        <Button variant="outline" size="sm" onClick={() => setAddingUpdateFor(p)}><Megaphone className="h-4 w-4 mr-1" /> Новость</Button>
-                        <Button variant="ghost" size="sm" onClick={() => openProjectForm(p)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="sm" className="text-red-500" onClick={() => {if(confirm('Удалить?')) deleteProjectMutation.mutate(p.id)}}><Trash2 className="h-4 w-4" /></Button>
+                        <Button className="bg-white border-2 border-slate-900 text-slate-900 hover:bg-blue-50 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all px-3 h-9" onClick={() => setAddingUpdateFor(p)}><Megaphone className="h-4 w-4 mr-1" /> Апдейт</Button>
+                        <Button variant="ghost" className="border-2 border-transparent hover:border-slate-900 rounded-none text-slate-600 h-9 px-3" onClick={() => openProjectForm(p)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" className="text-red-500 border-2 border-transparent hover:border-red-200 rounded-none h-9 px-3" onClick={() => {if(confirm('Удалить проект окончательно?')) deleteProjectMutation.mutate(p.id)}}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                    <p className="text-slate-500 text-sm line-clamp-2">{p.description}</p>
+                    <p className="text-slate-600 font-medium text-sm line-clamp-2 leading-relaxed">{p.description}</p>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* ВКАЛДКА 3: ВХОДЯЩИЕ ЗАЯВКИ */}
+      {/* ======================================================================= */}
+      {/* ВКАЛДКА 3: ВХОДЯЩИЕ ЗАЯВКИ В КОМАНДУ */}
+      {/* ======================================================================= */}
       {activeTab === 'applications' && (
         <div className="space-y-6">
-          <h2 className="text-2xl font-black text-slate-900">Заявки в команду</h2>
-          {appsLoading ? <p>Загрузка...</p> : incomingApplications.length === 0 ? <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-[32px] text-slate-400">Новых заявок пока нет.</div> : (
+          <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight border-b-2 border-slate-200 pb-4">Запросы на вступление</h2>
+          {appsLoading ? <p className="text-center font-bold text-slate-400">Сверяем списки...</p> : incomingApplications.length === 0 ? <div className="text-center py-16 border-4 border-dashed border-slate-200 bg-white font-bold uppercase tracking-widest text-xs text-slate-400">Входящих откликов на ваши вакансии пока нет</div> : (
             <div className="grid gap-4">
               {incomingApplications.map((app: any) => (
-                <Card key={app.id} className="rounded-3xl border-slate-100 p-6 flex flex-col md:flex-row justify-between gap-6">
-                  <div className="space-y-2 flex-1">
-                    <p className="text-xs font-bold text-blue-600 uppercase">Проект: {app.projects.title}</p>
-                    <h3 className="text-lg font-black flex items-center gap-2"><User className="h-5 w-5"/> {app.profiles?.name}</h3>
-                    <div className="p-4 bg-slate-50 rounded-2xl border text-sm text-slate-700 whitespace-pre-wrap">{app.cover_letter}</div>
+                <div key={app.id} className="border-4 border-slate-900 bg-white p-4 md:p-6 flex flex-col md:flex-row justify-between gap-6 shadow-[6px_6px_0_#0f172a]">
+                  <div className="space-y-3 flex-1 min-w-0">
+                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 border border-blue-200 font-black text-[9px] uppercase tracking-widest">Проект: {app.projects.title}</span>
+                    <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 flex items-center gap-2 mt-2"><User className="h-5 w-5 text-blue-600"/> {app.profiles?.name}</h3>
+                    <div className="p-4 bg-slate-50 border-2 border-slate-200 text-sm font-medium text-slate-700 whitespace-pre-wrap leading-relaxed">{app.cover_letter}</div>
                   </div>
-                  <div className="flex md:flex-col gap-2 shrink-0">
-                    <Button className="bg-emerald-600" onClick={() => handleApplicationMutation.mutate({app: app, status: 'accepted'})}>Принять</Button>
-                    <Button variant="outline" className="text-red-600" onClick={() => handleApplicationMutation.mutate({app: app, status: 'rejected'})}>Отклонить</Button>
+                  <div className="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-32 mt-4 md:mt-0">
+                    <Button className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-5 md:py-2" onClick={() => handleApplicationMutation.mutate({app: app, status: 'accepted'})}>Принять</Button>
+                    <Button variant="outline" className="flex-1 md:flex-none border-2 border-slate-900 text-slate-900 hover:bg-red-50 hover:text-red-600 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-5 md:py-2" onClick={() => handleApplicationMutation.mutate({app: app, status: 'rejected'})}>Отклонить</Button>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* МОДАЛКА: ПРОЕКТЫ */}
+      {/* ======================================================================= */}
+      {/* МОДАЛКА: СОЗДАНИЕ И РЕДАКТИРОВАНИЕ ПРОЕКТА */}
+      {/* ======================================================================= */}
       <Dialog open={isCreatingProject} onOpenChange={setIsCreatingProject}>
-        <DialogContent className="max-w-2xl rounded-[32px] p-8">
-          <div className="flex justify-between items-start mb-6">
-            <DialogTitle className="text-3xl font-black">{editingProject ? "Редактировать" : "Новый проект"}</DialogTitle>
-            <button onClick={() => setIsCreatingProject(false)} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full"><X className="h-5 w-5 text-slate-500" /></button>
+        <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[85vh] outline-none z-50">
+          <div className="bg-slate-900 p-5 flex justify-between items-start border-b-4 border-slate-900 text-white">
+            <DialogTitle className="text-2xl font-black uppercase tracking-tighter">{editingProject ? "Редактирование" : "Новый стартап"}</DialogTitle>
+            <button onClick={() => setIsCreatingProject(false)} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a]">
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <div className="space-y-4">
-            <Input placeholder="Название" className="h-12 rounded-xl" value={projTitle} onChange={e => setProjTitle(e.target.value)} />
-            <Textarea placeholder="Описание" className="h-28 rounded-xl resize-none" value={projDesc} onChange={e => setProjDesc(e.target.value)} />
-            <Input placeholder="URL обложки" className="h-12 rounded-xl" value={projImage} onChange={e => setProjImage(e.target.value)} />
+          <div className="p-6 overflow-y-auto space-y-4">
+            <div className="space-y-1">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Название стартапа</Label>
+              <Input placeholder="Введите название..." className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 font-bold focus-visible:ring-0 focus-visible:border-blue-600" value={projTitle} onChange={e => setProjTitle(e.target.value)} />
+            </div>
             
-            {/* ВЫБОР СТАТУСА ПРОЕКТА */}
-            <div className="space-y-2">
-              <Label className="font-bold text-slate-700">Статус проекта</Label>
-              <select className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 outline-none" value={projStatus} onChange={e => setProjStatus(e.target.value)}>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Подробное описание проекта</Label>
+              <Textarea placeholder="Расскажите суть идеи, цели и текущий прогресс..." className="h-28 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-blue-600 resize-none" value={projDesc} onChange={e => setProjDesc(e.target.value)} />
+            </div>
+            
+            <div className="space-y-1">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ссылка на обложку (URL)</Label>
+              <Input placeholder="https://..." className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-blue-600" value={projImage} onChange={e => setProjImage(e.target.value)} />
+            </div>
+            
+            <div className="space-y-1">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Текущий статус разработки</Label>
+              <select className="w-full h-12 px-3 border-2 border-slate-900 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={projStatus} onChange={e => setProjStatus(e.target.value)}>
                 <option value="idea">💡 Идея (на этапе задумки)</option>
                 <option value="in_progress">⚙️ В разработке (процесс идет)</option>
                 <option value="completed">✅ Завершен</option>
               </select>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded-2xl">
-              <label className="flex items-center gap-2 font-bold text-blue-900 cursor-pointer">
-                <input type="checkbox" className="w-5 h-5 rounded" checked={projLooking} onChange={e => setProjLooking(e.target.checked)} /> Ищу команду
+            <div className="p-4 bg-blue-50 border-2 border-blue-200">
+              <label className="flex items-center gap-3 font-black uppercase tracking-widest text-xs text-blue-900 cursor-pointer">
+                <input type="checkbox" className="w-5 h-5 rounded-none border-2 border-slate-900 accent-blue-600" checked={projLooking} onChange={e => setProjLooking(e.target.checked)} /> Расширяю команду / Ищу людей
               </label>
-              {projLooking && <Input className="mt-4 h-12 rounded-xl" placeholder="Кого ищем? (через запятую)" value={projRoles} onChange={e => setProjRoles(e.target.value)} />}
+              {projLooking && (
+                <div className="mt-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-blue-800">Кто вам нужен? (укажите роли через запятую)</Label>
+                  <Input className="h-12 border-2 border-blue-300 rounded-none bg-white font-bold focus-visible:ring-0 focus-visible:border-blue-600" placeholder="Frontend, Инженер, 3D-моделлер..." value={projRoles} onChange={e => setProjRoles(e.target.value)} />
+                </div>
+              )}
             </div>
-            <Button onClick={() => saveProjectMutation.mutate()} disabled={!projTitle || saveProjectMutation.isPending} className="w-full h-14 bg-[#005BAB] text-lg rounded-2xl">Сохранить</Button>
+            
+            <Button onClick={() => saveProjectMutation.mutate()} disabled={!projTitle || saveProjectMutation.isPending} className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black text-sm uppercase tracking-widest rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4">
+              {saveProjectMutation.isPending ? "Сохранение..." : "СОХРАНИТЬ ПРОЕКТ"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* МОДАЛКА: НОВОСТЬ ДЛЯ ПРОЕКТА */}
+      {/* ======================================================================= */}
+      {/* МОДАЛКА: СОЗДАНИЕ ОБНОВЛЕНИЯ (ДЕВЛОГ) */}
+      {/* ======================================================================= */}
       <Dialog open={!!addingUpdateFor} onOpenChange={(v) => !v && setAddingUpdateFor(null)}>
-        <DialogContent className="max-w-md rounded-[32px] p-6">
-          <div className="flex justify-between items-start mb-4">
-            <DialogTitle className="text-2xl font-black">Новость для проекта</DialogTitle>
-            <button onClick={() => setAddingUpdateFor(null)} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full"><X className="h-5 w-5 text-slate-500" /></button>
+        <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[85vh] outline-none z-50">
+          <div className="bg-slate-900 p-5 flex justify-between items-start border-b-4 border-slate-900 text-white">
+            <DialogTitle className="text-xl font-black uppercase tracking-tighter">Опубликовать новость</DialogTitle>
+            <button onClick={() => setAddingUpdateFor(null)} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a]">
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <Textarea placeholder="Что нового?" className="h-32 mt-4 rounded-2xl resize-none" value={updateContent} onChange={e => setUpdateContent(e.target.value)} />
-          <Button onClick={() => addUpdateMutation.mutate()} disabled={!updateContent.trim()} className="w-full h-12 mt-4 bg-emerald-600 rounded-xl">Опубликовать</Button>
+          <div className="p-6 space-y-4">
+            <div className="space-y-1">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Текст лога разработки (Девлог)</Label>
+              <Textarea placeholder="Что нового произошло в проекте? Опишите краткие изменения..." className="h-32 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-blue-600 resize-none" value={updateContent} onChange={e => setUpdateContent(e.target.value)} />
+            </div>
+            <Button onClick={() => addUpdateMutation.mutate()} disabled={!updateContent.trim() || addUpdateMutation.isPending} className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-2">
+              {addUpdateMutation.isPending ? "Публикация..." : "ВЫПУСТИТЬ АПДЕЙТ"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </main>

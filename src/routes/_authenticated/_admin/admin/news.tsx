@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { 
@@ -156,180 +155,257 @@ function AdminNewsPage() {
     }
   };
 
+  // ============================================================================
   // ЭКРАН 1: СПИСОК СТАТЕЙ
+  // ============================================================================
   if (view === 'list') {
     return (
-      <div className="max-w-5xl mx-auto space-y-8 p-4">
-        <div className="flex justify-between items-center">
+      <div className="space-y-8 animate-in fade-in duration-500 pb-12 p-2">
+        
+        {/* HEADER */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b-4 border-slate-900 pb-6">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-              <Newspaper className="h-8 w-8 text-blue-600" /> Управление медиа
-            </h1>
-            <p className="text-slate-500 mt-1">Список всех новостей и статей на платформе</p>
+            <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Медиа</h1>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Управление новостями и статьями</p>
           </div>
-          <Button onClick={openCreateNew} className="bg-[#005BAB] hover:bg-blue-800 rounded-2xl h-12 px-6 font-bold shadow-lg shadow-blue-100">
-            <Plus className="mr-2 h-5 w-5" /> Создать пост
+          <Button 
+            onClick={openCreateNew} 
+            className="bg-blue-600 hover:bg-blue-700 text-white border-4 border-slate-900 px-6 py-6 font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Создать пост
           </Button>
         </div>
 
-        <div className="grid gap-4">
+        {/* LIST */}
+        <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
           {isLoading ? (
-            <div className="h-24 bg-slate-100 rounded-3xl animate-pulse" />
+            <div className="p-6">
+              <div className="h-24 bg-slate-200 animate-pulse w-full" />
+            </div>
           ) : articles.length === 0 ? (
-            <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-[32px] text-slate-400">
-              Пока нет ни одной публикации. Самое время создать первую!
+            <div className="text-center py-20 bg-slate-50">
+              <p className="font-bold uppercase tracking-widest text-xs text-slate-400">Публикаций пока нет</p>
             </div>
           ) : (
-            articles.map((article) => (
-              <Card key={article.id} className="rounded-3xl border-slate-100 shadow-sm hover:shadow-md transition-all p-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                  <div className="h-16 w-24 rounded-2xl bg-slate-100 shrink-0 overflow-hidden">
+            <div className="flex flex-col">
+              {articles.map((article) => (
+                <div key={article.id} className="flex flex-col sm:flex-row items-stretch sm:items-center border-b-4 border-slate-900 last:border-b-0 p-4 sm:p-6 gap-4 hover:bg-slate-50 transition-colors">
+                  
+                  {/* Image */}
+                  <div className="h-24 w-36 shrink-0 border-2 border-slate-900 bg-slate-200 overflow-hidden relative">
                     {article.image_url ? (
-                      <img src={article.image_url} className="h-full w-full object-cover" />
+                      <img src={article.image_url} className="h-full w-full object-cover" alt="cover" />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-slate-300"><ImageIcon className="h-6 w-6" /></div>
+                      <div className="h-full w-full flex items-center justify-center text-slate-400"><ImageIcon className="h-8 w-8" /></div>
                     )}
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-slate-900 text-lg truncate">{article.title}</h3>
-                    <div className="flex gap-3 text-sm text-slate-500 mt-1">
-                      <span className="uppercase font-bold text-blue-600 text-xs">{article.category === 'news' ? 'Новость' : 'Статья'}</span>
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <h3 className="font-black text-xl uppercase tracking-tight text-slate-900 truncate mb-2">{article.title}</h3>
+                    <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-500">
+                      <span className={`px-2 py-1 border-2 border-slate-900 text-white ${article.category === 'news' ? 'bg-amber-500' : 'bg-blue-600'}`}>
+                        {article.category === 'news' ? 'Новость' : 'Статья'}
+                      </span>
                       <span>•</span>
                       <span>{new Date(article.created_at).toLocaleDateString("ru-RU")}</span>
                     </div>
                   </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3 mt-4 sm:mt-0 sm:self-center">
+                    <Button 
+                      onClick={() => openEdit(article)}
+                      className="bg-white hover:bg-slate-100 text-slate-900 border-2 border-slate-900 font-bold uppercase tracking-widest text-xs shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all px-4"
+                    >
+                      <Pencil className="h-4 w-4 mr-2" /> Изменить
+                    </Button>
+                    <Button 
+                      onClick={() => { if(confirm("Точно удалить?")) deleteArticle.mutate(article.id); }}
+                      className="bg-white hover:bg-red-50 text-red-600 border-2 border-slate-900 font-bold uppercase tracking-widest text-xs shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all px-3"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <Button variant="outline" className="rounded-xl h-12" onClick={() => openEdit(article)}>
-                    <Pencil className="h-4 w-4 mr-2" /> Изменить
-                  </Button>
-                  <Button variant="ghost" className="rounded-xl h-12 text-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => {
-                    if(confirm("Точно удалить?")) deleteArticle.mutate(article.id);
-                  }}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>
     );
   }
 
-  // ЭКРАН 2: РЕДАКТОР
+  // ============================================================================
+  // ЭКРАН 2: РЕДАКТОР СТАТЬИ
+  // ============================================================================
   return (
-    <div className="max-w-5xl mx-auto space-y-6 p-4">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={closeEditor} className="rounded-full h-12 w-12 p-0 bg-white shadow-sm border border-slate-100 hover:bg-slate-50">
-          <ArrowLeft className="h-5 w-5 text-slate-600" />
+    <div className="space-y-6 animate-in fade-in duration-500 pb-12 p-2">
+      
+      {/* EDITOR HEADER */}
+      <div className="flex items-center gap-4 border-b-4 border-slate-900 pb-6">
+        <Button 
+          onClick={closeEditor} 
+          className="bg-white hover:bg-slate-100 text-slate-900 border-4 border-slate-900 h-12 w-12 p-0 shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all rounded-none"
+        >
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-black text-slate-900">{editingId ? "Редактировать пост" : "Создать новый пост"}</h1>
-          <p className="text-slate-500">Блочный конструктор</p>
+          <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{editingId ? "Редактор" : "Новый пост"}</h1>
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-1">Блочный конструктор материала</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* ЛЕВАЯ КОЛОНКА */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        {/* ЛЕВАЯ КОЛОНКА (Настройки) */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="rounded-[32px] border-none shadow-xl bg-white">
-            <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4 rounded-t-[32px]">
-              <CardTitle className="text-lg">Настройки</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-4">
+          <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
+            <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900">
+              <h2 className="text-lg font-black uppercase tracking-tight">Настройки</h2>
+            </div>
+            <div className="p-4 md:p-6 space-y-5">
+              
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Заголовок</Label>
-                <Input className="h-12 rounded-xl" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Заголовок</Label>
+                <Input 
+                  className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-bold" 
+                  value={title} 
+                  onChange={(e) => setTitle(e.target.value)} 
+                />
               </div>
+
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Тип</Label>
-                <select className="w-full h-12 px-4 rounded-xl border border-slate-200 text-sm outline-none" value={category} onChange={(e) => setCategory(e.target.value)}>
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Тип материала</Label>
+                <select 
+                  className="w-full h-12 px-4 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm outline-none focus:border-blue-600" 
+                  value={category} 
+                  onChange={(e) => setCategory(e.target.value)}
+                >
                   <option value="news">Новость</option>
                   <option value="article">Статья / Гайд</option>
                 </select>
               </div>
+
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Кратко (для превью)</Label>
-                <Textarea className="resize-none h-20 rounded-xl" value={excerpt} onChange={(e) => setExcerpt(e.target.value)} />
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Кратко (для превью)</Label>
+                <Textarea 
+                  className="resize-none h-24 border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
+                  value={excerpt} 
+                  onChange={(e) => setExcerpt(e.target.value)} 
+                />
               </div>
+
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Обложка (URL)</Label>
-                <Input className="h-12 rounded-xl" placeholder="https://..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Обложка (URL)</Label>
+                <Input 
+                  className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
+                  placeholder="https://..." 
+                  value={imageUrl} 
+                  onChange={(e) => setImageUrl(e.target.value)} 
+                />
                 {imageUrl && (
-                  <div className="mt-3 h-32 w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                  <div className="mt-4 h-40 w-full border-2 border-slate-900 bg-slate-100 overflow-hidden relative">
                     <img src={imageUrl} alt="Превью" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.src = "")} />
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+
+            </div>
+          </div>
 
           <Button 
             onClick={() => saveArticle.mutate()} 
             disabled={saveArticle.isPending || !title || blocks.length === 0} 
-            className="w-full bg-emerald-600 hover:bg-emerald-700 h-16 rounded-[24px] text-xl font-black shadow-xl shadow-emerald-100"
+            className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-300 text-white border-4 border-slate-900 h-16 rounded-none text-xl font-black uppercase tracking-widest shadow-[6px_6px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[4px_4px_0_#0f172a] transition-all"
           >
             {saveArticle.isPending ? "Сохранение..." : editingId ? "СОХРАНИТЬ" : "ОПУБЛИКОВАТЬ"}
           </Button>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА */}
+        {/* ПРАВАЯ КОЛОНКА (Контент / Блоки) */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="rounded-[32px] border-none shadow-xl bg-white">
-            <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4 rounded-t-[32px]">
-              <CardTitle className="text-lg">Содержание статьи</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-6">
-              <div className="flex gap-2 p-2 bg-slate-100 rounded-2xl border border-slate-200">
+          <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
+            <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h2 className="text-lg font-black uppercase tracking-tight">Содержание</h2>
+              
+              {/* Добавление блока */}
+              <div className="flex gap-2 w-full sm:w-auto">
                 <select 
-                  className="flex-1 bg-white border-none rounded-xl px-4 text-sm outline-none font-medium"
+                  className="flex-1 sm:w-48 bg-slate-800 border-2 border-slate-700 text-white rounded-none px-3 py-2 text-xs font-bold uppercase tracking-widest outline-none"
                   value={selectedBlockType}
                   onChange={(e) => setSelectedBlockType(e.target.value as BlockType)}
                 >
-                  <option value="paragraph">¶ Текст (Paragraph)</option>
-                  <option value="heading">H Заголовок (Heading)</option>
-                  <option value="image">🖼 Картинка (Image URL)</option>
-                  <option value="youtube">▶ Видео (YouTube URL)</option>
-                  <option value="equipment">🛠 Привязка оборудования</option>
+                  <option value="paragraph">Текст (Paragraph)</option>
+                  <option value="heading">Заголовок (Heading)</option>
+                  <option value="image">Картинка (URL)</option>
+                  <option value="youtube">Видео (YouTube)</option>
+                  <option value="equipment">Оборудование</option>
                 </select>
-                <Button onClick={addBlock} className="bg-blue-600 rounded-xl px-6 font-bold">
-                  <Plus className="mr-2 h-4 w-4" /> Добавить блок
+                <Button 
+                  onClick={addBlock} 
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-400 rounded-none font-bold uppercase tracking-widest text-xs px-4"
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Блок
                 </Button>
               </div>
+            </div>
 
-              <div className="space-y-4 mt-6">
+            <div className="p-4 md:p-6 bg-slate-50 min-h-[400px]">
+              <div className="space-y-4">
                 {blocks.length === 0 ? (
-                  <div className="text-center py-10 text-slate-400 font-medium border-2 border-dashed border-slate-100 rounded-2xl">
-                    Нет блоков. Добавьте первый блок выше.
+                  <div className="text-center py-16 border-4 border-dashed border-slate-300 bg-white">
+                    <p className="font-bold uppercase tracking-widest text-xs text-slate-400">Конструктор пуст. Добавьте первый блок.</p>
                   </div>
                 ) : (
                   blocks.map((block, index) => (
-                    <div key={block.id} className="group relative flex gap-3 p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-200 transition-colors">
-                      <div className="flex flex-col gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => moveBlock(index, 'up')} className="p-1 hover:bg-slate-100 rounded"><ArrowUp className="h-4 w-4" /></button>
-                        <GripVertical className="h-4 w-4 text-slate-300 mx-auto my-1" />
-                        <button onClick={() => moveBlock(index, 'down')} className="p-1 hover:bg-slate-100 rounded"><ArrowDown className="h-4 w-4" /></button>
+                    <div key={block.id} className="group relative flex flex-col sm:flex-row gap-3 p-4 bg-white border-2 border-slate-900 shadow-[4px_4px_0_#0f172a] hover:border-blue-600 transition-colors">
+                      
+                      {/* Управление блоком */}
+                      <div className="flex sm:flex-col gap-1 items-center bg-slate-100 p-1 border-2 border-slate-200 self-start">
+                        <button onClick={() => moveBlock(index, 'up')} className="p-1 hover:bg-slate-200 text-slate-600"><ArrowUp className="h-4 w-4" /></button>
+                        <GripVertical className="h-4 w-4 text-slate-400 hidden sm:block" />
+                        <button onClick={() => moveBlock(index, 'down')} className="p-1 hover:bg-slate-200 text-slate-600"><ArrowDown className="h-4 w-4" /></button>
                       </div>
 
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      {/* Содержимое блока */}
+                      <div className="flex-1 space-y-2 min-w-0">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 w-max px-2 py-1 border border-slate-200">
                           {getBlockIcon(block.type)} {block.type}
                         </div>
 
                         {block.type === 'paragraph' && (
-                          <Textarea placeholder="Поддерживается Markdown (**жирный**, *курсив*)..." className="min-h-[100px] border-none bg-slate-50 rounded-xl focus-visible:ring-1" value={block.content} onChange={(e) => updateBlock(block.id, e.target.value)} />
+                          <Textarea 
+                            placeholder="Напишите текст... (Поддерживается Markdown: **жирный**, *курсив*)" 
+                            className="min-h-[120px] border-2 border-slate-200 rounded-none bg-white focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
+                            value={block.content} 
+                            onChange={(e) => updateBlock(block.id, e.target.value)} 
+                          />
                         )}
                         {block.type === 'heading' && (
-                          <Input placeholder="Заголовок раздела..." className="font-bold text-lg border-none bg-slate-50 rounded-xl h-12 focus-visible:ring-1" value={block.content} onChange={(e) => updateBlock(block.id, e.target.value)} />
+                          <Input 
+                            placeholder="Заголовок раздела..." 
+                            className="font-black text-lg border-2 border-slate-200 rounded-none bg-white h-14 focus-visible:ring-0 focus-visible:border-blue-600" 
+                            value={block.content} 
+                            onChange={(e) => updateBlock(block.id, e.target.value)} 
+                          />
                         )}
                         {(block.type === 'image' || block.type === 'youtube') && (
-                          <Input placeholder="Вставьте ссылку (URL)..." className="border-none bg-slate-50 rounded-xl h-12 focus-visible:ring-1" value={block.content} onChange={(e) => updateBlock(block.id, e.target.value)} />
+                          <Input 
+                            placeholder="Вставьте ссылку (URL)..." 
+                            className="border-2 border-slate-200 rounded-none bg-white h-12 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
+                            value={block.content} 
+                            onChange={(e) => updateBlock(block.id, e.target.value)} 
+                          />
                         )}
                         {block.type === 'equipment' && (
-                          <div className="flex items-center gap-3 p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
+                          <div className="flex items-center gap-3 p-3 bg-blue-50 border-2 border-blue-200">
                             <Wrench className="h-5 w-5 text-blue-600" />
-                            <select className="flex-1 bg-transparent font-bold text-slate-700 outline-none" value={block.content} onChange={(e) => updateBlock(block.id, e.target.value)}>
+                            <select 
+                              className="flex-1 bg-transparent font-bold text-slate-900 outline-none" 
+                              value={block.content} 
+                              onChange={(e) => updateBlock(block.id, e.target.value)}
+                            >
                               <option value="" disabled>Выберите станок...</option>
                               {equipmentList.map((eq: any) => <option key={eq.id} value={eq.id}>{eq.name}</option>)}
                             </select>
@@ -337,15 +413,19 @@ function AdminNewsPage() {
                         )}
                       </div>
 
-                      <button onClick={() => removeBlock(block.id)} className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all h-fit self-start">
-                        <Trash2 className="h-5 w-5" />
+                      {/* Удаление блока */}
+                      <button 
+                        onClick={() => removeBlock(block.id)} 
+                        className="sm:opacity-0 group-hover:opacity-100 p-2 bg-red-100 text-red-600 border-2 border-red-200 hover:bg-red-500 hover:text-white transition-all self-end sm:self-start mt-2 sm:mt-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   ))
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
