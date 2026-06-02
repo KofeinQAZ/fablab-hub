@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/app-header";
 import { AdminRouteGuard } from "@/components/admin-route-guard";
-import { ClipboardList, Calendar, Newspaper, Rocket } from "lucide-react";
+import { ClipboardList, Calendar, Newspaper, Rocket, Users } from "lucide-react"; // <-- ДОБАВИЛ ИКОНКУ USERS
 
 export const Route = createFileRoute("/_authenticated/_admin")({
   component: AdminLayout,
@@ -50,11 +50,17 @@ function AdminLayout() {
                     Управление медиа
                   </span>
                 </Link>
-                {/* Новая кнопка Управление проектами */}
                 <Link to="/admin/projects" className={itemClass} activeProps={{ className: `${itemClass} ${activeClass}` }}>
                   <span className="inline-flex items-center gap-2">
                     <Rocket className="h-4 w-4" />
                     Управление проектами
+                  </span>
+                </Link>
+                {/* НОВАЯ КНОПКА УПРАВЛЕНИЯ ПОЛЬЗОВАТЕЛЯМИ */}
+                <Link to="/admin/users" className={itemClass} activeProps={{ className: `${itemClass} ${activeClass}` }}>
+                  <span className="inline-flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    База резидентов
                   </span>
                 </Link>
               </nav>

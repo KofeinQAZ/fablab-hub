@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EquipmentDetailDialog, EquipmentDetails } from "@/components/equipment-detail-dialog";
 import { Lock, AlertCircle, Laptop, Printer, HardHat, Crown, CheckCircle2, ShieldAlert, Wrench } from "lucide-react";
@@ -92,54 +91,61 @@ function BookingPage() {
   };
 
   return (
-    <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-10 animate-in fade-in duration-500 pb-24 w-full overflow-hidden">
+    <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500 pb-24 w-full overflow-hidden">
       
       {/* ЗАГОЛОВОК СТРАНИЦЫ */}
-      <div className="border-b-4 border-slate-900 pb-6">
-        <h1 className="text-4xl md:text-6xl font-black text-slate-900 uppercase tracking-tighter">Бронирование</h1>
+      <div className="border-b-2 border-slate-100 pb-6">
+        <h1 className="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter">Бронирование</h1>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm mt-2">Резервирование мощностей и инвентаря FabLab</p>
       </div>
 
-      {/* КРАТКАЯ ШПАРГАЛКА ПО ДАШБОРДУ ДОСТУПА ДЛЯ СТУДЕНТА */}
-      <div className="grid grid-cols-1 md:grid-cols-3 border-4 border-slate-900 bg-white shadow-[6px_6px_0_#0f172a]">
-        <div className="p-4 border-b-2 md:border-b-0 md:border-r-2 border-slate-900 flex flex-col justify-center">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ваш статус инструктажа</span>
+      {/* МЯГКАЯ ШПАРГАЛКА ПО ДАШБОРДУ ДОСТУПА */}
+      <div className="grid grid-cols-1 md:grid-cols-3 border border-slate-200 bg-white rounded-3xl shadow-sm overflow-hidden">
+        <div className="p-5 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center bg-white">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Ваш статус инструктажа</span>
           <div className="flex items-center gap-2">
             {profile?.safety_briefing_passed ? (
-              <span className="bg-emerald-400 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs px-3 py-1 shadow-[2px_2px_0_#0f172a] flex items-center gap-1.5">
+              <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold uppercase tracking-widest text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 w-fit">
                 <CheckCircle2 className="w-4 h-4" /> ТБ ПРОЙДЕН
               </span>
             ) : (
-              <span className="bg-rose-500 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-xs px-3 py-1 shadow-[2px_2px_0_#0f172a] flex items-center gap-1.5">
+              <span className="bg-rose-50 text-rose-600 border border-rose-100 font-bold uppercase tracking-widest text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 w-fit">
                 <ShieldAlert className="w-4 h-4" /> ИНСТРУКТАЖ НЕ СДАН
               </span>
             )}
           </div>
         </div>
-        <div className="p-4 border-b-2 md:border-b-0 md:border-r-2 border-slate-900 flex flex-col justify-center">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Уровень роли аккаунта</span>
-          <div className="text-lg font-black uppercase tracking-tight text-slate-900">
-            {profile?.role === 'admin' ? '⚡ АДМИНИСТРАТОР' : profile?.role === 'resident' ? '👑 РЕЗИДЕНТ ЛАБОРАТОРИИ' : '👤 СТУДЕНТ КАМПУСА'}
+        <div className="p-5 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center bg-white">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Уровень роли аккаунта</span>
+          <div className="text-lg font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+            {profile?.role === 'admin' ? '⚡ АДМИНИСТРАТОР' : profile?.role === 'resident' ? '👑 РЕЗИДЕНТ ЛАБЫ' : '👤 СТУДЕНТ КАМПУСА'}
           </div>
         </div>
-        <div className="p-4 bg-slate-900 text-slate-400 text-xs font-medium flex items-center leading-relaxed">
-          Внимание: Бронирование сложного промышленного оборудования (с пометкой ТБ/Ментор) станет доступно сразу после подтверждения вашей заявки администратором.
+        <div className="p-5 bg-blue-50/50 text-blue-800 text-xs font-medium flex items-center leading-relaxed">
+          <AlertCircle className="w-5 h-5 mr-3 shrink-0 text-blue-500" />
+          Внимание: Бронирование сложного оборудования (с пометкой ТБ/Ментор) станет доступно сразу после подтверждения вашей заявки администратором.
         </div>
       </div>
 
-      {/* ТАБЫ ПЕРЕКЛЮЧЕНИЯ */}
+      {/* ШИРОКИЕ ТАБЫ (Идеально для мобилки) */}
       <Tabs defaultValue="stationary" onValueChange={(v) => setCategory(v as any)} className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2 rounded-none bg-slate-900 p-1 border-4 border-slate-900 shadow-[4px_4px_0_#0f172a]">
-          <TabsTrigger value="stationary" className="rounded-none font-black uppercase tracking-widest text-xs data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-400 py-3">
-            <Wrench className="w-4 h-4 mr-2" /> Станки
+        <TabsList className="grid grid-cols-2 h-auto w-full bg-slate-100 p-1.5 rounded-2xl gap-2">
+          <TabsTrigger 
+            value="stationary" 
+            className="h-12 md:h-14 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
+          >
+            <Wrench className="w-4 h-4 md:w-5 md:h-5 mr-2" /> Станки
           </TabsTrigger>
-          <TabsTrigger value="portable" className="rounded-none font-black uppercase tracking-widest text-xs data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-400 py-3">
-            <Laptop className="w-4 h-4 mr-2" /> Инвентарь
+          <TabsTrigger 
+            value="portable" 
+            className="h-12 md:h-14 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
+          >
+            <Laptop className="w-4 h-4 md:w-5 md:h-5 mr-2" /> Инвентарь
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {/* ГАЛЕРЕЯ КАРТОЧЕК */}
+      {/* ГАЛЕРЕЯ КАРТОЧЕК (Остались брутальными) */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3].map((i) => <div key={i} className="h-96 border-4 border-slate-900 bg-slate-200 animate-pulse" />)}
@@ -153,7 +159,7 @@ function BookingPage() {
             return (
               <Card key={item.id} className="border-4 border-slate-900 rounded-none bg-white shadow-[6px_6px_0_#0f172a] hover:shadow-[12px_12px_0_#005BAB] hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 flex flex-col overflow-hidden group">
                 
-                {/* ИСПРАВЛЕННЫЙ БЛОК ОБЛОЖКИ (Текст больше не накладывается на картинку кашей) */}
+                {/* ОБЛОЖКА */}
                 <div className="h-48 bg-slate-900 border-b-4 border-slate-900 relative overflow-hidden shrink-0">
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
@@ -161,7 +167,7 @@ function BookingPage() {
                     <div className="w-full h-full flex items-center justify-center text-slate-700 bg-slate-100 font-black text-xs uppercase tracking-widest">ФОТО ОТСУТСТВУЕТ</div>
                   )}
                   
-                  {/* Статус станка плавающим маркером поверх фото */}
+                  {/* Статус станка */}
                   <div className="absolute top-4 right-4">
                     <span className={`font-black uppercase tracking-widest text-[9px] border-2 border-slate-900 px-2 py-1 shadow-[2px_2px_0_#0f172a] ${
                       item.status === 'active' ? 'bg-emerald-400 text-slate-900' : 'bg-rose-500 text-white'
@@ -184,7 +190,7 @@ function BookingPage() {
                     </p>
                   </div>
 
-                  {/* КНОПКА ДЕЙСТВИЯ (Адаптированная под статус и доступы) */}
+                  {/* КНОПКА ДЕЙСТВИЯ */}
                   <div className="mt-auto pt-4 border-t-2 border-slate-100">
                     {item.status === 'maintenance' ? (
                       <Button disabled className="w-full h-14 border-2 border-slate-400 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-xs rounded-none cursor-not-allowed shadow-none">

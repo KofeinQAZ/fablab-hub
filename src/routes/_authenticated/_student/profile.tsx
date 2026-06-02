@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,7 @@ import { submitAccessRequest } from "@/lib/api";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Rocket, Users, ShieldCheck, ShieldAlert, Pencil, Trash2, Plus, Megaphone, User, Mail, X, Calendar, Activity, Phone, Clock, FileText } from "lucide-react";
+import { Rocket, Users, ShieldCheck, ShieldAlert, Pencil, Trash2, Plus, Megaphone, User, Mail, X, Calendar, Activity, Phone, Clock, FileText, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_student/profile")({
   component: ProfilePage,
@@ -31,7 +31,7 @@ interface UserProfileData {
   role: string;
   safety_briefing_passed: boolean;
   contact_email?: string;
-  contact_telegram?: string;
+  contact_phone?: string; // ИСПРАВЛЕНО НА TELEPHONE
 }
 
 interface AuthData {
@@ -42,11 +42,11 @@ interface AuthData {
 
 function ProfilePage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   // Вкладки профиля
   const [activeTab, setActiveTab] = useState<'info' | 'projects' | 'applications'>('info');
 
-  // --- ОРИГИНАЛЬНЫЕ СТЕЙТЫ ИЗ ТВОЕГО КОДА ---
   const [residencyDialogOpen, setResidencyDialogOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [cvUrl, setCvUrl] = useState("");
@@ -54,10 +54,10 @@ function ProfilePage() {
   const [briefingDialogOpen, setBriefingDialogOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState("");
 
-  // --- СТЕЙТЫ ДЛЯ КОНТАКТОВ ---
+  // --- СТЕЙТЫ ДЛЯ КОНТАКТОВ (ИСПРАВЛЕННЫЕ) ---
   const [contactEmail, setContactEmail] = useState("");
-  const [contactTelegram, setContactTelegram] = useState("");
-  const [savingContacts, setSavingContacts] = useState(false)
+  const [contactPhone, setContactPhone] = useState(""); // ИСПРАВЛЕНО
+  const [savingContacts, setSavingContacts] = useState(false);
 
   // --- СТЕЙТЫ ДЛЯ ПРОЕКТОВ ---
   const [isCreatingProject, setIsCreatingProject] = useState(false);
@@ -73,23 +73,29 @@ function ProfilePage() {
   const [addingUpdateFor, setAddingUpdateFor] = useState<any>(null);
   const [updateContent, setUpdateContent] = useState("");
 
-  // --- 1. ЗАГРУЗКА ДАННЫХ ---
+  // --- СТЕЙТЫ ДЛЯ УДАЛЕНИЯ АККАУНТА ---
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   const { data: authData, isLoading: isAuthLoading } = useQuery<AuthData | null>({
     queryKey: ["current-user-profile"],
     queryFn: async () => {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) return null;
 
+      // ИСПРАВЛЕНО: Вытягиваем правильные колонки
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, name, role, safety_briefing_passed, contact_email, contact_telegram")
+        .select("id, name, role, safety_briefing_passed, contact_email, contact_phone")
         .eq("id", user.id)
         .single();
 
       if (profileError || !profile) return null;
 
+      // ИСПРАВЛЕНО: Присваиваем правильные значения стейтам
       if (profile.contact_email) setContactEmail(profile.contact_email);
-      if (profile.contact_telegram) setContactTelegram(profile.contact_telegram);
+      if (profile.contact_phone) setContactPhone(profile.contact_phone);
 
       return {
         userId: user.id,
@@ -236,7 +242,7 @@ function ProfilePage() {
     }
   };
 
-  // --- 2.5 СОХРАНЕНИЕ КОНТАКТОВ ---
+  // --- 2.5 СОХРАНЕНИЕ КОНТАКТОВ (ИСПРАВЛЕНО) ---
   const saveContactsMutation = useMutation({
     mutationFn: async () => {
       if (!authData?.userId) throw new Error("Ошибка профиля");
@@ -245,7 +251,7 @@ function ProfilePage() {
         .from("profiles")
         .update({ 
           contact_email: contactEmail,
-          contact_telegram: contactTelegram
+          contact_phone: contactPhone // СОХРАНЯЕМ ИМЕННО В PHONE
         })
         .eq("id", authData.userId)
         .select();
@@ -265,6 +271,28 @@ function ProfilePage() {
   const handleSaveContacts = async () => {
     setSavingContacts(true);
     try { await saveContactsMutation.mutateAsync(); } finally { setSavingContacts(false); }
+  };
+
+  // --- УДАЛЕНИЕ АККАУНТА ---
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "УДАЛИТЬ") {
+      toast.error("Введите слово 'УДАЛИТЬ' для подтверждения");
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const { error } = await supabase.rpc("delete_user_account");
+      if (error) throw error;
+
+      toast.success("Аккаунт успешно удален");
+      await supabase.auth.signOut();
+      setTimeout(() => navigate({ to: "/login" }), 1000);
+    } catch (error: any) {
+      toast.error("Ошибка при удалении аккаунта: " + error.message);
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   // --- 3. МУТАЦИИ ПРОЕКТОВ И ЗАЯВОК ---
@@ -409,9 +437,10 @@ function ProfilePage() {
                     <Label htmlFor="contact_email" className="text-[9px] font-black uppercase tracking-widest text-slate-400">Email для коллабораций</Label>
                     <Input id="contact_email" type="email" placeholder="example@email.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="h-11 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm focus-visible:ring-0 focus-visible:border-blue-600" />
                   </div>
+                  {/* ИСПРАВЛЕНО: ТЕПЕРЬ ТУТ ТЕЛЕФОН */}
                   <div className="space-y-1">
-                    <Label htmlFor="contact_telegram" className="text-[9px] font-black uppercase tracking-widest text-slate-400">Telegram / Ссылка</Label>
-                    <Input id="contact_telegram" placeholder="@username или +7..." value={contactTelegram} onChange={(e) => setContactTelegram(e.target.value)} className="h-11 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm focus-visible:ring-0 focus-visible:border-blue-600" />
+                    <Label htmlFor="contact_phone" className="text-[9px] font-black uppercase tracking-widest text-slate-400">Номер телефона</Label>
+                    <Input id="contact_phone" type="tel" placeholder="+7 (777) 000-00-00" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="h-11 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm focus-visible:ring-0 focus-visible:border-blue-600" />
                   </div>
                   <Button onClick={handleSaveContacts} disabled={savingContacts} className="w-full bg-slate-900 hover:bg-blue-600 text-white font-black uppercase tracking-widest text-xs h-12 rounded-none border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">
                     {savingContacts ? "Сохранение..." : "Сохранить контакты"}
@@ -746,6 +775,73 @@ function ProfilePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ======================================================================= */}
+      {/* ОПАСНАЯ ЗОНА: УДАЛЕНИЕ АККАУНТА */}
+      {/* ======================================================================= */}
+      <div className="mt-10 border-4 border-red-900 bg-red-50 p-6 shadow-[6px_6px_0_#7f1d1d]">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="h-6 w-6 text-red-700" />
+          <h2 className="text-2xl font-black uppercase tracking-tight text-red-900">⚠️ Опасная зона</h2>
+        </div>
+        <p className="text-sm font-bold text-red-800 mb-6 max-w-2xl">
+          Эти действия необратимы. После удаления аккаунта все ваши данные будут потеряны навсегда.
+        </p>
+        
+        <Dialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-red-700 hover:bg-red-800 text-white border-2 border-red-900 font-black uppercase tracking-widest text-sm h-12 rounded-none shadow-[4px_4px_0_#7f1d1d] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+              <Trash2 className="h-5 w-5 mr-2" /> УДАЛИТЬ АККАУНТ НАВСЕГДА
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-0 border-4 border-red-900 bg-white rounded-none shadow-[12px_12px_0_#7f1d1d] flex flex-col max-h-[85vh] outline-none z-50">
+            <div className="bg-red-900 p-5 flex justify-between items-start border-b-4 border-red-900 text-white">
+              <DialogTitle className="text-xl font-black uppercase tracking-tighter">Подтверждение удаления</DialogTitle>
+              <button 
+                onClick={() => setDeleteAccountDialogOpen(false)} 
+                className="p-1.5 bg-white text-red-900 border-2 border-red-900 hover:bg-red-100 transition-colors shadow-[2px_2px_0_#7f1d1d]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto space-y-4">
+              <div className="bg-red-100 border-2 border-red-300 p-4 rounded-none">
+                <p className="text-sm font-bold text-red-900">
+                  ⚠️ Это действие необратимо! Все ваши данные, бронирования и проекты будут удалены.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase tracking-widest text-red-900">
+                  Введите слово "УДАЛИТЬ" для подтверждения
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="УДАЛИТЬ"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                  className="h-11 border-4 border-red-900 rounded-none bg-red-50 font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-red-700"
+                />
+              </div>
+              <div className="flex gap-3 pt-4 border-t-2 border-red-200">
+                <Button 
+                  onClick={() => setDeleteAccountDialogOpen(false)} 
+                  variant="outline" 
+                  className="flex-1 border-2 border-red-900 text-red-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#7f1d1d] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                >
+                  Отмена
+                </Button>
+                <Button 
+                  onClick={handleDeleteAccount}
+                  disabled={deletingAccount || deleteConfirmText !== "УДАЛИТЬ"}
+                  className="flex-1 bg-red-700 hover:bg-red-800 disabled:bg-red-400 text-white border-2 border-red-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#7f1d1d] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                >
+                  {deletingAccount ? "Удаление..." : "УДАЛИТЬ АККАУНТ"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </main>
   );
 }

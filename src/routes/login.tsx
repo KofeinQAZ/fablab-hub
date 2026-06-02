@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureProfile } from "@/lib/auth";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Wrench } from "lucide-react";
+import { Wrench, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 
 export const Route = createFileRoute("/login")({
@@ -22,6 +22,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [defaultTab, setDefaultTab] = useState<"signin" | "signup">("signin");
   const [returnTo, setReturnTo] = useState("/booking");
 
@@ -44,6 +45,7 @@ function LoginPage() {
       .max(80, "Имя слишком длинное")
       .refine((value) => !htmlTagPattern.test(value), "Имя содержит недопустимые символы"),
     email: z.string().email("Введите корректный email"),
+    phone: z.string().min(10, "Введите корректный номер телефона").max(20, "Номер слишком длинный"),
     password: z
       .string()
       .min(8, "Минимум 8 символов")
@@ -67,6 +69,7 @@ function LoginPage() {
     });
   }, [navigate, returnTo]);
 
+  // --- ВЕРНУЛИ НА МЕСТО ФУНКЦИЮ ВХОДА ---
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (signInLoading) return;
@@ -81,22 +84,27 @@ function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword(validated.data);
       if (error) return toast.error(error.message);
+      
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
+        // Вызываем умный и обновлённый у нас ensureProfile
         await ensureProfile(userData.user.id, userData.user.email);
       }
       toast.success("Вход выполнен");
       navigate({ to: returnTo as never });
+    } catch (error: any) {
+      toast.error(error.message || "Произошла ошибка при входе");
     } finally {
       setSignInLoading(false);
     }
   };
 
+  // --- ОСТАВИЛИ ОДНУ ИДЕАЛЬНУЮ ФУНКЦИЮ РЕГИСТРАЦИИ ---
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (signUpLoading) return;
 
-    const validated = signUpSchema.safeParse({ name, email, password });
+    const validated = signUpSchema.safeParse({ name, email, phone, password });
     if (!validated.success) {
       toast.error(validated.error.issues[0]?.message ?? "Проверьте корректность полей");
       return;
@@ -109,43 +117,59 @@ function LoginPage() {
         password: validated.data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/booking`,
-          data: { name: validated.data.name },
+          data: { 
+            name: validated.data.name,
+            phone: validated.data.phone // Сохраняем в метаданные auth аккаунта
+          },
         },
       });
       if (error) return toast.error(error.message);
+      
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        const { error: profileError } = await supabase.from("profiles").upsert({
+        // Подстраховка для мгновенного создания строки, если отключено подтверждение по почте
+        await supabase.from("profiles").upsert({
           id: userData.user.id,
           name: validated.data.name || userData.user.email?.split("@")[0] || "Student",
-          role: "student",
+          contact_email: validated.data.email,
+          contact_phone: validated.data.phone,
           safety_briefing_passed: false,
+          is_banned: false
         });
-        if (profileError) return toast.error(profileError.message);
       }
+      
       toast.success("✅ Аккаунт успешно создан!", {
-      description: "Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!",
-      duration: 10000,
-    });
-  } catch (error: any) {
-    toast.error(error.message || "Произошла ошибка при регистрации");
-  } finally {
-    // Если у тебя была какая-то загрузка, она выключается тут
-  }
-};
+        description: "Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!",
+        duration: 10000,
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Произошла ошибка при регистрации");
+    } finally {
+      setSignUpLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8 relative">
       <div className="w-full max-w-md">
+        
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2 mb-8 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-blue-600 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> На главную
+        </Link>
+
         <div className="mb-8 flex items-center justify-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-700 shadow-sm">
             <Wrench className="h-5 w-5 text-white" />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-blue-700">FabLab Satbayev</h1>
-            <p className="text-xs uppercase tracking-widest text-slate-500">Supabase Auth</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">Platform Auth</p>
           </div>
         </div>
+        
         <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
           <Tabs value={defaultTab} onValueChange={(value) => setDefaultTab(value as "signin" | "signup")}>
             <CardHeader>
@@ -157,6 +181,7 @@ function LoginPage() {
               </TabsList>
             </CardHeader>
             <CardContent>
+              
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
@@ -170,41 +195,43 @@ function LoginPage() {
                       Безопасный пароль: минимум 8 символов, цифра и спецсимвол.
                     </p>
                   </div>
-                  <Button
-                    type="submit"
-                    className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800"
-                    disabled={signInLoading}
-                  >
+                  <Button type="submit" className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800 font-bold" disabled={signInLoading}>
                     {signInLoading ? "Вход..." : "Войти"}
                   </Button>
                 </form>
               </TabsContent>
+
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Имя</Label>
-                    <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-2xl" />
+                    <Label htmlFor="name">Имя и Фамилия</Label>
+                    <Input id="name" required placeholder="Иван Иванов" value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-2xl" />
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Номер телефона</Label>
+                    <Input id="phone" type="tel" required placeholder="+7 (777) 000-00-00" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-11 rounded-2xl" />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="email-su">Email</Label>
-                    <Input id="email-su" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-2xl" />
+                    <Input id="email-su" type="email" required placeholder="example@satbayev.university" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-2xl" />
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="password-su">Password</Label>
+                    <Label htmlFor="password-su">Пароль</Label>
                     <Input id="password-su" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-2xl" />
                     <p className="text-xs text-slate-500">
                       Минимум 8 символов, минимум одна цифра и один спецсимвол.
                     </p>
                   </div>
-                  <Button
-                    type="submit"
-                    className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800"
-                    disabled={signUpLoading}
-                  >
+                  
+                  <Button type="submit" className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800 font-bold" disabled={signUpLoading}>
                     {signUpLoading ? "Создание..." : "Создать аккаунт"}
                   </Button>
                 </form>
               </TabsContent>
+
             </CardContent>
           </Tabs>
         </Card>

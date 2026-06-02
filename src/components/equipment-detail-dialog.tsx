@@ -145,40 +145,49 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl rounded-[40px] p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90vh] overflow-y-auto">
+      {/* МАГИЯ ТУТ: [&>button]:hidden полностью вырезает системный дефолтный крестик от shadcn.
+        Плюс накинул наш брутальный дизайн.
+      */}
+      <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[90vh] outline-none z-50 [&>button]:hidden">
         
-        {/* ШАПКА */}
-        <div className={`p-6 sm:p-8 text-white relative text-center sm:text-left ${isMentorRequired ? 'bg-amber-600' : 'bg-[#005BAB]'}`}>
-          <DialogTitle className="text-2xl sm:text-3xl font-black">{equipment?.name}</DialogTitle>
-          <p className="opacity-90 font-medium text-xs sm:text-sm mt-1">
-            Бронирование на {dayOptions[selectedDayIndex].label} 
-            {isMentorRequired && " (Требуется ментор)"}
-          </p>
-          <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition"><X className="h-5 w-5"/></button>
+        {/* ШАПКА В БРУТАЛЬНОМ СТИЛЕ */}
+        <div className={`p-6 border-b-4 border-slate-900 text-slate-900 relative flex justify-between items-start ${isMentorRequired ? 'bg-amber-400' : 'bg-emerald-400'}`}>
+          <div>
+            <DialogTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tighter leading-tight pr-8">{equipment?.name}</DialogTitle>
+            <p className="font-bold uppercase tracking-widest text-[10px] mt-2">
+              Бронь на {dayOptions[selectedDayIndex].label} 
+              {isMentorRequired && " (ТРЕБУЕТСЯ МЕНТОР)"}
+            </p>
+          </div>
+          
+          {/* НАШ КАСТОМНЫЙ КРЕСТИК */}
+          <button onClick={onClose} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a] shrink-0">
+            <X className="h-5 w-5"/>
+          </button>
         </div>
 
-        <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-8 bg-slate-50">
           
           {/* ПРЕДУПРЕЖДЕНИЕ О МЕНТОРЕ */}
           {isMentorRequired && (
-            <div className="bg-amber-50 border border-amber-200 p-3 sm:p-4 rounded-2xl flex gap-3 items-start text-amber-800">
-              <Info className="h-5 w-5 shrink-0 mt-0.5 text-amber-600" />
-              <p className="text-xs sm:text-sm font-medium">
-                Этот станок повышенной опасности. Доступны только часы работы дежурного ментора. 
-                Заявка будет отправлена на ручное подтверждение.
+            <div className="bg-amber-100 border-2 border-amber-400 p-4 flex gap-3 items-start text-amber-900">
+              <Info className="h-5 w-5 shrink-0 mt-0.5" />
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest leading-relaxed">
+                Станок повышенной опасности. Доступны только часы работы дежурного ментора. Заявка отправляется на ручное подтверждение.
               </p>
             </div>
           )}
 
+          {/* 1. ДАТА */}
           <div className="space-y-3">
-            <Label className="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-1 block text-center sm:text-left">1. Дата</Label>
-            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">1. Выбор даты</Label>
+            <div className="flex flex-wrap gap-2">
               {dayOptions.map((d, i) => (
                 <button key={i} onClick={() => setSelectedDayIndex(i)}
-                  className={`h-11 sm:h-12 px-4 sm:px-5 rounded-2xl font-bold text-xs sm:text-sm transition-all ${
+                  className={`h-10 px-4 font-black text-xs uppercase tracking-widest border-2 transition-all ${
                     selectedDayIndex === i 
-                      ? (isMentorRequired ? "bg-amber-500 text-white shadow-lg shadow-amber-200" : "bg-blue-600 text-white shadow-lg shadow-blue-200") 
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                      ? (isMentorRequired ? "bg-amber-400 text-slate-900 border-slate-900 shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]" : "bg-blue-600 text-white border-slate-900 shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]") 
+                      : "bg-white text-slate-600 border-slate-300 hover:border-slate-900 hover:text-slate-900"
                   }`}>
                   {d.label}
                 </button>
@@ -186,82 +195,85 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
             </div>
           </div>
 
+          {/* 2. ДЛИТЕЛЬНОСТЬ */}
           <div className="space-y-3">
-            <Label className="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-1 block text-center sm:text-left">2. Длительность</Label>
-            <div className="flex gap-2 justify-center">
+            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">2. Время работы</Label>
+            <div className="flex gap-2">
               {[1, 2, 3].map((h) => (
                 <button key={h} onClick={() => setDurationHours(h)}
-                  className={`h-12 sm:h-14 flex-1 max-w-[120px] rounded-2xl font-black text-lg border-2 transition-all ${
+                  className={`h-12 flex-1 max-w-[120px] font-black text-base border-2 transition-all ${
                     durationHours === h 
-                      ? "bg-emerald-50 border-emerald-500 text-emerald-700" 
-                      : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                      ? "bg-emerald-400 border-slate-900 text-slate-900 shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]" 
+                      : "bg-white border-slate-300 text-slate-400 hover:border-slate-900 hover:text-slate-900"
                   }`}>
-                  {h} ч.
+                  {h} ЧАС(ОВ)
                 </button>
               ))}
             </div>
           </div>
 
+          {/* 3. СЛОТЫ ВРЕМЕНИ */}
           <div className="space-y-3">
-            <Label className="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-1 block text-center sm:text-left">3. Время начала</Label>
-            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2">
+            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">3. Слот начала</Label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {[9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((h) => {
                 const { disabled, reason } = getSlotStatus(h);
                 const isActive = startHour === h;
                 
-                // Check if selectedDate is today and hour is in the past
                 const now = new Date();
                 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 const isToday = selectedDate.getTime() === today.getTime();
                 const currentHour = now.getHours();
                 const isPastHour = isToday && h <= currentHour;
                 
-                // If hour is in the past, it should be disabled and show "Прошедшее время"
                 const isFinallyDisabled = disabled || isPastHour;
                 const finalReason = isPastHour ? 'past_hour' : reason;
                 
                 return (
                   <button key={h} disabled={isFinallyDisabled} onClick={() => !isFinallyDisabled && setStartHour(h)}
-                    className={`h-12 sm:h-14 rounded-2xl font-bold text-sm transition-all border-2 flex flex-col items-center justify-center relative ${
+                    className={`h-14 font-black text-sm transition-all border-2 flex flex-col items-center justify-center relative ${
                       finalReason === 'busy' 
-                        ? "bg-red-500 border-red-500 text-white opacity-90 cursor-not-allowed" 
+                        ? "bg-rose-100 border-rose-300 text-rose-500 cursor-not-allowed" 
                         : finalReason === 'no_mentor'
-                        ? "bg-slate-50 border-slate-100 text-slate-300 opacity-60 cursor-not-allowed"
+                        ? "bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed"
                         : finalReason === 'past_hour'
-                        ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
+                        ? "bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed"
                         : isActive 
-                          ? (isMentorRequired ? "bg-amber-50 border-amber-500 text-amber-700" : "bg-blue-50 border-blue-600 text-blue-700")
-                          : "bg-white border-slate-100 text-slate-700 hover:border-blue-300"
+                          ? (isMentorRequired ? "bg-amber-400 border-slate-900 text-slate-900 shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]" : "bg-blue-600 border-slate-900 text-white shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]")
+                          : "bg-white border-slate-900 text-slate-900 hover:bg-slate-100 shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none"
                     }`}>
                     {h}:00
-                    {finalReason === 'busy' && <span className="text-[8px] font-black uppercase">Занято</span>}
-                    {finalReason === 'no_mentor' && <span className="text-[8px] font-bold uppercase">Нет ментора</span>}
-                    {finalReason === 'past_hour' && <span className="text-[8px] font-bold uppercase">Прошло</span>}
+                    {finalReason === 'busy' && <span className="text-[9px] font-black uppercase text-rose-600">ЗАНЯТО</span>}
+                    {finalReason === 'no_mentor' && <span className="text-[9px] font-black uppercase">НЕТ МЕНТОРА</span>}
+                    {finalReason === 'past_hour' && <span className="text-[9px] font-black uppercase">ПРОШЛО</span>}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-3">
-            <div className="flex items-center gap-3">
-              <Clock className={`h-5 w-5 ${isMentorRequired ? 'text-amber-600' : 'text-blue-600'}`} />
-              <span className="font-bold text-slate-700 text-sm sm:text-base">Итоговое время:</span>
+          {/* ИТОГ И КНОПКА */}
+          <div className="pt-4 mt-6">
+            <div className="p-4 bg-white border-4 border-slate-900 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-3 mb-4 shadow-[6px_6px_0_#0f172a]">
+              <div className="flex items-center gap-3">
+                <Clock className="h-6 w-6 text-slate-900" />
+                <span className="font-black uppercase tracking-widest text-slate-900 text-sm">Итоговый слот:</span>
+              </div>
+              <span className="text-xl font-black text-slate-900">
+                {startHour}:00 — {displayEndTime}:00
+              </span>
             </div>
-            <span className={`text-xl font-black ${isMentorRequired ? 'text-amber-700' : 'text-blue-700'}`}>
-              {startHour}:00 — {displayEndTime}:00
-            </span>
-          </div>
 
-          <Button 
-            onClick={() => createBooking.mutate()} 
-            disabled={createBooking.isPending || currentSlotStatus.disabled} 
-            className={`w-full h-14 sm:h-16 rounded-[28px] text-lg sm:text-xl font-black text-white shadow-xl transition-all flex items-center justify-center ${
-              isMentorRequired ? "bg-amber-600 hover:bg-amber-700" : "bg-[#005BAB] hover:bg-blue-800"
-            }`}
-          >
-            {createBooking.isPending ? "Минутку..." : (isMentorRequired ? "ОТПРАВИТЬ ЗАЯВКУ" : "ПОДТВЕРДИТЬ БРОНЬ")}
-          </Button>
+            <Button 
+              onClick={() => createBooking.mutate()} 
+              disabled={createBooking.isPending || currentSlotStatus.disabled} 
+              className={`w-full h-16 rounded-none text-sm font-black uppercase tracking-widest border-4 border-slate-900 text-white transition-all flex items-center justify-center shadow-[6px_6px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none ${
+                isMentorRequired ? "bg-amber-600 hover:bg-amber-700 disabled:bg-slate-300 disabled:border-slate-400 disabled:shadow-none" : "bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:border-slate-400 disabled:shadow-none"
+              }`}
+            >
+              {createBooking.isPending ? "ЗАГРУЗКА..." : (isMentorRequired ? "ОТПРАВИТЬ ЗАЯВКУ" : "ПОДТВЕРДИТЬ БРОНЬ")}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
