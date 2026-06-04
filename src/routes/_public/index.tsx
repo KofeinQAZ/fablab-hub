@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { 
   ChevronRight, Cpu, Wrench, Lightbulb, MapPin, 
   Mail, Phone, Printer, Rocket, ShieldCheck, 
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/_public/")({
 });
 
 function LandingPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -20,8 +22,8 @@ function LandingPage() {
         <div className="relative z-10 px-4 md:px-12 text-right select-none flex flex-col items-end justify-start w-full mt-4 md:mt-8">
           
           <div className="absolute top-[10%] left-[5%] hidden xl:block text-xs font-bold tracking-[0.2em] text-slate-900 uppercase text-left">
-            <span className="text-blue-600 block text-lg mb-1">№1 В УНИВЕРСИТЕТЕ</span>
-            Современный коворкинг<br/>для инженеров
+            <span className="text-blue-600 block text-lg mb-1">{t('landing.hero.badge')}</span>
+            {t('landing.hero.subtitle1')}<br/>{t('landing.hero.subtitle2')}
           </div>
 
           <h1 className="text-[18vw] md:text-[14vw] font-black leading-[0.75] tracking-tighter text-slate-900 uppercase">
@@ -33,13 +35,11 @@ function LandingPage() {
         </div>
 
         <div className="relative z-20 w-full max-w-[1600px] mx-auto px-0 sm:px-6 mt-8 md:mt-[-16vw] flex-1 flex flex-col justify-end">
-          {/* ИСПРАВЛЕНО: Увеличили высоту на мобилках (h-[60vh] min-h-[500px]) */}
           <div className="relative w-full h-[60vh] min-h-[500px] md:h-[650px] flex items-end justify-between">
             
-            {/* ИСПРАВЛЕНО: На мобилках object-center вместо object-bottom, чтобы поднять надпись здания */}
             <img 
               src="/hero-bg.png" 
-              alt="Здание FabLab Satbayev" 
+              alt="FabLab Satbayev Building" 
               className="absolute bottom-0 left-0 md:left-[-5%] w-full md:w-[95%] h-full object-cover object-center md:object-contain md:object-left-bottom pointer-events-none drop-shadow-2xl"
             />
             
@@ -49,16 +49,16 @@ function LandingPage() {
             {/* Акцентный блок CTA */}
             <div className="relative z-30 bg-blue-600 text-white p-6 md:p-10 lg:p-12 w-full md:w-[550px] rounded-t-[2rem] md:rounded-t-none md:rounded-tl-[3rem] flex flex-col justify-end shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-t-4 border-[#FAFAFA] md:border-none md:border-t-8 md:border-l-8 md:border-[#FAFAFA] ml-auto">
               <p className="font-bold text-sm md:text-base uppercase tracking-widest mb-4 opacity-90">
-                3D-печать, ЧПУ станки, слесарная зона, пайка и электроника
+                {t('landing.hero.ctaDesc')}
               </p>
               <h2 className="text-2xl md:text-3xl font-extrabold mb-8 leading-tight">
-                БРОНИРУЙ ОБОРУДОВАНИЕ ОНЛАЙН
+                {t('landing.hero.ctaTitle')}
               </h2>
               <button 
                 onClick={() => navigate({ to: "/booking" })}
                 className="group flex items-center font-bold uppercase tracking-widest text-sm border-b-2 border-white pb-2 w-max hover:text-blue-200 hover:border-blue-200 transition-colors"
               >
-                ПЕРЕЙТИ К БРОНИРОВАНИЮ <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                {t('landing.hero.ctaBtn')} <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
@@ -69,20 +69,20 @@ function LandingPage() {
       <section className="max-w-7xl mx-auto px-6 pt-12 pb-24 z-10 relative mt-12">
         <div className="border-t-4 border-slate-900 pt-12 flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
-            Технологии
+            {t('landing.tech.title')}
           </h2>
           <p className="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-500 uppercase md:text-right max-w-sm leading-relaxed">
-            Профессиональное оборудование для решения реальных инженерных задач
+            {t('landing.tech.subtitle')}
           </p>
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
           {[
-            { name: "3D Печать", icon: Printer },
-            { name: "Электроника", icon: Cpu },
-            { name: "Слесарная", icon: Wrench },
-            { name: "Пайка", icon: Zap },
-            { name: "ЧПУ Станки", icon: Layers },
+            { name: t('landing.tech.items.print'), icon: Printer },
+            { name: t('landing.tech.items.electronics'), icon: Cpu },
+            { name: t('landing.tech.items.lock'), icon: Wrench },
+            { name: t('landing.tech.items.solder'), icon: Zap },
+            { name: t('landing.tech.items.cnc'), icon: Layers },
           ].map((Tool, i) => (
             <div key={i} className="group bg-white border-4 border-slate-900 flex flex-col items-center justify-center aspect-square shadow-[6px_6px_0_#2563eb] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0_#2563eb] transition-all cursor-default">
               <Tool.icon className="w-10 h-10 text-slate-900 mb-3 group-hover:text-blue-600 transition-colors" />
@@ -98,9 +98,9 @@ function LandingPage() {
           
           <div className="bg-white border-4 border-slate-900 p-8 md:p-12 shadow-[8px_8px_0_theme(colors.slate.900)] flex flex-col justify-between group">
             <div>
-              <Badge text="Парк оборудования" />
-              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 mt-6 mb-4 leading-none">Тысячи деталей.<br/>Один принтер.</h3>
-              <p className="text-slate-600 text-base md:text-lg mb-8 font-medium">Получи доступ к парку современных 3D-принтеров. От базового PLA до сложных инженерных пластиков — всё бронируется онлайн.</p>
+              <Badge text={t('landing.bento.equipBadge')} />
+              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 mt-6 mb-4 leading-none">{t('landing.bento.equipTitle1')}<br/>{t('landing.bento.equipTitle2')}</h3>
+              <p className="text-slate-600 text-base md:text-lg mb-8 font-medium">{t('landing.bento.equipDesc')}</p>
             </div>
             <div className="relative h-64 bg-slate-100 border-4 border-slate-900 overflow-hidden">
                <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80" alt="3D Printing" className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
@@ -109,9 +109,9 @@ function LandingPage() {
 
           <div className="bg-blue-600 border-4 border-slate-900 p-8 md:p-12 shadow-[8px_8px_0_theme(colors.slate.900)] flex flex-col justify-between">
             <div>
-              <div className="inline-block border-2 border-slate-900 px-3 py-1 font-bold text-xs tracking-widest uppercase bg-slate-900 text-white shadow-[4px_4px_0_#ffffff]">Процессы</div>
-              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white mt-6 mb-4 leading-none">Умное<br/>бронирование</h3>
-              <p className="text-blue-100 text-base md:text-lg mb-8 font-medium">Больше никаких бумажных журналов. Интерактивное расписание, контроль доступов и автоматические уведомления.</p>
+              <div className="inline-block border-2 border-slate-900 px-3 py-1 font-bold text-xs tracking-widest uppercase bg-slate-900 text-white shadow-[4px_4px_0_#ffffff]">{t('landing.bento.processBadge')}</div>
+              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white mt-6 mb-4 leading-none">{t('landing.bento.processTitle1')}<br/>{t('landing.bento.processTitle2')}</h3>
+              <p className="text-blue-100 text-base md:text-lg mb-8 font-medium">{t('landing.bento.processDesc')}</p>
             </div>
             <div className="relative h-64 bg-slate-900 border-4 border-slate-900 flex items-center justify-center p-6">
                <div className="w-full h-full border-2 border-slate-700 bg-slate-800 flex flex-col gap-4 p-4">
@@ -129,15 +129,15 @@ function LandingPage() {
       <section className="bg-slate-900 border-y-4 border-slate-900 py-24 md:py-32 overflow-hidden relative">
         <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center mix-blend-luminosity" />
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-5xl md:text-8xl font-black uppercase text-white tracking-tighter mb-8 leading-none">От чертежа<br/><span className="text-blue-500">до стартапа</span></h2>
+          <h2 className="text-5xl md:text-8xl font-black uppercase text-white tracking-tighter mb-8 leading-none">{t('landing.cta.title1')}<br/><span className="text-blue-500">{t('landing.cta.title2')}</span></h2>
           <p className="text-lg md:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium">
-            FabLab — это не просто станки. Это место, где ты можешь собрать команду, получить грант и запустить реальный бизнес на базе университета.
+            {t('landing.cta.desc')}
           </p>
           <button 
             onClick={() => navigate({ to: "/projects" })}
             className="bg-blue-600 text-white border-4 border-blue-600 px-8 py-5 font-black uppercase tracking-[0.2em] hover:bg-white hover:text-blue-600 hover:border-white transition-colors text-sm md:text-base shadow-[8px_8px_0_#ffffff] hover:shadow-[4px_4px_0_#2563eb] hover:translate-y-1 hover:translate-x-1"
           >
-            Перейти на Витрину
+            {t('landing.cta.btn')}
           </button>
         </div>
       </section>
@@ -146,32 +146,32 @@ function LandingPage() {
       <section className="max-w-7xl mx-auto px-6 py-24 z-10 relative">
         <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-12 border-b-4 border-slate-900 pb-12">
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
-            Атмосфера
+            {t('landing.atmosphere.title')}
           </h2>
           <p className="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-500 uppercase md:text-right max-w-sm leading-relaxed">
-            Рабочее пространство, где создается будущее своими руками
+            {t('landing.atmosphere.subtitle')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 relative h-[400px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80" alt="Рабочая зона FabLab" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-blue-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">Основной зал</div>
+            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80" alt="FabLab Working Area" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
+            <div className="absolute bottom-0 left-0 bg-blue-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.atmosphere.mainHall')}</div>
           </div>
 
           <div className="relative h-[400px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80" alt="Зона 3D-печати" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-slate-900 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">3D Печать</div>
+            <img src="https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80" alt="3D Printing Zone" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
+            <div className="absolute bottom-0 left-0 bg-slate-900 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.tech.items.print')}</div>
           </div>
 
           <div className="relative h-[320px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" alt="Командная работа" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-slate-900 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">Команды</div>
+            <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" alt="Teamwork" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
+            <div className="absolute bottom-0 left-0 bg-slate-900 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.atmosphere.teams')}</div>
           </div>
 
           <div className="md:col-span-2 relative h-[320px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80" alt="Высокотехнологичное оборудование" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-blue-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">Станочный парк</div>
+            <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80" alt="High-tech equipment" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
+            <div className="absolute bottom-0 left-0 bg-blue-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.atmosphere.cncPark')}</div>
           </div>
         </div>
       </section>
@@ -180,40 +180,40 @@ function LandingPage() {
       <section className="bg-white border-y-4 border-slate-900 py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-16">
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900 mb-6">Почему мы</h2>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900 mb-6">{t('landing.whyUs.title')}</h2>
             <div className="h-2 w-32 bg-blue-600" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
             <PerkCard 
               icon={ShieldCheck} 
-              title="Безопасность" 
-              desc="Обязательный инструктаж и тесты. Доступ к сложному оборудованию открывается только после прохождения ТБ." 
+              title={t('landing.whyUs.safetyTitle')} 
+              desc={t('landing.whyUs.safetyDesc')} 
             />
             <PerkCard 
               icon={Target} 
-              title="Точность" 
-              desc="Промышленные ЧПУ станки, лазерные резчики и калиброванные 3D-принтеры для идеальных допусков." 
+              title={t('landing.whyUs.precisionTitle')} 
+              desc={t('landing.whyUs.precisionDesc')} 
             />
             <PerkCard 
               icon={Users} 
-              title="Комьюнити" 
-              desc="Работайте бок о бок с лучшими умами университета. Обменивайтесь опытом и создавайте коллаборации." 
+              title={t('landing.whyUs.communityTitle')} 
+              desc={t('landing.whyUs.communityDesc')} 
             />
             <PerkCard 
               icon={Lightbulb} 
-              title="Менторство" 
-              desc="Инженеры лаборатории всегда подскажут, какой материал выбрать и как оптимизировать модель." 
+              title={t('landing.whyUs.mentorTitle')} 
+              desc={t('landing.whyUs.mentorDesc')} 
             />
             <PerkCard 
               icon={Rocket} 
-              title="Витрина" 
-              desc="Публикуйте свои идеи, привлекайте инвесторов и находите недостающих специалистов в команду." 
+              title={t('landing.whyUs.showcaseTitle')} 
+              desc={t('landing.whyUs.showcaseDesc')} 
             />
             <PerkCard 
               icon={MapPin} 
-              title="Локация" 
-              desc="Лаборатория находится прямо в сердце кампуса Satbayev University." 
+              title={t('landing.whyUs.locationTitle')} 
+              desc={t('landing.whyUs.locationDesc')} 
             />
           </div>
         </div>
@@ -230,12 +230,12 @@ function LandingPage() {
               FABLAB
             </div>
             <p className="text-slate-400 text-sm font-bold tracking-widest uppercase leading-relaxed max-w-xs">
-              Твои идеи. Наше оборудование. Место создания стартапов.
+              {t('landing.footer.desc')}
             </p>
           </div>
           
           <div className="flex flex-col gap-4 text-sm font-bold tracking-widest uppercase text-slate-400">
-            <h4 className="text-white mb-2">Контакты</h4>
+            <h4 className="text-white mb-2">{t('landing.footer.contacts')}</h4>
             <a href="#" className="hover:text-blue-400 flex items-center gap-3 transition-colors">
               <Phone className="w-5 h-5 text-slate-600" /> +7 (700) 000-00-00
             </a>
@@ -245,10 +245,10 @@ function LandingPage() {
           </div>
           
           <div className="flex flex-col gap-4 text-sm font-bold tracking-widest uppercase text-slate-400">
-            <h4 className="text-white mb-2">Адрес</h4>
+            <h4 className="text-white mb-2">{t('landing.footer.address')}</h4>
             <p className="flex items-start gap-3">
               <MapPin className="w-5 h-5 shrink-0 mt-1 text-slate-600" /> 
-              <span>г. Алматы, ул. Сатпаева 22<br/>Главный корпус</span>
+              <span>{t('landing.footer.addressValue1')}<br/>{t('landing.footer.addressValue2')}</span>
             </p>
           </div>
         </div>

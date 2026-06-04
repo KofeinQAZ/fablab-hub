@@ -7,19 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
+  DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Plus, RefreshCcw, Trash2, Laptop, Printer, HardHat, Crown, QrCode, Printer as PrintIcon, Wrench, Settings, ShieldAlert, Zap } from "lucide-react";
 import { z } from "zod";
+
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/equipment")({
   component: AdminEquipmentPage,
@@ -28,11 +28,15 @@ export const Route = createFileRoute("/_authenticated/_admin/admin/equipment")({
 type Equipment = {
   id: string;
   name: string;
+  name_kz: string | null;
+  name_en: string | null;
   category: "stationary" | "portable";
   status: "active" | "maintenance";
   access_type: "basic" | "independent" | "mentor_required" | "resident_only";
   image_url: string | null;
   description?: string | null;
+  description_kz?: string | null;
+  description_en?: string | null;
   specs?: string | null;
 };
 
@@ -45,6 +49,20 @@ const equipmentFormSchema = z.object({
     .min(2, "Название слишком короткое")
     .max(120, "Название слишком длинное")
     .refine((value) => !htmlTagPattern.test(value), "Название содержит недопустимые символы"),
+  name_kz: z
+    .string()
+    .trim()
+    .max(120, "Название слишком длинное")
+    .refine((value) => !htmlTagPattern.test(value), "Название содержит недопустимые символы")
+    .optional()
+    .or(z.literal("")),
+  name_en: z
+    .string()
+    .trim()
+    .max(120, "Название слишком длинное")
+    .refine((value) => !htmlTagPattern.test(value), "Название содержит недопустимые символы")
+    .optional()
+    .or(z.literal("")),
   category: z.enum(["stationary", "portable"]),
   status: z.enum(["active", "maintenance"]),
   access_type: z.enum(["basic", "independent", "mentor_required", "resident_only"]),
@@ -57,6 +75,18 @@ const equipmentFormSchema = z.object({
     .string()
     .max(500, "Описание не должно превышать 500 символов")
     .refine((value) => !htmlTagPattern.test(value), "Описание содержит недопустимые символы"),
+  description_kz: z
+    .string()
+    .max(500, "Описание не должно превышать 500 символов")
+    .refine((value) => !htmlTagPattern.test(value), "Описание содержит недопустимые символы")
+    .optional()
+    .or(z.literal("")),
+  description_en: z
+    .string()
+    .max(500, "Описание не должно превышать 500 символов")
+    .refine((value) => !htmlTagPattern.test(value), "Описание содержит недопустимые символы")
+    .optional()
+    .or(z.literal("")),
   specs: z
     .string()
     .max(500, "Параметры не должны превышать 500 символов")
@@ -80,8 +110,8 @@ function AdminEquipmentPage() {
   const [qrModalItem, setQrModalItem] = useState<Equipment | null>(null);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [form, setForm] = useState({
-    name: "", category: "stationary" as Equipment["category"], status: "active" as Equipment["status"],
-    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", specs: "",
+    name: "", name_kz: "", name_en: "", category: "stationary" as Equipment["category"], status: "active" as Equipment["status"],
+    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", description_kz: "", description_en: "", specs: "",
   });
 
   const { data: equipment } = useQuery({
@@ -93,7 +123,6 @@ function AdminEquipmentPage() {
     },
   });
 
-  // ВЫЧИСЛЕНИЕ МЕТРИК ДЛЯ ОБОРУДОВАНИЯ
   const stats = useMemo(() => {
     const all = equipment ?? [];
     const total = all.length;
@@ -108,9 +137,17 @@ function AdminEquipmentPage() {
     mutationFn: async () => {
       const validated = equipmentFormSchema.parse(form);
       const payload = {
-        name: validated.name, category: validated.category, status: validated.status,
-        access_type: validated.access_type, image_url: validated.image_url || null,
-        description: validated.description || null, specs: validated.specs || null,
+        name: validated.name,
+        name_kz: validated.name_kz || null,
+        name_en: validated.name_en || null,
+        category: validated.category,
+        status: validated.status,
+        access_type: validated.access_type,
+        image_url: validated.image_url || null,
+        description: validated.description || null,
+        description_kz: validated.description_kz || null,
+        description_en: validated.description_en || null,
+        specs: validated.specs || null,
       };
 
       const table = supabase.from("equipment");
@@ -124,7 +161,7 @@ function AdminEquipmentPage() {
       toast.success(editingEquipment ? "Оборудование обновлено" : "Оборудование добавлено");
       setCatalogOpen(false);
       setEditingEquipment(null);
-      setForm({ name: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", specs: "" });
+      setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "" });
       qc.invalidateQueries({ queryKey: ["admin-equipment"] });
     },
     onError: (error: Error) => {
@@ -133,7 +170,6 @@ function AdminEquipmentPage() {
     },
   });
 
-  // УДАЛЕНИЕ (С проверкой RLS)
   const deleteEquipment = useMutation({
     mutationFn: async (id: string) => {
       const { data, error } = await supabase.from("equipment").delete().eq("id", id).select();
@@ -147,7 +183,6 @@ function AdminEquipmentPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  // СМЕНА СТАТУСА (С проверкой RLS)
   const toggleEquipmentStatus = useMutation({
     mutationFn: async ({ id, nextStatus }: { id: string; nextStatus: Equipment["status"] }) => {
       const { data, error } = await supabase.from("equipment").update({ status: nextStatus }).eq("id", id).select();
@@ -163,16 +198,16 @@ function AdminEquipmentPage() {
 
   const openCreate = () => {
     setEditingEquipment(null);
-    setForm({ name: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", specs: "" });
+    setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "" });
     setCatalogOpen(true);
   };
 
   const openEdit = (item: Equipment) => {
     setEditingEquipment(item);
     setForm({
-      name: item.name, category: item.category, status: item.status,
+      name: item.name, name_kz: item.name_kz || "", name_en: item.name_en || "", category: item.category, status: item.status,
       access_type: item.access_type || "basic", image_url: item.image_url || "",
-      description: item.description || "", specs: item.specs || "",
+      description: item.description || "", description_kz: item.description_kz || "", description_en: item.description_en || "", specs: item.specs || "",
     });
     setCatalogOpen(true);
   };
@@ -184,7 +219,6 @@ function AdminEquipmentPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12 p-2">
       
-      {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b-4 border-slate-900 pb-6 print:hidden">
         <div>
           <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Оборудование</h1>
@@ -198,7 +232,6 @@ function AdminEquipmentPage() {
         </Button>
       </div>
 
-      {/* DETAILED STATISTICS BLOCK */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 print:hidden">
         <div className="bg-white border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
@@ -233,7 +266,6 @@ function AdminEquipmentPage() {
         </div>
       </div>
 
-      {/* TABLE SECTION */}
       <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] print:hidden overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
@@ -293,19 +325,57 @@ function AdminEquipmentPage() {
         </div>
       </div>
 
-      {/* ДИАЛОГ РЕДАКТИРОВАНИЯ / СОЗДАНИЯ (Брутальный) */}
       <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
-        <DialogContent className="border-4 border-slate-900 bg-white p-0 rounded-none shadow-[8px_8px_0_#0f172a] overflow-hidden">
+        <DialogContent className="border-4 border-slate-900 bg-white p-0 rounded-none shadow-[8px_8px_0_#0f172a] overflow-hidden max-w-2xl">
           <div className="bg-slate-900 p-6">
             <DialogTitle className="text-xl font-black uppercase tracking-tighter text-white">
-              {editingEquipment ? "Редактирование" : "Новый станок"}
+              {editingEquipment ? "Редактирование станка" : "Новый станок"}
             </DialogTitle>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Название</Label>
-              <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-bold" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} />
-            </div>
+          <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+            
+            {/* БРУТАЛЬНЫЕ ВКЛАДКИ ДЛЯ МУЛЬТИЯЗЫЧНОСТИ */}
+            <Tabs defaultValue="ru" className="w-full border-2 border-slate-900 p-2 bg-slate-50 shadow-[2px_2px_0_#0f172a]">
+              <TabsList className="grid grid-cols-3 h-10 w-full bg-slate-200 p-1 rounded-none border-b-2 border-slate-900 gap-1">
+                <TabsTrigger value="ru" className="rounded-none font-black text-xs uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">RU</TabsTrigger>
+                <TabsTrigger value="kz" className="rounded-none font-black text-xs uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">KZ</TabsTrigger>
+                <TabsTrigger value="en" className="rounded-none font-black text-xs uppercase data-[state=active]:bg-slate-900 data-[state=active]:text-white">EN</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="ru" className="space-y-4 pt-3">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Название (RU) *</Label>
+                  <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-bold" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Описание (RU) *</Label>
+                  <Textarea className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-24" value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="kz" className="space-y-4 pt-3">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Атауы (KZ)</Label>
+                  <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-bold" value={form.name_kz} onChange={(e) => setForm((prev) => ({ ...prev, name_kz: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Сипаттамасы (KZ)</Label>
+                  <Textarea className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-24" value={form.description_kz} onChange={(e) => setForm((prev) => ({ ...prev, description_kz: e.target.value }))} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="en" className="space-y-4 pt-3">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Name (EN)</Label>
+                  <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-bold" value={form.name_en} onChange={(e) => setForm((prev) => ({ ...prev, name_en: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Description (EN)</Label>
+                  <Textarea className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-24" value={form.description_en} onChange={(e) => setForm((prev) => ({ ...prev, description_en: e.target.value }))} />
+                </div>
+              </TabsContent>
+            </Tabs>
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Категория</Label>
@@ -322,6 +392,7 @@ function AdminEquipmentPage() {
                 </select>
               </div>
             </div>
+            
             <div className="space-y-2 bg-blue-50 border-2 border-blue-200 p-4">
               <Label className="text-[10px] font-black uppercase tracking-widest text-blue-900">Уровень доступа</Label>
               <select className="w-full h-12 px-3 border-2 border-blue-300 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={form.access_type} onChange={(e) => setForm((prev) => ({ ...prev, access_type: e.target.value as any }))}>
@@ -331,15 +402,19 @@ function AdminEquipmentPage() {
                 <option value="resident_only">🔴 Элита (Только для Резидентов)</option>
               </select>
             </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Фото URL</Label>
-              <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.image_url} onChange={(e) => setForm((prev) => ({ ...prev, image_url: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Описание</Label>
-              <Textarea className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-20" value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Фото URL</Label>
+                <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.image_url} onChange={(e) => setForm((prev) => ({ ...prev, image_url: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Параметры / Спецификации</Label>
+                <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.specs} onChange={(e) => setForm((prev) => ({ ...prev, specs: e.target.value }))} />
+              </div>
             </div>
           </div>
+          
           <div className="p-6 pt-0 flex justify-end gap-3 bg-slate-50 border-t-2 border-slate-200 mt-4">
             <Button variant="outline" className="border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4" onClick={() => setCatalogOpen(false)}>Отмена</Button>
             <Button className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4" onClick={() => saveEquipment.mutate()} disabled={saveEquipment.isPending}>
@@ -349,7 +424,6 @@ function AdminEquipmentPage() {
         </DialogContent>
       </Dialog>
 
-      {/* МОДАЛКА ПАСПОРТА ПРЕДМЕТА И ПЕЧАТИ QR КОДА */}
       <Dialog open={!!qrModalItem} onOpenChange={(v) => !v && setQrModalItem(null)}>
         <DialogContent className="border-4 border-slate-900 bg-white p-6 rounded-none shadow-[8px_8px_0_#0f172a] max-w-sm mx-auto">
           <DialogHeader className="print:hidden">

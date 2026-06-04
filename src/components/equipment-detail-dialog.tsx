@@ -5,10 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { X, Clock, Info } from "lucide-react";
 import { createBookingSchema } from "@/lib/booking-schemas";
 
+// Добавляем универсальный хелпер для локализации
+const getLocalized = (obj: any, field: string, lang: string) => {
+  if (!obj) return '';
+  if (lang === 'ru') return obj[field] || '';
+  return obj[`${field}_${lang}`] || obj[field] || '';
+};
+
 export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSuccess }: any) {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [startHour, setStartHour] = useState<number>(10);
@@ -16,16 +25,22 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
 
   const isMentorRequired = equipment?.access_type === 'mentor_required';
 
-  // 1. Генерируем 7 ближайших дней
+  // Локаль для дат в зависимости от языка интерфейса
+  const dateLocale = i18n.language === 'kz' ? 'kk-KZ' : i18n.language === 'en' ? 'en-US' : 'ru-RU';
+
+  // Получаем локализованное имя оборудования
+  const localizedEquipmentName = getLocalized(equipment, 'name', i18n.language);
+
+  // 1. Генерируем 7 ближайших дней с учетом текущего языка
   const dayOptions = useMemo(() => {
     const now = new Date();
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(now);
       d.setDate(now.getDate() + i);
       d.setHours(0, 0, 0, 0);
-      return { date: d, label: d.toLocaleDateString("ru-RU", { weekday: "short", day: "numeric" }) };
+      return { date: d, label: d.toLocaleDateString(dateLocale, { weekday: "short", day: "numeric" }) };
     });
-  }, []);
+  }, [i18n.language]);
 
   const selectedDate = dayOptions[selectedDayIndex].date;
 
@@ -67,7 +82,6 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
     pStart.setHours(hour, 0, 0, 0);
     const pEnd = new Date(pStart.getTime() + durationHours * 3600000);
 
-    // А) Проверка на занятость другими студентами
     const isBusy = bookings.some((b: any) => {
       const bS = new Date(b.start_time).getTime();
       const bE = new Date(b.end_time).getTime();
@@ -76,14 +90,12 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
 
     if (isBusy) return { disabled: true, reason: 'busy' };
 
-    // Б) Проверка на наличие ментора (если нужно)
     if (isMentorRequired) {
       const isoDay = getIsoDay(selectedDate);
       const scheduleForDay = mentorSchedules.filter(s => s.day_of_week === isoDay);
 
       if (scheduleForDay.length === 0) return { disabled: true, reason: 'no_mentor' };
 
-      // Проверяем, влезает ли выбранное время ПОЛНОСТЬЮ в смену ментора
       const fitsInShift = scheduleForDay.some(shift => {
         const shiftStart = parseInt(shift.start_time.split(":")[0]);
         const shiftEnd = parseInt(shift.end_time.split(":")[0]);
@@ -96,14 +108,12 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
     return { disabled: false, reason: null };
   };
 
-  // Мутация создания брони
   const createBooking = useMutation({
     mutationFn: async () => {
       const start = new Date(selectedDate.getTime());
       start.setHours(startHour, 0, 0, 0);
       const end = new Date(start.getTime() + durationHours * 3600000);
 
-      // SECURITY: Validate booking times against schema before submission
       const validationResult = createBookingSchema.safeParse({
         startTime: start,
         endTime: end,
@@ -124,15 +134,14 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
         status: isMentorRequired ? "pending" : "active", 
       }).select();
 
-      if (error) throw new Error("Это время уже занято! Обновите страницу.");
+      if (error) throw new Error(t('booking_dialog.errors.alreadyBusy'));
       
-      // SECURITY: Check for silent RLS denial (empty result with 200 OK)
       if (!data || data.length === 0) {
-        throw new Error("У вас нет прав для выполнения этого действия");
+        throw new Error(t('booking_dialog.errors.noPermission'));
       }
     },
     onSuccess: () => {
-      toast.success(isMentorRequired ? "Заявка отправлена ментору!" : "Бронь успешно создана!");
+      toast.success(isMentorRequired ? t('booking_dialog.toast.requestSent') : t('booking_dialog.toast.bookingCreated'));
       qc.invalidateQueries({ queryKey: ["final-booking-check"] });
       onSuccess();
       onClose();
@@ -145,22 +154,19 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      {/* МАГИЯ ТУТ: [&>button]:hidden полностью вырезает системный дефолтный крестик от shadcn.
-        Плюс накинул наш брутальный дизайн.
-      */}
       <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[90vh] outline-none z-50 [&>button]:hidden">
         
         {/* ШАПКА В БРУТАЛЬНОМ СТИЛЕ */}
         <div className={`p-6 border-b-4 border-slate-900 text-slate-900 relative flex justify-between items-start ${isMentorRequired ? 'bg-amber-400' : 'bg-emerald-400'}`}>
           <div>
-            <DialogTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tighter leading-tight pr-8">{equipment?.name}</DialogTitle>
+            {/* Используем локализованное имя здесь */}
+            <DialogTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tighter leading-tight pr-8">{localizedEquipmentName}</DialogTitle>
             <p className="font-bold uppercase tracking-widest text-[10px] mt-2">
-              Бронь на {dayOptions[selectedDayIndex].label} 
-              {isMentorRequired && " (ТРЕБУЕТСЯ МЕНТОР)"}
+              {t('booking_dialog.headerSubtitle', { date: dayOptions[selectedDayIndex].label })}
+              {isMentorRequired && ` (${t('booking_dialog.mentorRequiredBadge')})`}
             </p>
           </div>
           
-          {/* НАШ КАСТОМНЫЙ КРЕСТИК */}
           <button onClick={onClose} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a] shrink-0">
             <X className="h-5 w-5"/>
           </button>
@@ -173,14 +179,14 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
             <div className="bg-amber-100 border-2 border-amber-400 p-4 flex gap-3 items-start text-amber-900">
               <Info className="h-5 w-5 shrink-0 mt-0.5" />
               <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest leading-relaxed">
-                Станок повышенной опасности. Доступны только часы работы дежурного ментора. Заявка отправляется на ручное подтверждение.
+                {t('booking_dialog.warningMentor')}
               </p>
             </div>
           )}
 
           {/* 1. ДАТА */}
           <div className="space-y-3">
-            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">1. Выбор даты</Label>
+            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">{t('booking_dialog.labels.selectDate')}</Label>
             <div className="flex flex-wrap gap-2">
               {dayOptions.map((d, i) => (
                 <button key={i} onClick={() => setSelectedDayIndex(i)}
@@ -197,7 +203,7 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
 
           {/* 2. ДЛИТЕЛЬНОСТЬ */}
           <div className="space-y-3">
-            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">2. Время работы</Label>
+            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">{t('booking_dialog.labels.workingTime')}</Label>
             <div className="flex gap-2">
               {[1, 2, 3].map((h) => (
                 <button key={h} onClick={() => setDurationHours(h)}
@@ -206,7 +212,7 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
                       ? "bg-emerald-400 border-slate-900 text-slate-900 shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]" 
                       : "bg-white border-slate-300 text-slate-400 hover:border-slate-900 hover:text-slate-900"
                   }`}>
-                  {h} ЧАС(ОВ)
+                  {t(`booking_dialog.duration.${h}`)}
                 </button>
               ))}
             </div>
@@ -214,7 +220,7 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
 
           {/* 3. СЛОТЫ ВРЕМЕНИ */}
           <div className="space-y-3">
-            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">3. Слот начала</Label>
+            <Label className="text-slate-900 font-black text-sm uppercase tracking-widest block border-b-2 border-slate-200 pb-2">{t('booking_dialog.labels.startSlot')}</Label>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {[9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((h) => {
                 const { disabled, reason } = getSlotStatus(h);
@@ -243,9 +249,9 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
                           : "bg-white border-slate-900 text-slate-900 hover:bg-slate-100 shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none"
                     }`}>
                     {h}:00
-                    {finalReason === 'busy' && <span className="text-[9px] font-black uppercase text-rose-600">ЗАНЯТО</span>}
-                    {finalReason === 'no_mentor' && <span className="text-[9px] font-black uppercase">НЕТ МЕНТОРА</span>}
-                    {finalReason === 'past_hour' && <span className="text-[9px] font-black uppercase">ПРОШЛО</span>}
+                    {finalReason === 'busy' && <span className="text-[9px] font-black uppercase text-rose-600">{t('booking_dialog.slots.busy')}</span>}
+                    {finalReason === 'no_mentor' && <span className="text-[9px] font-black uppercase">{t('booking_dialog.slots.noMentor')}</span>}
+                    {finalReason === 'past_hour' && <span className="text-[9px] font-black uppercase">{t('booking_dialog.slots.past')}</span>}
                   </button>
                 );
               })}
@@ -257,7 +263,7 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
             <div className="p-4 bg-white border-4 border-slate-900 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-3 mb-4 shadow-[6px_6px_0_#0f172a]">
               <div className="flex items-center gap-3">
                 <Clock className="h-6 w-6 text-slate-900" />
-                <span className="font-black uppercase tracking-widest text-slate-900 text-sm">Итоговый слот:</span>
+                <span className="font-black uppercase tracking-widest text-slate-900 text-sm">{t('booking_dialog.totalSlot')}</span>
               </div>
               <span className="text-xl font-black text-slate-900">
                 {startHour}:00 — {displayEndTime}:00
@@ -271,7 +277,7 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
                 isMentorRequired ? "bg-amber-600 hover:bg-amber-700 disabled:bg-slate-300 disabled:border-slate-400 disabled:shadow-none" : "bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:border-slate-400 disabled:shadow-none"
               }`}
             >
-              {createBooking.isPending ? "ЗАГРУЗКА..." : (isMentorRequired ? "ОТПРАВИТЬ ЗАЯВКУ" : "ПОДТВЕРДИТЬ БРОНЬ")}
+              {createBooking.isPending ? t('booking_dialog.btn.loading') : (isMentorRequired ? t('booking_dialog.btn.sendRequest') : t('booking_dialog.btn.confirmBooking'))}
             </Button>
           </div>
         </div>

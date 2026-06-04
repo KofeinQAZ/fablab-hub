@@ -12,18 +12,26 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ChevronDown, LogOut, ShieldAlert, ShieldCheck, User, Wrench, Bell, CheckCircle2, Menu, X, Rocket, Newspaper, Calendar, LayoutDashboard } from "lucide-react";
+import { ChevronDown, LogOut, ShieldAlert, ShieldCheck, User, Wrench, Bell, CheckCircle2, Menu, X, Rocket, Newspaper, Calendar, LayoutDashboard, Globe } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { UserProfile } from "@/lib/auth";
 
 export function AppHeader({ profile }: { profile: UserProfile | null }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Подключаем хук локализации
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    toast.success("Вы вышли из аккаунта");
+    toast.success(t('auth.signOutSuccess', 'Вы вышли из аккаунта')); // Используем фоллбэк текст, если ключа нет в JSON
     setIsMobileMenuOpen(false);
     navigate({ to: "/login" });
   };
@@ -34,7 +42,6 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
     queryKey: ["notifications", profile?.id],
     enabled: !!profile?.id,
     queryFn: async () => {
-      // Жесткая защита от ошибки 400 (eq.undefined)
       if (!profile?.id) return [];
       
       const { data, error } = await supabase
@@ -72,6 +79,34 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
   const unreadCount = notifications.filter(n => !n.is_read).length;
   const closeMenu = () => setIsMobileMenuOpen(false);
 
+  // Вспомогательный компонент для кнопок языка
+  const renderLanguageButtons = (isMobile = false) => {
+    const langs = [
+      { code: 'kz', label: 'KZ' },
+      { code: 'ru', label: 'RU' },
+      { code: 'en', label: 'EN' }
+    ];
+
+    return (
+      <div className={`flex items-center gap-1 ${isMobile ? 'justify-center w-full p-2 bg-slate-50 rounded-xl mt-4' : 'border-r border-slate-200 pr-3 mr-1 hidden md:flex'}`}>
+        {isMobile && <Globe className="w-4 h-4 text-slate-400 mr-2" />}
+        {langs.map((lang) => (
+          <button
+            key={lang.code}
+            onClick={() => changeLanguage(lang.code)}
+            className={`px-2 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${
+              i18n.language === lang.code 
+                ? 'bg-blue-100 text-blue-700 shadow-sm' 
+                : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            {lang.label}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-lg">
@@ -88,17 +123,20 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
             </div>
           </Link>
           
-          {/* ЧИСТАЯ НАВИГАЦИЯ ДЛЯ DESKTOP */}
+          {/* ЧИСТАЯ НАВИГАЦИЯ ДЛЯ DESKTOP СО СЛОВАРЕМ */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link to="/" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">Главная</Link>
-            <Link to="/booking" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">Бронь</Link>
-            <Link to="/news" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">Медиа</Link>
-            <Link to="/projects" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">Проекты</Link>
+            <Link to="/" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.home')}</Link>
+            <Link to="/booking" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.booking')}</Link>
+            <Link to="/news" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.media')}</Link>
+            <Link to="/projects" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.projects')}</Link>
           </nav>
 
           {/* ПРАВАЯ ЧАСТЬ */}
           <div className="flex items-center gap-3">
             
+            {/* Десктопный переключатель языков */}
+            {renderLanguageButtons(false)}
+
             {profile ? (
               <>
                 {/* АККУРАТНЫЙ КОЛОКОЛЬЧИК */}
@@ -115,16 +153,16 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                   </PopoverTrigger>
                   <PopoverContent align="end" className="w-80 rounded-2xl border border-slate-100 p-0 shadow-xl bg-white overflow-hidden">
                     <div className="p-4 bg-slate-50 flex items-center justify-between border-b border-slate-100">
-                      <span className="font-bold text-slate-900 uppercase tracking-widest text-xs">Уведомления</span>
+                      <span className="font-bold text-slate-900 uppercase tracking-widest text-xs">{t('header.notifications.title', 'Уведомления')}</span>
                       {unreadCount > 0 && (
                         <button onClick={() => markAllAsRead.mutate()} className="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors">
-                          <CheckCircle2 className="h-3 w-3" /> Прочитать все
+                          <CheckCircle2 className="h-3 w-3" /> {t('header.notifications.markAllRead', 'Прочитать все')}
                         </button>
                       )}
                     </div>
                     <div className="max-h-[350px] overflow-y-auto p-2 space-y-1 bg-white">
                       {notifications.length === 0 ? (
-                        <div className="p-6 text-center text-xs font-bold uppercase tracking-widest text-slate-400">Нет новых уведомлений</div>
+                        <div className="p-6 text-center text-xs font-bold uppercase tracking-widest text-slate-400">{t('header.notifications.empty', 'Нет новых уведомлений')}</div>
                       ) : (
                         notifications.map((n: any) => (
                           <div 
@@ -148,11 +186,11 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                 <div className="hidden md:flex items-center gap-3">
                   {profile.safety_briefing_passed ? (
                     <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
-                      <ShieldCheck className="h-3 w-3" /> ТБ Сдан
+                      <ShieldCheck className="h-3 w-3" /> {t('header.user.tbPassed', 'ТБ Сдан')}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-600">
-                      <ShieldAlert className="h-3 w-3" /> Нет ТБ
+                      <ShieldAlert className="h-3 w-3" /> {t('header.user.tbFailed', 'Нет ТБ')}
                     </span>
                   )}
 
@@ -170,16 +208,16 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 rounded-2xl border border-slate-100 p-2 shadow-xl bg-white">
                       <DropdownMenuItem asChild className="rounded-xl font-bold uppercase tracking-widest text-xs text-slate-600 focus:bg-slate-50 focus:text-slate-900 cursor-pointer p-3 mb-1">
-                        <Link to="/profile"><User className="h-4 w-4 mr-2" /> Личный кабинет</Link>
+                        <Link to="/profile"><User className="h-4 w-4 mr-2" /> {t('header.user.profile', 'Личный кабинет')}</Link>
                       </DropdownMenuItem>
                       {isAdmin && (
                         <DropdownMenuItem asChild className="rounded-xl font-bold uppercase tracking-widest text-xs text-blue-600 focus:bg-blue-50 focus:text-blue-700 cursor-pointer p-3 mb-1">
-                          <Link to="/admin/statistics"><LayoutDashboard className="h-4 w-4 mr-2" /> Админ-панель</Link>
+                          <Link to="/admin/statistics"><LayoutDashboard className="h-4 w-4 mr-2" /> {t('header.user.adminPanel', 'Админ-панель')}</Link>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator className="bg-slate-100 my-1" />
                       <DropdownMenuItem onClick={signOut} className="rounded-xl font-bold uppercase tracking-widest text-xs text-rose-600 focus:bg-rose-50 focus:text-rose-700 cursor-pointer p-3">
-                        <LogOut className="h-4 w-4 mr-2" /> Выйти
+                        <LogOut className="h-4 w-4 mr-2" /> {t('header.user.logout', 'Выйти')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -195,20 +233,20 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                 </Button>
               </>
             ) : (
-              /* КНОПКИ ВХОДА */
+              /* КНОПКИ ВХОДА СО СЛОВАРЕМ */
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   onClick={() => navigate({ to: "/login" })}
                   className="h-9 rounded-full border border-slate-200 bg-white font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all shadow-sm"
                 >
-                  Вход
+                  {t('auth.login')}
                 </Button>
                 <Button
                   onClick={() => navigate({ to: "/login", search: { mode: "signup" } as never })}
                   className="hidden sm:flex h-9 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-widest text-[10px] transition-all shadow-sm"
                 >
-                  Регистрация
+                  {t('auth.register')}
                 </Button>
               </div>
             )}
@@ -217,7 +255,7 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
       </header>
 
       {/* ========================================= */}
-      {/* ИСПРАВЛЕННОЕ ВОЗДУШНОЕ МОБИЛЬНОЕ МЕНЮ (ВЫНЕСЕНО НАРУЖУ) */}
+      {/* МОБИЛЬНОЕ МЕНЮ С ЯЗЫКАМИ */}
       {/* ========================================= */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-top-2 duration-200 overflow-hidden">
@@ -228,7 +266,7 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 shadow-sm">
                 <Wrench className="h-5 w-5 text-white" />
               </div>
-              <div className="text-lg font-black uppercase tracking-tight text-slate-900 leading-none">Меню</div>
+              <div className="text-lg font-black uppercase tracking-tight text-slate-900 leading-none">{t('header.mobile.menu', 'Меню')}</div>
             </div>
             <button 
               onClick={closeMenu} 
@@ -238,55 +276,57 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
             </button>
           </div>
 
-          {/* ЕДИНЫЙ СКРОЛЛ-КОНТЕЙНЕР (Ссылки + Профиль) */}
           <div className="flex-1 overflow-y-auto w-full bg-white px-4 py-6 pb-24">
             
-            {/* Навигационные ссылки */}
+            {/* Навигационные ссылки со словарем */}
             <div className="flex flex-col gap-3">
               <Link to="/" onClick={closeMenu} className="flex items-center gap-4 text-lg font-bold uppercase tracking-tight p-4 rounded-2xl bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                Главная
+                {t('nav.home')}
               </Link>
               <Link to="/booking" onClick={closeMenu} className="flex items-center gap-4 text-lg font-bold uppercase tracking-tight p-4 rounded-2xl bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                <Calendar className="w-6 h-6" /> Бронирование
+                <Calendar className="w-6 h-6" /> {t('nav.booking')}
               </Link>
               <Link to="/news" onClick={closeMenu} className="flex items-center gap-4 text-lg font-bold uppercase tracking-tight p-4 rounded-2xl bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                <Newspaper className="w-6 h-6" /> Медиа
+                <Newspaper className="w-6 h-6" /> {t('nav.media')}
               </Link>
               <Link to="/projects" onClick={closeMenu} className="flex items-center gap-4 text-lg font-bold uppercase tracking-tight p-4 rounded-2xl bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                <Rocket className="w-6 h-6" /> Проекты
+                <Rocket className="w-6 h-6" /> {t('nav.projects')}
               </Link>
             </div>
+
+            {/* Мобильный переключатель языков */}
+            {renderLanguageButtons(true)}
 
             {/* Блок профиля */}
             {profile && (
               <div className="mt-8 border-t border-slate-100 pt-6">
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Вы вошли как</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{t('header.mobile.loggedInAs', 'Вы вошли как')}</div>
                     <div className="truncate text-lg font-black uppercase tracking-tight text-slate-900">{profile.name}</div>
                   </div>
                   {profile.safety_briefing_passed ? (
                     <span className="shrink-0 flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest">
-                      <ShieldCheck className="h-3 w-3" /> ТБ Сдан
+                      <ShieldCheck className="h-3 w-3" /> {t('header.user.tbPassed', 'ТБ Сдан')}
                     </span>
                   ) : (
                     <span className="shrink-0 flex items-center gap-1 rounded-full bg-rose-50 text-rose-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest">
-                      <ShieldAlert className="h-3 w-3" /> Нет ТБ
+                      <ShieldAlert className="h-3 w-3" /> {t('header.user.tbFailed', 'Нет ТБ')}
                     </span>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <Link to="/profile" onClick={closeMenu} className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-50 text-slate-700 p-4 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-colors">
-                    <User className="h-4 w-4" /> Личный кабинет
+                    <User className="h-4 w-4" /> {t('header.user.profile', 'Личный кабинет')}
                   </Link>
                   {isAdmin && (
                     <Link to="/admin/statistics" onClick={closeMenu} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-50 text-blue-700 p-4 font-bold uppercase tracking-widest text-xs hover:bg-blue-100 transition-colors">
-                      <LayoutDashboard className="h-4 w-4" /> Админ-панель
+                      <LayoutDashboard className="h-4 w-4" /> {t('header.user.adminPanel', 'Админ-панель')}
                     </Link>
                   )}
                   <button onClick={signOut} className="flex items-center justify-center gap-2 w-full rounded-xl bg-rose-50 text-rose-600 p-4 font-bold uppercase tracking-widest text-xs hover:bg-rose-100 transition-colors mt-2">
-                    <LogOut className="h-4 w-4" /> Выйти
+                    <LogOut className="h-4 w-4" /> {t('header.user.logout', 'Выйти')}
                   </button>
                 </div>
               </div>

@@ -10,12 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Wrench, ArrowLeft } from "lucide-react";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
 function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [signInLoading, setSignInLoading] = useState(false);
   const [signUpLoading, setSignUpLoading] = useState(false);
@@ -28,31 +30,32 @@ function LoginPage() {
 
   const htmlTagPattern = /<[^>]*>/;
 
+  // Схемы валидации перемещены внутрь компонента для работы с i18n
   const signInSchema = z.object({
-    email: z.string().email("Введите корректный email"),
+    email: z.string().email(t('login.validation.emailInvalid', 'Введите корректный email')),
     password: z
       .string()
-      .min(1, "Введите пароль")
-      .max(128, "Пароль слишком длинный")
-      .refine((value) => !htmlTagPattern.test(value), "Пароль содержит недопустимые символы"),
+      .min(1, t('login.validation.passwordRequired', 'Введите пароль'))
+      .max(128, t('login.validation.passwordTooLong', 'Пароль слишком длинный'))
+      .refine((value) => !htmlTagPattern.test(value), t('login.validation.passwordInvalidChars', 'Пароль содержит недопустимые символы')),
   });
 
   const signUpSchema = z.object({
     name: z
       .string()
       .trim()
-      .min(2, "Имя слишком короткое")
-      .max(80, "Имя слишком длинное")
-      .refine((value) => !htmlTagPattern.test(value), "Имя содержит недопустимые символы"),
-    email: z.string().email("Введите корректный email"),
-    phone: z.string().min(10, "Введите корректный номер телефона").max(20, "Номер слишком длинный"),
+      .min(2, t('login.validation.nameTooShort', 'Имя слишком короткое'))
+      .max(80, t('login.validation.nameTooLong', 'Имя слишком длинное'))
+      .refine((value) => !htmlTagPattern.test(value), t('login.validation.nameInvalidChars', 'Имя содержит недопустимые символы')),
+    email: z.string().email(t('login.validation.emailInvalid', 'Введите корректный email')),
+    phone: z.string().min(10, t('login.validation.phoneInvalid', 'Введите корректный номер телефона')).max(20, t('login.validation.phoneTooLong', 'Номер слишком длинный')),
     password: z
       .string()
-      .min(8, "Минимум 8 символов")
-      .max(128, "Пароль слишком длинный")
-      .refine((value) => /\d/.test(value), "Пароль должен содержать цифру")
-      .refine((value) => /[^A-Za-z0-9]/.test(value), "Пароль должен содержать спецсимвол")
-      .refine((value) => !htmlTagPattern.test(value), "Пароль содержит недопустимые символы"),
+      .min(8, t('login.validation.passwordMinLen', 'Минимум 8 символов'))
+      .max(128, t('login.validation.passwordTooLong', 'Пароль слишком длинный'))
+      .refine((value) => /\d/.test(value), t('login.validation.passwordDigit', 'Пароль должен содержать цифру'))
+      .refine((value) => /[^A-Za-z0-9]/.test(value), t('login.validation.passwordSpecial', 'Пароль должен содержать спецсимвол'))
+      .refine((value) => !htmlTagPattern.test(value), t('login.validation.passwordInvalidChars', 'Пароль содержит недопустимые символы')),
   });
 
   useEffect(() => {
@@ -69,14 +72,13 @@ function LoginPage() {
     });
   }, [navigate, returnTo]);
 
-  // --- ВЕРНУЛИ НА МЕСТО ФУНКЦИЮ ВХОДА ---
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (signInLoading) return;
 
     const validated = signInSchema.safeParse({ email, password });
     if (!validated.success) {
-      toast.error(validated.error.issues[0]?.message ?? "Проверьте корректность полей");
+      toast.error(validated.error.issues[0]?.message ?? t('login.toasts.validationError', 'Проверьте корректность полей'));
       return;
     }
 
@@ -87,26 +89,24 @@ function LoginPage() {
       
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        // Вызываем умный и обновлённый у нас ensureProfile
         await ensureProfile(userData.user.id, userData.user.email);
       }
-      toast.success("Вход выполнен");
+      toast.success(t('login.toasts.signInSuccess', 'Вход выполнен'));
       navigate({ to: returnTo as never });
     } catch (error: any) {
-      toast.error(error.message || "Произошла ошибка при входе");
+      toast.error(error.message || t('login.toasts.signInError', 'Произошла ошибка при входе'));
     } finally {
       setSignInLoading(false);
     }
   };
 
-  // --- ОСТАВИЛИ ОДНУ ИДЕАЛЬНУЮ ФУНКЦИЮ РЕГИСТРАЦИИ ---
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (signUpLoading) return;
 
     const validated = signUpSchema.safeParse({ name, email, phone, password });
     if (!validated.success) {
-      toast.error(validated.error.issues[0]?.message ?? "Проверьте корректность полей");
+      toast.error(validated.error.issues[0]?.message ?? t('login.toasts.validationError', 'Проверьте корректность полей'));
       return;
     }
 
@@ -119,7 +119,7 @@ function LoginPage() {
           emailRedirectTo: `${window.location.origin}/booking`,
           data: { 
             name: validated.data.name,
-            phone: validated.data.phone // Сохраняем в метаданные auth аккаунта
+            phone: validated.data.phone
           },
         },
       });
@@ -127,7 +127,6 @@ function LoginPage() {
       
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        // Подстраховка для мгновенного создания строки, если отключено подтверждение по почте
         await supabase.from("profiles").upsert({
           id: userData.user.id,
           name: validated.data.name || userData.user.email?.split("@")[0] || "Student",
@@ -138,12 +137,12 @@ function LoginPage() {
         });
       }
       
-      toast.success("✅ Аккаунт успешно создан!", {
-        description: "Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!",
+      toast.success(t('login.toasts.signUpSuccessTitle', '✅ Аккаунт успешно создан!'), {
+        description: t('login.toasts.signUpSuccessDesc', 'Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!'),
         duration: 10000,
       });
     } catch (error: any) {
-      toast.error(error.message || "Произошла ошибка при регистрации");
+      toast.error(error.message || t('login.toasts.signUpError', 'Произошла ошибка при регистрации'));
     } finally {
       setSignUpLoading(false);
     }
@@ -157,7 +156,7 @@ function LoginPage() {
           to="/" 
           className="inline-flex items-center gap-2 mb-8 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-blue-600 transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> На главную
+          <ArrowLeft className="h-4 w-4" /> {t('login.backToHome', 'На главную')}
         </Link>
 
         <div className="mb-8 flex items-center justify-center gap-3">
@@ -166,18 +165,18 @@ function LoginPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-blue-700">FabLab Satbayev</h1>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">Platform Auth</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">{t('login.platformAuth', 'Platform Auth')}</p>
           </div>
         </div>
         
         <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
           <Tabs value={defaultTab} onValueChange={(value) => setDefaultTab(value as "signin" | "signup")}>
             <CardHeader>
-              <CardTitle>Добро пожаловать</CardTitle>
-              <CardDescription>Войдите или зарегистрируйтесь, чтобы продолжить.</CardDescription>
+              <CardTitle>{t('login.title', 'Добро пожаловать')}</CardTitle>
+              <CardDescription>{t('login.subtitle', 'Войдите или зарегистрируйтесь, чтобы продолжить.')}</CardDescription>
               <TabsList className="mt-4 grid grid-cols-2 rounded-2xl">
-                <TabsTrigger value="signin" className="rounded-xl">Вход</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-xl">Регистрация</TabsTrigger>
+                <TabsTrigger value="signin" className="rounded-xl">{t('login.tabSignIn', 'Вход')}</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-xl">{t('login.tabSignUp', 'Регистрация')}</TabsTrigger>
               </TabsList>
             </CardHeader>
             <CardContent>
@@ -185,18 +184,18 @@ function LoginPage() {
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t('login.emailLabel', 'Email')}</Label>
                     <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-2xl" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t('login.passwordLabel', 'Пароль')}</Label>
                     <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-2xl" />
                     <p className="text-xs text-slate-500">
-                      Безопасный пароль: минимум 8 символов, цифра и спецсимвол.
+                      {t('login.passwordHint', 'Безопасный пароль: минимум 8 символов, цифра и спецсимвол.')}
                     </p>
                   </div>
                   <Button type="submit" className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800 font-bold" disabled={signInLoading}>
-                    {signInLoading ? "Вход..." : "Войти"}
+                    {signInLoading ? t('login.btnSignInLoading', 'Вход...') : t('login.btnSignIn', 'Войти')}
                   </Button>
                 </form>
               </TabsContent>
@@ -204,30 +203,30 @@ function LoginPage() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Имя и Фамилия</Label>
-                    <Input id="name" required placeholder="Иван Иванов" value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-2xl" />
+                    <Label htmlFor="name">{t('login.nameLabel', 'Имя и Фамилия')}</Label>
+                    <Input id="name" required placeholder={t('login.namePlaceholder', 'Иван Иванов')} value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-2xl" />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Номер телефона</Label>
+                    <Label htmlFor="phone">{t('login.phoneLabel', 'Номер телефона')}</Label>
                     <Input id="phone" type="tel" required placeholder="+7 (777) 000-00-00" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-11 rounded-2xl" />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email-su">Email</Label>
+                    <Label htmlFor="email-su">{t('login.emailLabel', 'Email')}</Label>
                     <Input id="email-su" type="email" required placeholder="example@satbayev.university" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-2xl" />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="password-su">Пароль</Label>
+                    <Label htmlFor="password-su">{t('login.passwordLabel', 'Пароль')}</Label>
                     <Input id="password-su" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-2xl" />
                     <p className="text-xs text-slate-500">
-                      Минимум 8 символов, минимум одна цифра и один спецсимвол.
+                      {t('login.passwordHint', 'Минимум 8 символов, минимум одна цифра и один спецсимвол.')}
                     </p>
                   </div>
                   
                   <Button type="submit" className="h-12 w-full rounded-2xl bg-blue-700 hover:bg-blue-800 font-bold" disabled={signUpLoading}>
-                    {signUpLoading ? "Создание..." : "Создать аккаунт"}
+                    {signUpLoading ? t('login.btnSignUpLoading', 'Создание...') : t('login.btnSignUp', 'Создать аккаунт')}
                   </Button>
                 </form>
               </TabsContent>

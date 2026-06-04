@@ -27,19 +27,38 @@ interface Block {
 function AdminNewsPage() {
   const qc = useQueryClient();
   
-  // Управление экранами: 'list' (список) или 'editor' (редактор)
   const [view, setView] = useState<'list' | 'editor'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editorLang, setEditorLang] = useState<'ru' | 'kz' | 'en'>('ru');
 
-  // Состояния редактора
-  const [title, setTitle] = useState("");
-  const [excerpt, setExcerpt] = useState("");
+  // Глобальные настройки (общие для всех языков)
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("news");
+
+  // Локализованные стейты текстов
+  const [title, setTitle] = useState("");
+  const [titleKz, setTitleKz] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  
+  const [excerpt, setExcerpt] = useState("");
+  const [excerptKz, setExcerptKz] = useState("");
+  const [excerptEn, setExcerptEn] = useState("");
+
+  // Локализованные массивы блоков конструктора
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [blocksKz, setBlocksKz] = useState<Block[]>([]);
+  const [blocksEn, setBlocksEn] = useState<Block[]>([]);
+  
   const [selectedBlockType, setSelectedBlockType] = useState<BlockType>("paragraph");
 
-  // --- ЗАГРУЗКА ДАННЫХ ---
+  // Умные реактивные селекторы текущего рабочего набора данных
+  const currentBlocks = editorLang === 'ru' ? blocks : editorLang === 'kz' ? blocksKz : blocksEn;
+  const setCurrentBlocks = (newBlocks: Block[]) => {
+    if (editorLang === 'ru') setBlocks(newBlocks);
+    else if (editorLang === 'kz') setBlocksKz(newBlocks);
+    else setBlocksEn(newBlocks);
+  };
+
   const { data: equipmentList = [] } = useQuery({
     queryKey: ["equipment-list-for-news"],
     queryFn: async () => {
@@ -57,28 +76,54 @@ function AdminNewsPage() {
     },
   });
 
-  // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ЭКРАНОВ ---
   const openCreateNew = () => {
     setEditingId(null);
-    setTitle(""); setExcerpt(""); setImageUrl(""); setCategory("news"); setBlocks([]);
+    setEditorLang('ru');
+    setImageUrl(""); setCategory("news");
+    setTitle(""); setTitleKz(""); setTitleEn("");
+    setExcerpt(""); setExcerptKz(""); setExcerptEn("");
+    setBlocks([]); setBlocksKz([]); setBlocksEn([]);
     setView('editor');
   };
 
   const openEdit = (article: any) => {
     setEditingId(article.id);
-    setTitle(article.title);
-    setExcerpt(article.excerpt);
+    setEditorLang('ru');
     setImageUrl(article.image_url || "");
     setCategory(article.category);
     
-    // Умная парсилка старых текстов
+    setTitle(article.title || "");
+    setTitleKz(article.title_kz || "");
+    setTitleEn(article.title_en || "");
+    
+    setExcerpt(article.excerpt || "");
+    setExcerptKz(article.excerpt_kz || "");
+    setExcerptEn(article.excerpt_en || "");
+    
+    // Безопасный парсинг основного (RU) контента
     try {
       const parsed = JSON.parse(article.content);
       setBlocks(Array.isArray(parsed) ? parsed : []);
     } catch (e) {
-      // Если это старая статья (просто текст), превращаем ее в блок-параграф
-      setBlocks([{ id: 'legacy-1', type: 'paragraph', content: article.content }]);
+      setBlocks([{ id: 'legacy-1', type: 'paragraph', content: article.content || "" }]);
     }
+
+    // Парсинг KZ контента
+    try {
+      const parsed = JSON.parse(article.content_kz);
+      setBlocksKz(Array.isArray(parsed) ? parsed : []);
+    } catch (e) {
+      setBlocksKz([]);
+    }
+
+    // Парсинг EN контента
+    try {
+      const parsed = JSON.parse(article.content_en);
+      setBlocksEn(Array.isArray(parsed) ? parsed : []);
+    } catch (e) {
+      setBlocksEn([]);
+    }
+
     setView('editor');
   };
 
@@ -86,37 +131,50 @@ function AdminNewsPage() {
     setView('list');
   };
 
-  // --- ЛОГИКА РЕДАКТОРА ---
+  // Все операции с конструктором автоматически применяются к активному языку
   const addBlock = () => {
     const newBlock: Block = {
       id: Math.random().toString(36).substr(2, 9),
       type: selectedBlockType,
       content: selectedBlockType === 'equipment' && equipmentList.length > 0 ? equipmentList[0].id : ""
     };
-    setBlocks([...blocks, newBlock]);
+    setCurrentBlocks([...currentBlocks, newBlock]);
   };
 
   const updateBlock = (id: string, newContent: string) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, content: newContent } : b));
+    setCurrentBlocks(currentBlocks.map(b => b.id === id ? { ...b, content: newContent } : b));
   };
 
   const removeBlock = (id: string) => {
-    setBlocks(blocks.filter(b => b.id !== id));
+    setCurrentBlocks(currentBlocks.filter(b => b.id !== id));
   };
 
   const moveBlock = (index: number, direction: 'up' | 'down') => {
-    if ((direction === 'up' && index === 0) || (direction === 'down' && index === blocks.length - 1)) return;
-    const newBlocks = [...blocks];
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === currentBlocks.length - 1)) return;
+    const newBlocks = [...currentBlocks];
     const swapIndex = direction === 'up' ? index - 1 : index + 1;
     [newBlocks[index], newBlocks[swapIndex]] = [newBlocks[swapIndex], newBlocks[index]];
-    setBlocks(newBlocks);
+    setCurrentBlocks(newBlocks);
   };
 
   const saveArticle = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      const contentJson = JSON.stringify(blocks);
-      const payload = { title, excerpt, content: contentJson, image_url: imageUrl, category, is_published: true };
+      
+      const payload = { 
+        title, 
+        title_kz: titleKz || null,
+        title_en: titleEn || null,
+        excerpt, 
+        excerpt_kz: excerptKz || null,
+        excerpt_en: excerptEn || null,
+        content: JSON.stringify(blocks), 
+        content_kz: blocksKz.length > 0 ? JSON.stringify(blocksKz) : null,
+        content_en: blocksEn.length > 0 ? JSON.stringify(blocksEn) : null,
+        image_url: imageUrl, 
+        category, 
+        is_published: true 
+      };
 
       if (editingId) {
         const { error } = await supabase.from("articles").update(payload).eq("id", editingId);
@@ -155,14 +213,9 @@ function AdminNewsPage() {
     }
   };
 
-  // ============================================================================
-  // ЭКРАН 1: СПИСОК СТАТЕЙ
-  // ============================================================================
   if (view === 'list') {
     return (
       <div className="space-y-8 animate-in fade-in duration-500 pb-12 p-2">
-        
-        {/* HEADER */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b-4 border-slate-900 pb-6">
           <div>
             <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Медиа</h1>
@@ -176,12 +229,9 @@ function AdminNewsPage() {
           </Button>
         </div>
 
-        {/* LIST */}
         <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
           {isLoading ? (
-            <div className="p-6">
-              <div className="h-24 bg-slate-200 animate-pulse w-full" />
-            </div>
+            <div className="p-6"><div className="h-24 bg-slate-200 animate-pulse w-full" /></div>
           ) : articles.length === 0 ? (
             <div className="text-center py-20 bg-slate-50">
               <p className="font-bold uppercase tracking-widest text-xs text-slate-400">Публикаций пока нет</p>
@@ -190,8 +240,6 @@ function AdminNewsPage() {
             <div className="flex flex-col">
               {articles.map((article) => (
                 <div key={article.id} className="flex flex-col sm:flex-row items-stretch sm:items-center border-b-4 border-slate-900 last:border-b-0 p-4 sm:p-6 gap-4 hover:bg-slate-50 transition-colors">
-                  
-                  {/* Image */}
                   <div className="h-24 w-36 shrink-0 border-2 border-slate-900 bg-slate-200 overflow-hidden relative">
                     {article.image_url ? (
                       <img src={article.image_url} className="h-full w-full object-cover" alt="cover" />
@@ -200,7 +248,6 @@ function AdminNewsPage() {
                     )}
                   </div>
                   
-                  {/* Content */}
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <h3 className="font-black text-xl uppercase tracking-tight text-slate-900 truncate mb-2">{article.title}</h3>
                     <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-500">
@@ -212,7 +259,6 @@ function AdminNewsPage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-3 mt-4 sm:mt-0 sm:self-center">
                     <Button 
                       onClick={() => openEdit(article)}
@@ -236,23 +282,37 @@ function AdminNewsPage() {
     );
   }
 
-  // ============================================================================
-  // ЭКРАН 2: РЕДАКТОР СТАТЬИ
-  // ============================================================================
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-12 p-2">
       
-      {/* EDITOR HEADER */}
-      <div className="flex items-center gap-4 border-b-4 border-slate-900 pb-6">
-        <Button 
-          onClick={closeEditor} 
-          className="bg-white hover:bg-slate-100 text-slate-900 border-4 border-slate-900 h-12 w-12 p-0 shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all rounded-none"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{editingId ? "Редактор" : "Новый пост"}</h1>
-          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-1">Блочный конструктор материала</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-4 border-slate-900 pb-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={closeEditor} 
+            className="bg-white hover:bg-slate-100 text-slate-900 border-4 border-slate-900 h-12 w-12 p-0 shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all rounded-none"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{editingId ? "Редактор" : "Новый пост"}</h1>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-1">Блочный конструктор материала</p>
+          </div>
+        </div>
+
+        {/* БРУТАЛЬНЫЕ ПЕРЕКЛЮЧАТЕЛИ ЯЗЫКОВ КОНСТРУКТОРА */}
+        <div className="flex border-4 border-slate-900 bg-slate-100 p-1 shadow-[4px_4px_0_#0f172a] w-max self-start md:self-auto">
+          {(['ru', 'kz', 'en'] as const).map((lang) => (
+            <button
+              key={lang}
+              type="button"
+              onClick={() => setEditorLang(lang)}
+              className={`px-4 py-2 font-black text-xs uppercase tracking-widest transition-all ${
+                editorLang === lang ? 'bg-slate-900 text-white' : 'bg-transparent text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              {lang === 'ru' ? '🇷🇺 RU' : lang === 'kz' ? '🇰🇿 KZ' : '🇬🇧 EN'}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -261,22 +321,31 @@ function AdminNewsPage() {
         {/* ЛЕВАЯ КОЛОНКА (Настройки) */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
-            <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900">
+            <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900 flex justify-between items-center">
               <h2 className="text-lg font-black uppercase tracking-tight">Настройки</h2>
+              <span className="bg-white text-slate-900 text-[10px] font-black uppercase px-2 py-0.5 border border-slate-900 shadow-[1px_1px_0_#000]">
+                {editorLang} мод
+              </span>
             </div>
             <div className="p-4 md:p-6 space-y-5">
               
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Заголовок</Label>
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  Заголовок ({editorLang.toUpperCase()}) *
+                </Label>
                 <Input 
                   className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-bold" 
-                  value={title} 
-                  onChange={(e) => setTitle(e.target.value)} 
+                  value={editorLang === 'ru' ? title : editorLang === 'kz' ? titleKz : titleEn} 
+                  onChange={(e) => {
+                    if (editorLang === 'ru') setTitle(e.target.value);
+                    else if (editorLang === 'kz') setTitleKz(e.target.value);
+                    else if (editorLang === 'en') setTitleEn(e.target.value);
+                  }} 
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Тип материала</Label>
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Тип материала (Общий)</Label>
                 <select 
                   className="w-full h-12 px-4 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm outline-none focus:border-blue-600" 
                   value={category} 
@@ -288,16 +357,22 @@ function AdminNewsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Кратко (для превью)</Label>
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  Кратко для превью ({editorLang.toUpperCase()})
+                </Label>
                 <Textarea 
                   className="resize-none h-24 border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
-                  value={excerpt} 
-                  onChange={(e) => setExcerpt(e.target.value)} 
+                  value={editorLang === 'ru' ? excerpt : editorLang === 'kz' ? excerptKz : excerptEn} 
+                  onChange={(e) => {
+                    if (editorLang === 'ru') setExcerpt(e.target.value);
+                    else if (editorLang === 'kz') setExcerptKz(e.target.value);
+                    else if (editorLang === 'en') setExcerptEn(e.target.value);
+                  }} 
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Обложка (URL)</Label>
+                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Обложка URL (Общий)</Label>
                 <Input 
                   className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
                   placeholder="https://..." 
@@ -319,7 +394,7 @@ function AdminNewsPage() {
             disabled={saveArticle.isPending || !title || blocks.length === 0} 
             className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-300 text-white border-4 border-slate-900 h-16 rounded-none text-xl font-black uppercase tracking-widest shadow-[6px_6px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[4px_4px_0_#0f172a] transition-all"
           >
-            {saveArticle.isPending ? "Сохранение..." : editingId ? "СОХРАНИТЬ" : "ОПУБЛИКОВАТЬ"}
+            {saveArticle.isPending ? "Сохранение..." : editingId ? "СОХРАНИТЬ ВСЁ" : "ОПУБЛИКОВАТЬ ПОСТ"}
           </Button>
         </div>
 
@@ -327,9 +402,8 @@ function AdminNewsPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
             <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-lg font-black uppercase tracking-tight">Содержание</h2>
+              <h2 className="text-lg font-black uppercase tracking-tight">Содержание ({editorLang.toUpperCase()})</h2>
               
-              {/* Добавление блока */}
               <div className="flex gap-2 w-full sm:w-auto">
                 <select 
                   className="flex-1 sm:w-48 bg-slate-800 border-2 border-slate-700 text-white rounded-none px-3 py-2 text-xs font-bold uppercase tracking-widest outline-none"
@@ -353,22 +427,22 @@ function AdminNewsPage() {
 
             <div className="p-4 md:p-6 bg-slate-50 min-h-[400px]">
               <div className="space-y-4">
-                {blocks.length === 0 ? (
+                {currentBlocks.length === 0 ? (
                   <div className="text-center py-16 border-4 border-dashed border-slate-300 bg-white">
-                    <p className="font-bold uppercase tracking-widest text-xs text-slate-400">Конструктор пуст. Добавьте первый блок.</p>
+                    <p className="font-bold uppercase tracking-widest text-xs text-slate-400">
+                      Конструктор для {editorLang.toUpperCase()} пуст. Добавьте первый блок перевода.
+                    </p>
                   </div>
                 ) : (
-                  blocks.map((block, index) => (
+                  currentBlocks.map((block, index) => (
                     <div key={block.id} className="group relative flex flex-col sm:flex-row gap-3 p-4 bg-white border-2 border-slate-900 shadow-[4px_4px_0_#0f172a] hover:border-blue-600 transition-colors">
                       
-                      {/* Управление блоком */}
                       <div className="flex sm:flex-col gap-1 items-center bg-slate-100 p-1 border-2 border-slate-200 self-start">
                         <button onClick={() => moveBlock(index, 'up')} className="p-1 hover:bg-slate-200 text-slate-600"><ArrowUp className="h-4 w-4" /></button>
                         <GripVertical className="h-4 w-4 text-slate-400 hidden sm:block" />
                         <button onClick={() => moveBlock(index, 'down')} className="p-1 hover:bg-slate-200 text-slate-600"><ArrowDown className="h-4 w-4" /></button>
                       </div>
 
-                      {/* Содержимое блока */}
                       <div className="flex-1 space-y-2 min-w-0">
                         <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 w-max px-2 py-1 border border-slate-200">
                           {getBlockIcon(block.type)} {block.type}
@@ -376,7 +450,7 @@ function AdminNewsPage() {
 
                         {block.type === 'paragraph' && (
                           <Textarea 
-                            placeholder="Напишите текст... (Поддерживается Markdown: **жирный**, *курсив*)" 
+                            placeholder="Текст материала... (Поддерживается Markdown)" 
                             className="min-h-[120px] border-2 border-slate-200 rounded-none bg-white focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
                             value={block.content} 
                             onChange={(e) => updateBlock(block.id, e.target.value)} 
@@ -392,7 +466,7 @@ function AdminNewsPage() {
                         )}
                         {(block.type === 'image' || block.type === 'youtube') && (
                           <Input 
-                            placeholder="Вставьте ссылку (URL)..." 
+                            placeholder="URL ссылка..." 
                             className="border-2 border-slate-200 rounded-none bg-white h-12 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
                             value={block.content} 
                             onChange={(e) => updateBlock(block.id, e.target.value)} 
@@ -413,7 +487,6 @@ function AdminNewsPage() {
                         )}
                       </div>
 
-                      {/* Удаление блока */}
                       <button 
                         onClick={() => removeBlock(block.id)} 
                         className="sm:opacity-0 group-hover:opacity-100 p-2 bg-red-100 text-red-600 border-2 border-red-200 hover:bg-red-500 hover:text-white transition-all self-end sm:self-start mt-2 sm:mt-0"

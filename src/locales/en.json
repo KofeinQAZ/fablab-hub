@@ -1,0 +1,446 @@
+{
+  "nav": {
+    "home": "Home",
+    "booking": "Booking",
+    "media": "Media",
+    "projects": "Projects"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Sign Up"
+  },
+  "header": {
+    "platform": "Platform",
+    "notifications": {
+      "title": "Notifications",
+      "markAllRead": "Read all",
+      "empty": "No new notifications"
+    },
+    "user": {
+      "tbPassed": "Safety Passed",
+      "tbFailed": "No Safety",
+      "profile": "Profile",
+      "adminPanel": "Admin Panel",
+      "logout": "Log Out"
+    },
+    "mobile": {
+      "menu": "Menu",
+      "loggedInAs": "Logged in as"
+    }
+  },
+  "booking": {
+    "access": {
+      "authRequired": "Authorization required",
+      "tbRequired": "SAFETY BRIEFING REQUIRED",
+      "residentOnly": "RESIDENTS ONLY",
+      "basic": "General access",
+      "independent": "Safety briefing needed",
+      "mentor": "Work with mentor",
+      "resident": "Lab residents",
+      "unknown": "Unknown"
+    },
+    "pageTitle": "Booking",
+    "pageSubtitle": "Reservation of FabLab facilities and equipment",
+    "status": {
+      "briefingTitle": "Your briefing status",
+      "tbPassed": "SAFETY PASSED",
+      "tbFailed": "BRIEFING NOT PASSED",
+      "roleTitle": "Account role level",
+      "roleAdmin": "⚡ ADMINISTRATOR",
+      "roleResident": "👑 LAB RESIDENT",
+      "roleStudent": "👤 CAMPUS STUDENT",
+      "warning": "Attention: Booking of complex equipment (marked Safety/Mentor) will become available immediately after your request is confirmed by an administrator."
+    },
+    "tabs": {
+      "stationary": "Machines",
+      "portable": "Equipment"
+    },
+    "card": {
+      "noPhoto": "NO PHOTO",
+      "statusActive": "ACTIVE",
+      "statusRepair": "REPAIR",
+      "defaultDesc": "Reliable industrial workshop equipment to realize your projects.",
+      "maintenance": "MAINTENANCE",
+      "selectTime": "SELECT TIME"
+    }
+  },
+  "profile": {
+    "loading": "Loading personal dashboard...",
+    "roles": {
+      "student": "Student",
+      "resident": "Resident",
+      "admin": "Admin"
+    },
+    "briefingStatus": {
+      "passed": "PASSED",
+      "failed": "NOT PASSED"
+    },
+    "status": {
+      "pending": "Pending",
+      "active": "Active",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "header": {
+      "title": "Personal Dashboard",
+      "subtitle": "Manage your profile, bookings, and projects"
+    },
+    "tabs": {
+      "info": "Profile & Bookings",
+      "projects": "My Projects",
+      "applications": "Team Applications"
+    },
+    "info": {
+      "studentSubtitle": "Student",
+      "contactsTitle": "Contact Information",
+      "emailLabel": "Email for Collaboration",
+      "phoneLabel": "Phone Number",
+      "saving": "Saving...",
+      "saveBtn": "Save Contacts",
+      "accessLevels": "Access Levels",
+      "systemRole": "System Role",
+      "safetyBriefing": "Safety Briefing",
+      "accessGranted": "Machine Access Granted",
+      "accessBlocked": "Access Blocked",
+      "requestBriefingBtn": "Request Safety Briefing",
+      "requestResidencyBtn": "Apply for Residency",
+      "fullAccess": "✓ Full FabLab Catalog Available",
+      "myBookings": "My Bookings",
+      "loadingSchedule": "Loading schedule...",
+      "noBookings": "You have no active bookings yet",
+      "cancelBookingBtn": "Cancel",
+      "cancelConfirm": "Are you sure you want to cancel this booking?",
+      "cancelSuccess": "Booking successfully cancelled",
+      "cancelError": "Failed to cancel booking:",
+      "contactsSaved": "Contacts saved!",
+      "contactsError": "Save error:"
+    },
+    "briefingDialog": {
+      "title": "Safety Briefing Registration",
+      "noSlots": "No available slots this week",
+      "sending": "Sending...",
+      "confirmBtn": "CONFIRM REGISTRATION",
+      "selectTimeAlert": "Please select a date and time!",
+      "success": "Briefing request sent!"
+    },
+    "residencyDialog": {
+      "title": "Residency Application",
+      "descLabel": "Project Description *",
+      "descPlaceholder": "Tell us what startup or idea you plan to develop...",
+      "cvLabel": "Portfolio / CV Link *",
+      "cancelBtn": "Cancel",
+      "sending": "Sending...",
+      "sendBtn": "SUBMIT",
+      "errorDesc": "Please fill in the project description",
+      "errorCv": "Please enter a CV link",
+      "errorUrl": "Please enter a valid URL"
+    },
+    "projects": {
+      "title": "My Startups",
+      "addBtn": "Add Project",
+      "loading": "Loading showcase...",
+      "noProjects": "You have no created projects yet",
+      "mediaPlaceholder": "MEDIA",
+      "statusRejected": "❌ Rejected to archive",
+      "statusPending": "⏳ Pending moderation",
+      "statusApproved": "🚀 Published",
+      "updateBtn": "Update",
+      "deleteConfirm": "Delete project permanently?",
+      "deleteSuccess": "Project deleted!",
+      "updateSuccess": "Project updated!",
+      "createSuccess": "Project created! Awaiting moderation."
+    },
+    "projectForm": {
+      "editTitle": "Editing",
+      "createTitle": "New Startup",
+      "nameLabel": "Startup Name",
+      "namePlaceholder": "Enter name...",
+      "descLabel": "Detailed Project Description",
+      "descPlaceholder": "Describe the core idea, goals, and current progress...",
+      "urlLabel": "Cover Link (URL)",
+      "statusLabel": "Current Development Status",
+      "statusIdea": "💡 Idea (conceptual stage)",
+      "statusInProgress": "⚙️ In Progress (active development)",
+      "statusCompleted": "✅ Completed",
+      "lookingForTeam": "Expanding Team / Looking for Members",
+      "rolesLabel": "Who do you need? (comma separated roles)",
+      "rolesPlaceholder": "Frontend, Engineer, 3D Modeler...",
+      "saving": "Saving...",
+      "saveBtn": "SAVE PROJECT"
+    },
+    "updateForm": {
+      "title": "Publish Update",
+      "textLabel": "Development Log Text (Devlog)",
+      "textPlaceholder": "What's new in the project? Briefly describe the changes...",
+      "publishing": "Publishing...",
+      "publishBtn": "PUBLISH UPDATE",
+      "success": "Update published!"
+    },
+    "applications": {
+      "title": "Join Requests",
+      "loading": "Checking lists...",
+      "noApps": "No incoming applications for your vacancies yet",
+      "projectLabel": "Project:",
+      "acceptBtn": "Accept",
+      "rejectBtn": "Reject",
+      "statusUpdated": "Application status updated",
+      "notifyAcceptTitle": "🎉 Application Accepted!",
+      "notifyRejectTitle": "😔 Application Rejected",
+      "notifyAcceptMsg": "The author of project \"{{title}}\" accepted your application to join the team! Contact them to get started.",
+      "notifyRejectMsg": "Your application for project \"{{title}}\" was rejected."
+    },
+    "danger": {
+      "title": "⚠️ Danger Zone",
+      "desc": "These actions are irreversible. Once your account is deleted, all your data will be permanently lost.",
+      "btn": "DELETE ACCOUNT PERMANENTLY",
+      "dialogTitle": "Confirm Deletion",
+      "dialogWarning": "⚠️ This action is irreversible! All your data, bookings, and projects will be deleted.",
+      "inputLabel": "Enter the word \"{{keyword}}\" to confirm",
+      "keyword": "DELETE",
+      "keywordError": "Enter the word '{{keyword}}' to confirm",
+      "cancelBtn": "Cancel",
+      "deleting": "Deleting...",
+      "confirmBtn": "DELETE ACCOUNT",
+      "success": "Account successfully deleted",
+      "error": "Error deleting account:"
+    }
+  },
+  "news": {
+    "loading": "Gathering fresh news...",
+    "header": {
+      "title": "Journal",
+      "subtitle": "Useful guides, announcements, and lab stories."
+    },
+    "search": {
+      "placeholder": "SEARCH ARTICLES..."
+    },
+    "tabs": {
+      "all": "All",
+      "news": "News",
+      "guides": "Guides"
+    },
+    "empty": {
+      "title": "Nothing found",
+      "desc": "Try changing your query or resetting the filters.",
+      "resetBtn": "Reset search"
+    },
+    "badge": {
+      "news": "News",
+      "article": "Article"
+    },
+    "dialog": {
+      "srTitle": "View article"
+    },
+    "article": {
+      "adminAuthor": "FabLab Administration",
+      "youtubeError": "Error: Invalid YouTube link",
+      "equipDefaultName": "Equipment",
+      "equipAvailable": "Available in the workshop",
+      "bookBtn": "Book Now"
+    }
+  },
+  "projects_page": {
+    "status": {
+      "completed": "Completed",
+      "idea": "Idea",
+      "inProgress": "In Progress"
+    },
+    "header": {
+      "title": "Showcase",
+      "subtitle": "Create things, find a team, and grow."
+    },
+    "search": {
+      "placeholder": "SEARCH IDEAS..."
+    },
+    "tabs": {
+      "all": "All",
+      "team": "Recruiting",
+      "my": "My Projects"
+    },
+    "banner": {
+      "title": "Want to publish your startup?",
+      "btn": "TO PROFILE"
+    },
+    "empty": "No projects found",
+    "card": {
+      "updates": "upd.",
+      "studentAuthor": "Student",
+      "lookingFor": "Looking for",
+      "joinBtn": "Join"
+    },
+    "dialog": {
+      "srTitle": "View Project",
+      "aboutTitle": "About the Project",
+      "contactsTitle": "Contact Information",
+      "emailBtn": "Send Email",
+      "phoneBtn": "Telegram / Phone",
+      "contactsHidden": "Contacts hidden",
+      "devlogTitle": "Devlog",
+      "recruitingTitle": "Looking for team members!",
+      "wantToJoinBtn": "I want to join"
+    },
+    "apply": {
+      "title": "Submit Application",
+      "profileLabel": "Sending from Profile",
+      "letterLabel": "Cover Letter",
+      "letterPlaceholder": "What are your skills and how can you help the project...",
+      "sending": "Sending...",
+      "submitBtn": "SUBMIT APPLICATION"
+    },
+    "notify": {
+      "title": "New team application 👥",
+      "message": "User {{name}} wants to join your project \"{{project}}\". Go to your Dashboard to check the application!"
+    },
+    "applySuccess": "Application sent successfully!",
+    "applyError": "Error: {{error}}"
+  },
+  "landing": {
+    "hero": {
+      "badge": "№1 IN THE UNIVERSITY",
+      "subtitle1": "Modern coworking",
+      "subtitle2": "for engineers",
+      "ctaDesc": "3D printing, CNC machines, benchwork zone, soldering and electronics",
+      "ctaTitle": "BOOK EQUIPMENT ONLINE",
+      "ctaBtn": "GO TO BOOKING"
+    },
+    "tech": {
+      "title": "Technologies",
+      "subtitle": "Professional equipment for solving real engineering problems",
+      "items": {
+        "print": "3D Printing",
+        "electronics": "Electronics",
+        "lock": "Benchwork",
+        "solder": "Soldering",
+        "cnc": "CNC Machines"
+      }
+    },
+    "bento": {
+      "equipBadge": "Equipment Fleet",
+      "equipTitle1": "Thousands of parts.",
+      "equipTitle2": "One printer.",
+      "equipDesc": "Get access to a fleet of modern 3D printers. From basic PLA to complex engineering plastics — everything is booked online.",
+      "processBadge": "Processes",
+      "processTitle1": "Smart",
+      "processTitle2": "booking",
+      "processDesc": "No more paper logbooks. Interactive schedule, access control, and automated notifications."
+    },
+    "cta": {
+      "title1": "From blueprint",
+      "title2": "to startup",
+      "desc": "FabLab is more than just machines. It is a place where you can build a team, secure a grant, and launch a real business right inside the university.",
+      "btn": "Go to Showcase"
+    },
+    "atmosphere": {
+      "title": "Atmosphere",
+      "subtitle": "A workspace where the future is created with your own hands",
+      "mainHall": "Main Hall",
+      "teams": "Teams",
+      "cncPark": "Machine Park"
+    },
+    "whyUs": {
+      "title": "Why Us",
+      "safetyTitle": "Safety",
+      "safetyDesc": "Mandatory briefing and tests. Access to complex equipment is granted only after passing safety protocols.",
+      "precisionTitle": "Precision",
+      "precisionDesc": "Industrial CNC machines, laser cutters, and calibrated 3D printers for perfect tolerances.",
+      "communityTitle": "Community",
+      "communityDesc": "Work side by side with the university's brightest minds. Exchange experience and create collaborations.",
+      "mentorTitle": "Mentorship",
+      "mentorDesc": "Lab engineers are always ready to advise on material selection and model optimization.",
+      "showcaseTitle": "Showcase",
+      "showcaseDesc": "Publish your ideas, attract investors, and find missing specialists for your team.",
+      "locationTitle": "Location",
+      "locationDesc": "The laboratory is located right in the heart of the Satbayev University campus."
+    },
+    "footer": {
+      "desc": "Your ideas. Our equipment. The launchpad for startups.",
+      "contacts": "Contacts",
+      "address": "Address",
+      "addressValue1": "Almaty, 22 Satpayev St.",
+      "addressValue2": "Main Building"
+    }
+  },
+  "booking_dialog": {
+    "headerSubtitle": "Booking for {{date}}",
+    "mentorRequiredBadge": "MENTOR REQUIRED",
+    "warningMentor": "High-risk machine. Only duty mentor working hours are available. Application is submitted for manual confirmation.",
+    "labels": {
+      "selectDate": "1. Select Date",
+      "workingTime": "2. Working Time",
+      "startSlot": "3. Start Slot"
+    },
+    "duration": {
+      "1": "1 HOUR",
+      "2": "2 HOURS",
+      "3": "3 HOURS"
+    },
+    "slots": {
+      "busy": "BUSY",
+      "noMentor": "NO MENTOR",
+      "past": "PAST"
+    },
+    "totalSlot": "Total slot:",
+    "btn": {
+      "loading": "LOADING...",
+      "sendRequest": "SEND REQUEST",
+      "confirmBooking": "CONFIRM BOOKING"
+    },
+    "toast": {
+      "requestSent": "Application sent to mentor!",
+      "bookingCreated": "Booking successfully created!"
+    },
+    "errors": {
+      "alreadyBusy": "This time slot is already taken! Please refresh the page.",
+      "noPermission": "You do not have permission to perform this action"
+    }
+  },
+  "login": {
+    "backToHome": "Back to Home",
+    "platformAuth": "Platform Auth",
+    "title": "Welcome",
+    "subtitle": "Sign in or register to continue.",
+    "tabSignIn": "Sign In",
+    "tabSignUp": "Sign Up",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordHint": "Secure password: min 8 characters, at least one digit and one special character.",
+    "btnSignIn": "Sign In",
+    "btnSignInLoading": "Signing in...",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "John Doe",
+    "phoneLabel": "Phone Number",
+    "btnSignUp": "Create Account",
+    "btnSignUpLoading": "Creating...",
+    "toasts": {
+      "validationError": "Please check the form fields",
+      "signInSuccess": "Signed in successfully",
+      "signInError": "An error occurred during sign in",
+      "signUpSuccessTitle": "✅ Account created successfully!",
+      "signUpSuccessDesc": "We have sent an email to your address. Please click the link inside the email to activate your account and access the platform!",
+      "signUpError": "An error occurred during registration"
+    },
+    "validation": {
+      "emailInvalid": "Enter a valid email",
+      "passwordRequired": "Enter a password",
+      "passwordTooLong": "Password is too long",
+      "passwordInvalidChars": "Password contains invalid characters",
+      "nameTooShort": "Name is too short",
+      "nameTooLong": "Name is too long",
+      "nameInvalidChars": "Name contains invalid characters",
+      "phoneInvalid": "Enter a valid phone number",
+      "phoneTooLong": "Phone number is too long",
+      "passwordMinLen": "Minimum 8 characters",
+      "passwordDigit": "Password must contain a digit",
+      "passwordSpecial": "Password must contain a special character"
+    }
+  },
+  "errorBoundary": {
+    "title": "Oops! Something went wrong. We're fixing it.",
+    "description": "Try refreshing the page. If the problem persists, contact the FabLab administrator.",
+    "reloadBtn": "Refresh Page"
+  },
+  "adminGuard": {
+    "accessDenied": "Access denied. Administrator privileges required"
+  }
+}
