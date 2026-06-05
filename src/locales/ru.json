@@ -453,7 +453,10 @@
       "signInError": "Произошла ошибка при входе",
       "signUpSuccessTitle": "✅ Account created successfully!",
       "signUpSuccessDesc": "We have sent an email to your address. Please click the link inside the email to activate your account and access the platform!",
-      "signUpError": "Произошла ошибка при регистрации"
+      "signUpError": "Произошла ошибка при регистрации",
+      "emailRequired": "Введите email для сброса",
+      "resetSuccess": "Ссылка для восстановления отправлена на почту",
+      "resetError": "Ошибка при отправке ссылки"
     },
     "validation": {
       "emailInvalid": "Введите корректный email",
@@ -477,5 +480,13 @@
   },
   "adminGuard": {
     "accessDenied": "Доступ запрещен. Требуются права администратора"
-  }
+  },
+  "forgotPassword": "Забыли пароль?",
+    "reset": {
+      "title": "Восстановление пароля",
+      "subtitle": "Введите ваш email, и мы отправим ссылку для сброса пароля.",
+      "btn": "Отправить ссылку",
+      "sending": "Отправка...",
+      "back": "Назад ко входу"
+    }
 }

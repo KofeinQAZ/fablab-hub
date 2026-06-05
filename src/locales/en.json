@@ -453,7 +453,10 @@
       "signInError": "An error occurred during sign in",
       "signUpSuccessTitle": "✅ Account created successfully!",
       "signUpSuccessDesc": "We have sent an email to your address. Please click the link inside the email to activate your account and access the platform!",
-      "signUpError": "An error occurred during registration"
+      "signUpError": "An error occurred during registration",
+      "emailRequired": "Enter email to reset password",
+      "resetSuccess": "Password reset link has been sent to your email",
+      "resetError": "Error sending reset link"
     },
     "validation": {
       "emailInvalid": "Enter a valid email",
@@ -477,5 +480,13 @@
   },
   "adminGuard": {
     "accessDenied": "Access denied. Administrator privileges required"
-  }
+  },
+  "forgotPassword": "Forgot password?",
+    "reset": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email, and we will send you a reset link.",
+      "btn": "Send Reset Link",
+      "sending": "Sending...",
+      "back": "Back to Sign In"
+    }
 }
