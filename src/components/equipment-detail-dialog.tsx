@@ -131,7 +131,7 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
         equipment_id: equipment.id,
         start_time: start.toISOString(),
         end_time: end.toISOString(),
-        status: isMentorRequired ? "pending" : "active", 
+        status: "pending", 
       }).select();
 
       if (error) throw new Error(t('booking_dialog.errors.alreadyBusy'));
@@ -141,11 +141,12 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
       }
     },
     onSuccess: () => {
-      toast.success(isMentorRequired ? t('booking_dialog.toast.requestSent') : t('booking_dialog.toast.bookingCreated'));
-      qc.invalidateQueries({ queryKey: ["final-booking-check"] });
-      onSuccess();
-      onClose();
-    },
+  // Меняем логику тоста, чтобы он всегда говорил об успешной отправке запроса
+  toast.success(t('booking_dialog.toast.requestSent', 'Заявка отправлена на подтверждение!'));
+  qc.invalidateQueries({ queryKey: ["final-booking-check"] });
+  onSuccess();
+  onClose();
+},
     onError: (err: any) => toast.error(err.message),
   });
 
