@@ -161,7 +161,7 @@ function LoginPage() {
     setResetLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/profile`, // Перенаправляем в профиль после клика по ссылке
+        redirectTo: `${window.location.origin}/update-password`, // Направляем на новую страничку
       });
       
       if (error) throw error;
