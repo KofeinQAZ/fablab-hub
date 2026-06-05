@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
-import { Rocket, Users, Pencil, Trash2, Plus, Megaphone, User, X, Calendar, Clock, AlertTriangle, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard } from "lucide-react";
+import { Rocket, Users, Pencil, Trash2, Plus, Megaphone, User, X, Calendar, Clock, AlertTriangle, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard, FileText, CheckCircle2, XCircle, Clock4, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_student/profile")({
   component: ProfilePage,
@@ -38,7 +38,6 @@ interface AuthData {
   profile: UserProfileData;
 }
 
-// Хелпер для фоллбэка языка в списке проектов
 const getLocalized = (obj: any, field: string, lang: string) => {
   if (!obj) return '';
   if (lang === 'ru') return obj[field] || '';
@@ -50,7 +49,8 @@ function ProfilePage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState<'info' | 'projects' | 'applications'>('info');
+  // Добавили новую вкладку 'my_applications'
+  const [activeTab, setActiveTab] = useState<'info' | 'projects' | 'applications' | 'my_applications'>('info');
   const [residencyDialogOpen, setResidencyDialogOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [cvUrl, setCvUrl] = useState("");
@@ -155,6 +155,27 @@ function ProfilePage() {
         .eq("projects.author_id", authData!.userId)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
+      return data || [];
+    },
+  });
+
+  // НОВЫЙ ЗАПРОС: Исходящие заявки (куда подался юзер)
+  const { data: myApplications = [], isLoading: myAppsLoading } = useQuery({
+    queryKey: ["my-outgoing-applications", authData?.userId],
+    enabled: !!authData?.userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("project_applications")
+        .select(`
+          *, 
+          projects!inner (
+            id, title, title_kz, title_en, author_id,
+            profiles:author_id (name, contact_email)
+          )
+        `)
+        .eq("applicant_id", authData!.userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
       return data || [];
     },
   });
@@ -286,7 +307,6 @@ function ProfilePage() {
 
   const saveProjectMutation = useMutation({
     mutationFn: async () => {
-      // Жесткая валидация URL перед сохранением проекта
       if (projImage.trim() && !isValidUrl(projImage.trim())) {
         throw new Error(t('profile.residencyDialog.errorUrl', 'Пожалуйста, введите корректный URL для обложки'));
       }
@@ -328,17 +348,17 @@ function ProfilePage() {
       const { error } = await supabase.from("project_applications").update({ status }).eq("id", app.id);
       if (error) throw error;
 
-      const title = status === 'accepted' ? t('profile.applications.notifyAcceptTitle') : t('profile.applications.notifyRejectTitle');
+      const title = status === 'accepted' ? t('profile.applications.notifyAcceptTitle', '✅ Заявка в команду принята!') : t('profile.applications.notifyRejectTitle', '❌ Заявка отклонена');
       const message = status === 'accepted'
-        ? t('profile.applications.notifyAcceptMsg', { title: app.projects.title })
-        : t('profile.applications.notifyRejectMsg', { title: app.projects.title });
+        ? t('profile.applications.notifyAcceptMsg', `Автор проекта "${app.projects.title}" одобрил вашу заявку. Вы теперь в команде!`)
+        : t('profile.applications.notifyRejectMsg', `К сожалению, автор проекта "${app.projects.title}" отклонил вашу заявку.`);
 
       await supabase.from("notifications").insert({
         user_id: app.applicant_id, title, message, type: "project"
       });
     },
     onSuccess: () => { 
-      toast.success(t('profile.applications.statusUpdated')); 
+      toast.success(t('profile.applications.statusUpdated', 'Статус заявки обновлен')); 
       queryClient.invalidateQueries({ queryKey: ["incoming-applications"] }); 
     }
   });
@@ -386,13 +406,14 @@ function ProfilePage() {
   const getStatusBadge = (status: string) => {
     const bStyle = "font-black uppercase tracking-widest text-[9px] border-2 border-slate-900 px-2 py-0.5 shadow-[2px_2px_0_#0f172a]";
     switch (status) {
-      case "pending": return <span className={`bg-amber-400 text-slate-900 ${bStyle}`}>{t('profile.status.pending')}</span>;
+      case "pending": return <span className={`bg-amber-400 text-slate-900 flex items-center gap-1 w-max ${bStyle}`}><Clock4 className="w-3 h-3"/> {t('profile.status.pending', 'Ожидает')}</span>;
       case "approved": 
-      case "active": return <span className={`bg-emerald-400 text-slate-900 ${bStyle}`}>{t('profile.status.active')}</span>;
-      case "rejected": return <span className={`bg-rose-500 text-white ${bStyle}`}>{t('profile.status.rejected')}</span>;
-      case "cancelled": return <span className={`bg-slate-300 text-slate-700 ${bStyle}`}>{t('profile.status.cancelled')}</span>;
-      case "completed": return <span className={`bg-blue-500 text-white ${bStyle}`}>{t('profile.status.completed')}</span>;
-      default: return <span className={`bg-white text-slate-900 ${bStyle}`}>{status}</span>;
+      case "accepted": 
+      case "active": return <span className={`bg-emerald-400 text-slate-900 flex items-center gap-1 w-max ${bStyle}`}><CheckCircle2 className="w-3 h-3"/> {t('profile.status.active', 'Принято')}</span>;
+      case "rejected": return <span className={`bg-rose-500 text-white flex items-center gap-1 w-max ${bStyle}`}><XCircle className="w-3 h-3"/> {t('profile.status.rejected', 'Отклонено')}</span>;
+      case "cancelled": return <span className={`bg-slate-300 text-slate-700 flex items-center gap-1 w-max ${bStyle}`}>{t('profile.status.cancelled')}</span>;
+      case "completed": return <span className={`bg-blue-500 text-white flex items-center gap-1 w-max ${bStyle}`}>{t('profile.status.completed')}</span>;
+      default: return <span className={`bg-white text-slate-900 flex items-center gap-1 w-max ${bStyle}`}>{status}</span>;
     }
   };
 
@@ -404,25 +425,31 @@ function ProfilePage() {
         <p className="text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm mt-2">{t('profile.header.subtitle')}</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2 p-1 bg-slate-900 border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] rounded-none w-full sm:w-max">
+      <div className="flex flex-col sm:flex-row gap-2 p-1 bg-slate-900 border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] rounded-none w-full flex-wrap">
         <button 
           onClick={() => setActiveTab('info')} 
-          className={`px-6 py-3 rounded-none text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'info' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
+          className={`px-4 lg:px-6 py-3 rounded-none text-[10px] lg:text-xs font-black uppercase tracking-widest transition-all flex-1 text-center sm:flex-none ${activeTab === 'info' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
         >
-          <User className="h-4 w-4 inline-block mr-2" /> {t('profile.tabs.info')}
+          <User className="h-4 w-4 inline-block md:mr-2" /> <span className="hidden md:inline">{t('profile.tabs.info')}</span>
         </button>
         <button 
           onClick={() => setActiveTab('projects')} 
-          className={`px-6 py-3 rounded-none text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'projects' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
+          className={`px-4 lg:px-6 py-3 rounded-none text-[10px] lg:text-xs font-black uppercase tracking-widest transition-all flex-1 text-center sm:flex-none ${activeTab === 'projects' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
         >
-          <Rocket className="h-4 w-4 inline-block mr-2" /> {t('profile.tabs.projects')}
+          <Rocket className="h-4 w-4 inline-block md:mr-2" /> <span className="hidden md:inline">{t('profile.tabs.projects')}</span>
         </button>
         <button 
           onClick={() => setActiveTab('applications')} 
-          className={`px-6 py-3 rounded-none text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === 'applications' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
+          className={`px-4 lg:px-6 py-3 rounded-none text-[10px] lg:text-xs font-black uppercase tracking-widest transition-all relative flex-1 text-center sm:flex-none ${activeTab === 'applications' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
         >
-          <Users className="h-4 w-4 inline-block mr-2" /> {t('profile.tabs.applications')}
+          <Users className="h-4 w-4 inline-block md:mr-2" /> <span className="hidden md:inline">{t('profile.tabs.applications')}</span>
           {incomingApplications.length > 0 && <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-rose-500 border-2 border-slate-900"></span>}
+        </button>
+        <button 
+          onClick={() => setActiveTab('my_applications')} 
+          className={`px-4 lg:px-6 py-3 rounded-none text-[10px] lg:text-xs font-black uppercase tracking-widest transition-all flex-1 text-center sm:flex-none ${activeTab === 'my_applications' ? 'bg-white text-slate-900' : 'bg-transparent text-slate-400 hover:text-white'}`}
+        >
+          <FileText className="h-4 w-4 inline-block md:mr-2" /> <span className="hidden md:inline">{t('profile.tabs.myApplications', 'My Applications')}</span>
         </button>
       </div>
 
@@ -596,33 +623,6 @@ function ProfilePage() {
               )}
             </div>
           </div>
-
-          <Dialog open={residencyDialogOpen} onOpenChange={setResidencyDialogOpen}>
-            <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[85vh] outline-none z-50">
-              <div className="bg-slate-900 p-5 flex justify-between items-start border-b-4 border-slate-900 text-white">
-                <DialogTitle className="text-xl font-black uppercase tracking-tighter">{t('profile.residencyDialog.title')}</DialogTitle>
-                <button onClick={() => setResidencyDialogOpen(false)} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a]">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="p-6 overflow-y-auto space-y-4">
-                <div className="space-y-1">
-                  <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.residencyDialog.descLabel')}</Label>
-                  <Textarea id="description" placeholder={t('profile.residencyDialog.descPlaceholder')} value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[120px] border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none" />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="cv_url" className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.residencyDialog.cvLabel')}</Label>
-                  <Input id="cv_url" type="url" placeholder="https://drive.google.com/..." value={cvUrl} onChange={(e) => setCvUrl(e.target.value)} className="h-11 border-2 border-slate-900 rounded-none bg-slate-50 font-bold focus-visible:ring-0 focus-visible:border-blue-600" />
-                </div>
-                <div className="flex gap-3 pt-4 border-t-2 border-slate-100 mt-4">
-                  <Button onClick={() => setResidencyDialogOpen(false)} variant="outline" className="flex-1 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">{t('profile.residencyDialog.cancelBtn')}</Button>
-                  <Button onClick={handleSubmitResidencyForm} disabled={submittingForm} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">
-                    {submittingForm ? t('profile.residencyDialog.sending') : t('profile.residencyDialog.sendBtn')}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
       )}
 
@@ -671,6 +671,7 @@ function ProfilePage() {
         </div>
       )}
 
+      {/* ВХОДЯЩИЕ ЗАЯВКИ (ДЛЯ АВТОРА ПРОЕКТА) */}
       {activeTab === 'applications' && (
         <div className="space-y-6">
           <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight border-b-2 border-slate-200 pb-4">{t('profile.applications.title')}</h2>
@@ -689,6 +690,80 @@ function ProfilePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* НОВАЯ ВКЛАДКА: ИСХОДЯЩИЕ ЗАЯВКИ (КУДА ПОДАЛСЯ ЮЗЕР) */}
+      {activeTab === 'my_applications' && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight border-b-2 border-slate-200 pb-4">
+            {t('profile.myApplications.title', 'My Team Applications')}
+          </h2>
+          
+          {myAppsLoading ? (
+            <p className="text-center font-bold text-slate-400 animate-pulse">{t('profile.applications.loading')}</p>
+          ) : myApplications.length === 0 ? (
+            <div className="text-center py-16 border-4 border-dashed border-slate-200 bg-white font-bold uppercase tracking-widest text-xs text-slate-400">
+              {t('profile.myApplications.empty', 'You have not submitted any project applications yet.')}
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {myApplications.map((app: any) => {
+                const projectTitle = getLocalized(app.projects, 'title', i18n.language);
+                const submitDate = new Date(app.created_at);
+                const authorEmail = app.projects?.profiles?.contact_email;
+
+                return (
+                  <div key={app.id} className="border-4 border-slate-900 bg-white p-4 md:p-6 shadow-[6px_6px_0_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4 pb-4 border-b-2 border-dashed border-slate-200">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('profile.myApplications.projectLabel', 'Project')}</p>
+                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight hover:text-blue-600 cursor-pointer transition-colors" onClick={() => navigate({to: '/projects'})}>{projectTitle}</h3>
+                      </div>
+                      <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+                        {getStatusBadge(app.status)}
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                          <Calendar className="w-3 h-3" /> {format(submitDate, 'd MMM yyyy', { locale: i18n.language === 'ru' ? ru : undefined })}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {app.role && (
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('profile.myApplications.roleLabel', 'Desired Role')}</p>
+                          <span className="bg-purple-100 text-purple-800 border-2 border-slate-900 font-black text-[10px] uppercase tracking-widest px-3 py-1">
+                            {app.role}
+                          </span>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('profile.myApplications.letterLabel', 'Cover Letter')}</p>
+                        <p className="text-sm font-medium text-slate-700 bg-slate-50 border-2 border-slate-200 p-3 italic">
+                          "{app.cover_letter}"
+                        </p>
+                      </div>
+
+                      {/* Если заявку приняли, показываем контакты автора (если есть) */}
+                      {app.status === 'accepted' && (
+                        <div className="pt-4 border-t-2 border-slate-100 mt-4">
+                          <p className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-2">🎉 {t('profile.myApplications.acceptedMsg', 'Your application was approved!')}</p>
+                          {authorEmail ? (
+                            <a href={`mailto:${authorEmail}`} className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-blue-600 text-white font-black uppercase tracking-widest text-xs h-10 px-6 border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] transition-all">
+                              <Mail className="w-4 h-4" /> {t('profile.myApplications.contactAuthorBtn', 'Contact Author')}
+                            </a>
+                          ) : (
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('profile.myApplications.noEmailMsg', 'The project author did not provide a contact email. Please wait for them to contact you.')}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -782,12 +857,19 @@ function ProfilePage() {
             </div>
             
             <Button 
-              onClick={() => saveProjectMutation.mutate()} 
-              disabled={!projTitle.ru.trim() || saveProjectMutation.isPending} 
-              className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black text-sm uppercase tracking-widest rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4"
-            >
-              {saveProjectMutation.isPending ? t('profile.projectForm.saving') : t('profile.projectForm.saveBtn')}
-            </Button>
+  onClick={() => saveProjectMutation.mutate()} 
+  disabled={
+    !projTitle.ru.trim() || 
+    !projDesc.ru.trim() || 
+    !projImage.trim() || 
+    !isValidUrl(projImage.trim()) || 
+    (projLooking && !projRoles.trim()) || 
+    saveProjectMutation.isPending
+  } 
+  className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black text-sm uppercase tracking-widest rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4 disabled:bg-slate-300 disabled:text-slate-500 disabled:border-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+>
+  {saveProjectMutation.isPending ? t('profile.projectForm.saving') : t('profile.projectForm.saveBtn')}
+</Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -4,16 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { AppHeader } from "@/components/app-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { 
-  Search, Rocket, Users, FolderKanban, CheckCircle2, UserPlus, 
+  Search, Rocket, Users, CheckCircle2, UserPlus, 
   X, User, Image as ImageIcon, Calendar, History, Megaphone, 
   Lightbulb, Settings, ArrowRight, Mail, Phone 
 } from "lucide-react";
@@ -73,6 +72,24 @@ function ProjectsPage() {
     },
   });
 
+  // НОВЫЙ ЗАПРОС: Получаем статусы заявок текущего юзера
+  const { data: myApplications = [] } = useQuery({
+    queryKey: ["my-applications-status", profile?.id],
+    enabled: !!profile?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("project_applications")
+        .select("project_id, status")
+        .eq("applicant_id", profile!.id);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getApplicationStatus = (projectId: string) => {
+    return myApplications.find(app => app.project_id === projectId)?.status;
+  };
+
   const filteredProjects = projects.filter((p) => {
     // Поиск по локализованным полям
     const searchLower = searchQuery.toLowerCase();
@@ -99,7 +116,7 @@ function ProjectsPage() {
       });
       if (error) throw error;
 
-      // Локализуем имя проекта для уведомления, если хотим
+      // Локализуем имя проекта для уведомления
       const projTitle = getLocalized(applyingToProject, 'title', i18n.language);
 
       await supabase.from("notifications").insert({
@@ -113,6 +130,8 @@ function ProjectsPage() {
       toast.success(t('projects_page.applySuccess'));
       setApplyingToProject(null);
       setCoverLetter("");
+      // Обновляем статусы заявок, чтобы кнопка сразу заблокировалась
+      qc.invalidateQueries({ queryKey: ["my-applications-status"] });
     },
     onError: (err: any) => toast.error(t('projects_page.applyError', { error: err.message }))
   });
@@ -244,13 +263,42 @@ function ProjectsPage() {
                             <span key={i} className="border-2 border-blue-200 bg-white text-blue-700 font-bold text-[10px] uppercase tracking-widest px-2 py-1 shadow-[2px_2px_0_#bfdbfe]">{role}</span>
                           ))}
                         </div>
+                        
                         {project.author_id !== profile?.id && (
-                          <Button 
-                            onClick={(e) => { e.stopPropagation(); setApplyingToProject(project); }} 
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 rounded-none font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
-                          >
-                            <UserPlus className="mr-2 h-4 w-4" /> {t('projects_page.card.joinBtn')}
-                          </Button>
+                          (() => {
+                            const appStatus = getApplicationStatus(project.id);
+                            
+                            if (appStatus === 'pending') {
+                              return (
+                                <div className="w-full bg-slate-200 text-slate-500 border-2 border-slate-300 rounded-none font-black uppercase tracking-widest text-[10px] py-3 text-center cursor-not-allowed">
+                                  {t('projects_page.appStatus.pending', 'Заявка на рассмотрении')}
+                                </div>
+                              );
+                            }
+                            if (appStatus === 'accepted' || appStatus === 'approved' || appStatus === 'active') {
+                              return (
+                                <div className="w-full bg-emerald-100 text-emerald-700 border-2 border-emerald-300 rounded-none font-black uppercase tracking-widest text-[10px] py-3 text-center flex items-center justify-center gap-2">
+                                  <CheckCircle2 className="w-4 h-4" /> {t('projects_page.appStatus.accepted', 'Вы в команде')}
+                                </div>
+                              );
+                            }
+                            if (appStatus === 'rejected') {
+                              return (
+                                <div className="w-full bg-red-100 text-red-700 border-2 border-red-300 rounded-none font-black uppercase tracking-widest text-[10px] py-3 text-center cursor-not-allowed flex items-center justify-center gap-2">
+                                  <X className="w-4 h-4" /> {t('projects_page.appStatus.rejected', 'Заявка отклонена')}
+                                </div>
+                              );
+                            }
+                            // Если статус null/undefined, показываем обычную кнопку
+                            return (
+                              <Button 
+                                onClick={(e) => { e.stopPropagation(); setApplyingToProject(project); }} 
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 rounded-none font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                              >
+                                <UserPlus className="mr-2 h-4 w-4" /> {t('projects_page.card.joinBtn')}
+                              </Button>
+                            );
+                          })()
                         )}
                       </div>
                     )}
@@ -373,16 +421,44 @@ function ProjectsPage() {
                   </div>
                   
                   {selectedProject.author_id !== profile?.id && (
-                    <Button 
-                      onClick={() => {
-                        const proj = selectedProject;
-                        setSelectedProject(null);
-                        setTimeout(() => setApplyingToProject(proj), 150); 
-                      }} 
-                      className="w-full h-16 bg-amber-400 hover:bg-amber-500 text-slate-900 border-4 border-slate-900 rounded-none font-black text-lg uppercase tracking-widest shadow-[6px_6px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
-                    >
-                      <UserPlus className="mr-3 h-6 w-6" /> {t('projects_page.dialog.wantToJoinBtn')}
-                    </Button>
+                    (() => {
+                      const appStatus = getApplicationStatus(selectedProject.id);
+                      
+                      if (appStatus === 'pending') {
+                        return (
+                          <div className="w-full h-16 bg-slate-200 text-slate-500 border-4 border-slate-300 rounded-none font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 cursor-not-allowed">
+                            {t('projects_page.appStatus.pending', 'Заявка на рассмотрении')}
+                          </div>
+                        );
+                      }
+                      if (appStatus === 'accepted' || appStatus === 'approved' || appStatus === 'active') {
+                        return (
+                          <div className="w-full h-16 bg-emerald-500 text-slate-900 border-4 border-slate-900 rounded-none font-black text-lg uppercase tracking-widest shadow-[6px_6px_0_#0f172a] flex items-center justify-center gap-3">
+                            <CheckCircle2 className="w-6 h-6" /> {t('projects_page.appStatus.accepted', 'Вы в команде')}
+                          </div>
+                        );
+                      }
+                      if (appStatus === 'rejected') {
+                        return (
+                          <div className="w-full h-16 bg-red-100 text-red-700 border-4 border-red-300 rounded-none font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 cursor-not-allowed">
+                            <X className="w-6 h-6" /> {t('projects_page.appStatus.rejected', 'Заявка отклонена')}
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <Button 
+                          onClick={() => {
+                            const proj = selectedProject;
+                            setSelectedProject(null);
+                            setTimeout(() => setApplyingToProject(proj), 150); 
+                          }} 
+                          className="w-full h-16 bg-amber-400 hover:bg-amber-500 text-slate-900 border-4 border-slate-900 rounded-none font-black text-lg uppercase tracking-widest shadow-[6px_6px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                        >
+                          <UserPlus className="mr-3 h-6 w-6" /> {t('projects_page.dialog.wantToJoinBtn')}
+                        </Button>
+                      );
+                    })()
                   )}
                 </div>
               )}

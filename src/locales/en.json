@@ -89,7 +89,18 @@
     "tabs": {
       "info": "Profile & Bookings",
       "projects": "My Projects",
-      "applications": "Team Applications"
+      "applications": "Team Applications",
+      "myApplications": "My Applications"
+    },
+    "myApplications": {
+      "title": "My Team Applications",
+      "empty": "You have not submitted any project applications yet.",
+      "projectLabel": "Project",
+      "roleLabel": "Desired Role",
+      "letterLabel": "Cover Letter",
+      "acceptedMsg": "Your application was approved!",
+      "contactAuthorBtn": "Contact Author",
+      "noEmailMsg": "The project author did not provide a contact email. Please wait for them to contact you."
     },
     "info": {
       "studentSubtitle": "Student",
@@ -359,6 +370,30 @@
       "address": "Address",
       "addressValue1": "Almaty, 22 Satpayev St.",
       "addressValue2": "Main Building"
+    },
+    "partners": {
+      "title": "OUR PARTNERS",
+      "subtitle": "COMPANIES THAT TRUST US"
+    },
+    "sdg": {
+      "title": "Sustainable Development Goals (SDGs)",
+      "subtitle": "FabLab Satbayev actively supports the university's global strategy within the framework of UN initiatives",
+      "miniTitle": "Sustainable Development Goals",
+      "goal4": {
+        "badge": "Quality Education",
+        "title": "Quality Education",
+        "desc": "We provide open access to digital manufacturing. We train students in practical engineering, prototyping, and operating industrial equipment."
+      },
+      "goal7": {
+        "badge": "Clean Energy",
+        "title": "Affordable & Clean Energy",
+        "desc": "We stimulate the development of student projects in the GreenTech field. We help build prototypes of energy-efficient systems and renewable energy sources."
+      },
+      "goal9": {
+        "badge": "Innovation & Infrastructure",
+        "title": "Industry & Innovation",
+        "desc": "We develop a reliable hardware infrastructure for startups. We help transform theoretical ideas into market-ready technological products."
+      }
     }
   },
   "booking_dialog": {

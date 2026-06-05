@@ -20,7 +20,7 @@
       "tbPassed": "ТБ Сдан",
       "tbFailed": "Нет ТБ",
       "profile": "Личный кабинет",
-      "adminPanel": "Админ-панель",
+      "adminPanel": "Admin Panel",
       "logout": "Выйти"
     },
     "mobile": {
@@ -89,7 +89,18 @@
     "tabs": {
       "info": "Профиль и Брони",
       "projects": "Мои проекты",
-      "applications": "Заявки в команду"
+      "applications": "Заявки в команду",
+      "myApplications": "Мои заявки"
+    },
+    "myApplications": {
+      "title": "Мои заявки в команды",
+      "empty": "Вы еще не подавали заявки в проекты.",
+      "projectLabel": "Проект",
+      "roleLabel": "Желаемая роль",
+      "letterLabel": "Текст заявки",
+      "acceptedMsg": "Ваша заявка одобрена!",
+      "contactAuthorBtn": "Написать автору",
+      "noEmailMsg": "Автор проекта не указал email для связи. Ждите, когда он напишет вам."
     },
     "info": {
       "studentSubtitle": "Студент",
@@ -332,7 +343,7 @@
       "btn": "Перейти на Витрину"
     },
     "atmosphere": {
-      "title": "Атмосфера",
+      "title": "Atmosphere",
       "subtitle": "Рабочее пространство, где создается будущее своими руками",
       "mainHall": "Основной зал",
       "teams": "Команды",
@@ -359,6 +370,30 @@
       "address": "Адрес",
       "addressValue1": "г. Алматы, ул. Сатпаева 22",
       "addressValue2": "Главный корпус"
+    },
+    "partners": {
+      "title": "НАШИ ПАРТНЕРЫ",
+      "subtitle": "КОМПАНИИ, КОТОРЫЕ НАМ ДОВЕРЯЮТ"
+    },
+    "sdg": {
+      "title": "Цели устойчивого развития (ЦУР)",
+      "subtitle": "FabLab Satbayev активно поддерживает глобальную стратегию университета в рамках инициатив ООН",
+      "miniTitle": "Sustainable Development Goals",
+      "goal4": {
+        "badge": "Качественное образование",
+        "title": "Quality Education",
+        "desc": "Обеспечиваем открытый доступ к цифровому производству. Обучаем студентов практической инженерии, прототипированию и работе на промышленном оборудовании."
+      },
+      "goal7": {
+        "badge": "Чистая энергия",
+        "title": "Affordable & Clean Energy",
+        "desc": "Стимулируем разработку студенческих проектов в сфере GreenTech. Помогаем собирать прототипы энергоэффективных систем и возобновляемых источников."
+      },
+      "goal9": {
+        "badge": "Инновации и инфраструктура",
+        "title": "Industry & Innovation",
+        "desc": "Развиваем надежную hardware-инфраструктуру для стартапов. Помогаем трансформировать теоретические идеи в готовые к рынку технологические продукты."
+      }
     }
   },
   "booking_dialog": {
@@ -416,8 +451,8 @@
       "validationError": "Проверьте корректность полей",
       "signInSuccess": "Вход выполнен",
       "signInError": "Произошла ошибка при входе",
-      "signUpSuccessTitle": "✅ Аккаунт успешно создан!",
-      "signUpSuccessDesc": "Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!",
+      "signUpSuccessTitle": "✅ Account created successfully!",
+      "signUpSuccessDesc": "We have sent an email to your address. Please click the link inside the email to activate your account and access the platform!",
       "signUpError": "Произошла ошибка при регистрации"
     },
     "validation": {
