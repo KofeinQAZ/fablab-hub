@@ -44,7 +44,7 @@
     "status": {
       "briefingTitle": "Сіздің нұсқама мәртебеңіз",
       "tbPassed": "ҚТ ӨТТІ",
-      "tbFailed": "НҰСҚАМА ТАПСЫРЫЛМАДЫ",
+      "tbFailed": "ҚТ ТАПСЫРЫЛМАДЫ",
       "roleTitle": "Аккаунт рөлінің деңгейі",
       "roleAdmin": "⚡ АДМИНИСТРАТОР",
       "roleResident": "👑 ЗЕРТХАНА РЕЗИДЕНТІ",
@@ -289,7 +289,7 @@
       "contactsHidden": "Байланыстар жасырылған",
       "devlogTitle": "Девлог",
       "recruitingTitle": "Командаға адам іздейміз!",
-      "wantToJoinBtn": "Командаға қос"
+      "wantToJoinBtn": "Командаға қосылу"
     },
     "apply": {
       "title": "Өтінім беру",

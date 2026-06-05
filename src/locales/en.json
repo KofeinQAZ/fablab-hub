@@ -43,8 +43,8 @@
     "pageSubtitle": "Reservation of FabLab facilities and equipment",
     "status": {
       "briefingTitle": "Your briefing status",
-      "tbPassed": "SAFETY PASSED",
-      "tbFailed": "BRIEFING NOT PASSED",
+      "tbPassed": "Safety briefing completed",
+      "tbFailed": " Safety briefing not completed",
       "roleTitle": "Account role level",
       "roleAdmin": "⚡ ADMINISTRATOR",
       "roleResident": "👑 LAB RESIDENT",
