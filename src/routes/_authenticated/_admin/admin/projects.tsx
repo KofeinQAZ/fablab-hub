@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { 
   Rocket, Calendar, User, CheckCircle, XCircle, Mail, Archive, 
-  FolderKanban, Undo2, Users, Activity, AlertCircle, CheckSquare 
+  FolderKanban, Undo2, Users, Activity, AlertCircle, CheckSquare, X 
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/projects")({
@@ -55,7 +55,7 @@ function AdminProjectsPage() {
   const completedProjects = projects.filter(p => p.is_approved && p.status === 'completed');
   const archivedProjects = projects.filter(p => p.is_rejected);
 
-  // МУТАЦИИ С УВЕДОМЛЕНИЯМИ (Без изменений)
+  // МУТАЦИИ С УВЕДОМЛЕНИЯМИ
   const approveProject = useMutation({
     mutationFn: async (project: any) => {
       const { error } = await supabase.from("projects").update({ is_approved: true, is_rejected: false }).eq("id", project.id);
@@ -128,7 +128,7 @@ function AdminProjectsPage() {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12 p-2 flex flex-col h-[calc(100vh-80px)]">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12 p-2 flex flex-col h-auto md:h-[calc(100vh-80px)]">
       
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b-4 border-slate-900 pb-6 shrink-0">
@@ -193,10 +193,10 @@ function AdminProjectsPage() {
         </div>
       ) : (
         /* КАНБАН ДОСКА */
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden min-h-[500px]">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 md:overflow-hidden min-h-[500px]">
           
           {/* КОЛОНКА 1: ОЖИДАЮТ */}
-          <div className="flex flex-col bg-slate-50 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] overflow-hidden">
+          <div className="flex flex-col bg-slate-50 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] overflow-hidden h-[450px] md:h-auto">
             <div className="p-4 border-b-4 border-slate-900 bg-slate-900 text-white shrink-0 flex items-center justify-between">
               <h2 className="font-black uppercase tracking-widest text-xs flex items-center gap-3">
                 <span className="w-3 h-3 bg-amber-400 border border-slate-900"></span> На проверке
@@ -210,7 +210,7 @@ function AdminProjectsPage() {
           </div>
 
           {/* КОЛОНКА 2: В РАЗРАБОТКЕ */}
-          <div className="flex flex-col bg-slate-50 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] overflow-hidden">
+          <div className="flex flex-col bg-slate-50 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] overflow-hidden h-[450px] md:h-auto">
             <div className="p-4 border-b-4 border-slate-900 bg-slate-900 text-white shrink-0 flex items-center justify-between">
               <h2 className="font-black uppercase tracking-widest text-xs flex items-center gap-3">
                 <span className="w-3 h-3 bg-blue-500 border border-slate-900"></span> В разработке
@@ -224,7 +224,7 @@ function AdminProjectsPage() {
           </div>
 
           {/* КОЛОНКА 3: ЗАВЕРШЕННЫЕ */}
-          <div className="flex flex-col bg-slate-50 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] overflow-hidden">
+          <div className="flex flex-col bg-slate-50 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] overflow-hidden h-[450px] md:h-auto">
             <div className="p-4 border-b-4 border-slate-900 bg-slate-900 text-white shrink-0 flex items-center justify-between">
               <h2 className="font-black uppercase tracking-widest text-xs flex items-center gap-3">
                 <span className="w-3 h-3 bg-emerald-400 border border-slate-900"></span> Успех
@@ -242,36 +242,42 @@ function AdminProjectsPage() {
 
       {/* МОДАЛКА ПРОСМОТРА */}
       <Dialog open={!!selectedProject} onOpenChange={(v) => !v && setSelectedProject(null)}>
-        <DialogContent className="max-w-3xl border-4 border-slate-900 bg-white p-0 rounded-none shadow-[8px_8px_0_#0f172a] overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogContent className="w-full max-w-3xl border-4 border-slate-900 bg-white p-0 rounded-none shadow-[8px_8px_0_#0f172a] flex flex-col h-[90vh] md:h-[85vh]">
           
-          <div className="bg-slate-900 p-6 flex justify-between items-start border-b-4 border-slate-900">
+          <div className="bg-slate-900 p-4 md:p-6 flex justify-between items-start border-b-4 border-slate-900 shrink-0">
             <div>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tighter text-white">{selectedProject?.title}</DialogTitle>
-              <div className="flex items-center gap-4 mt-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              <DialogTitle className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white pr-8">{selectedProject?.title}</DialogTitle>
+              <div className="flex items-center gap-4 mt-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                 <span className="flex items-center gap-2"><User className="h-4 w-4 text-blue-400" /> {selectedProject?.profiles?.name}</span>
                 <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-amber-400" /> {selectedProject && new Date(selectedProject.created_at).toLocaleDateString("ru-RU")}</span>
               </div>
             </div>
+            <button 
+              onClick={() => setSelectedProject(null)} 
+              className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a] shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-slate-50">
             {selectedProject?.image_url && (
               <div className="border-4 border-slate-900 bg-white p-2">
-                <img src={selectedProject.image_url} alt="Cover" className="w-full h-64 object-cover" />
+                <img src={selectedProject.image_url} alt="Cover" className="w-full h-48 md:h-64 object-cover" />
               </div>
             )}
             
-            <div className="bg-white border-2 border-slate-900 p-6 shadow-[4px_4px_0_#0f172a]">
+            <div className="bg-white border-2 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a]">
               <h4 className="font-black text-xs uppercase tracking-widest text-slate-900 mb-4 flex items-center gap-2">
                 <Activity className="h-4 w-4 text-blue-600" /> Описание стартапа
               </h4>
-              <p className="text-slate-700 font-medium whitespace-pre-wrap leading-relaxed">
+              <p className="text-slate-700 font-medium whitespace-pre-wrap leading-relaxed text-sm md:text-base">
                 {selectedProject?.description}
               </p>
             </div>
 
             {selectedProject?.is_looking_for_team && (
-              <div className="bg-white border-2 border-slate-900 p-6 shadow-[4px_4px_0_#0f172a]">
+              <div className="bg-white border-2 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a]">
                 <h4 className="font-black text-xs uppercase tracking-widest text-slate-900 mb-4 flex items-center gap-2">
                   <Users className="h-4 w-4 text-purple-600" /> Вакансии в команду
                 </h4>
@@ -287,7 +293,7 @@ function AdminProjectsPage() {
 
             {/* КОНТАКТЫ АВТОРА */}
             {selectedProject?.profiles && (
-              <div className="bg-white border-2 border-slate-900 p-6 shadow-[4px_4px_0_#0f172a]">
+              <div className="bg-white border-2 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a]">
                 <h4 className="font-black text-xs uppercase tracking-widest text-slate-900 mb-4 flex items-center gap-2">
                   <Mail className="h-4 w-4 text-blue-600" /> Контакты автора
                 </h4>
@@ -297,8 +303,8 @@ function AdminProjectsPage() {
                       href={`mailto:${selectedProject.profiles.contact_email}`}
                       className="flex items-center gap-3 p-3 rounded-lg border-2 border-slate-200 hover:border-blue-600 hover:bg-blue-50 transition-all cursor-pointer group"
                     >
-                      <Mail className="h-4 w-4 text-blue-600 group-hover:text-blue-700" />
-                      <span className="font-semibold text-slate-900 group-hover:text-blue-700 break-all text-sm">
+                      <Mail className="h-4 w-4 text-blue-600 group-hover:text-blue-700 shrink-0" />
+                      <span className="font-semibold text-slate-900 group-hover:text-blue-700 break-all text-xs md:text-sm">
                         {selectedProject.profiles.contact_email}
                       </span>
                     </a>
@@ -313,8 +319,8 @@ function AdminProjectsPage() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 rounded-lg border-2 border-slate-200 hover:border-blue-600 hover:bg-blue-50 transition-all cursor-pointer group"
                     >
-                      <span className="font-black text-sm text-blue-600 group-hover:text-blue-700">✈️</span>
-                      <span className="font-semibold text-slate-900 group-hover:text-blue-700 break-all text-sm">
+                      <span className="font-black text-sm text-blue-600 group-hover:text-blue-700 shrink-0">✈️</span>
+                      <span className="font-semibold text-slate-900 group-hover:text-blue-700 break-all text-xs md:text-sm">
                         {selectedProject.profiles.contact_telegram}
                       </span>
                     </a>
@@ -327,27 +333,27 @@ function AdminProjectsPage() {
             )}
           </div>
 
-          {/* ПАНЕЛЬ УПРАВЛЕНИЯ */}
-          <div className="p-6 border-t-4 border-slate-900 bg-white flex flex-wrap gap-3">
+          {/* ПАНЕЛЬ УПРАВЛЕНИЯ ВНИЗУ */}
+          <div className="p-4 md:p-6 border-t-4 border-slate-900 bg-white flex flex-col sm:flex-row gap-3 shrink-0">
             {selectedProject?.is_rejected && (
-              <Button onClick={() => approveProject.mutate(selectedProject)} className="flex-1 min-w-[140px] bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
+              <Button onClick={() => approveProject.mutate(selectedProject)} className="w-full bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
                 <Undo2 className="h-4 w-4 mr-2" /> Восстановить
               </Button>
             )}
 
             {!selectedProject?.is_approved && !selectedProject?.is_rejected && (
-              <>
-                <Button onClick={() => approveProject.mutate(selectedProject)} className="flex-1 min-w-[140px] bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
+              <div className="flex gap-3 w-full">
+                <Button onClick={() => approveProject.mutate(selectedProject)} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
                   <CheckCircle className="h-4 w-4 mr-2" /> Одобрить
                 </Button>
-                <Button onClick={() => { if(confirm("Отклонить проект и убрать в архив?")) rejectProject.mutate(selectedProject); }} className="flex-1 min-w-[140px] bg-white hover:bg-red-50 text-red-600 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
+                <Button onClick={() => { if(confirm("Отклонить проект и убрать в архив?")) rejectProject.mutate(selectedProject); }} className="flex-1 bg-white hover:bg-red-50 text-red-600 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
                   <XCircle className="h-4 w-4 mr-2" /> Отклонить
                 </Button>
-              </>
+              </div>
             )}
 
             {selectedProject?.is_approved && (
-              <Button onClick={() => { if(confirm("Убрать проект в архив?")) rejectProject.mutate(selectedProject); }} className="flex-1 min-w-[140px] bg-white hover:bg-red-50 text-red-600 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
+              <Button onClick={() => { if(confirm("Убрать проект в архив?")) rejectProject.mutate(selectedProject); }} className="w-full bg-white hover:bg-red-50 text-red-600 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all py-6">
                 <Archive className="h-4 w-4 mr-2" /> В архив
               </Button>
             )}
