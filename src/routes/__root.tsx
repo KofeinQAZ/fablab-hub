@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalErrorBoundary } from "@/components/global-error-boundary";
+import { Footer } from "@/components/Footer"; // Импортируем наш новый глобальный футер
 
 // В Vite SPA стили импортируются просто так (без ?url)
 import "../styles.css";
@@ -81,7 +82,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
-  // Слушатель авторизации Supabase (ТВОЙ КОД - ВАЖНО!)
+  // Слушатель авторизации Supabase
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       router.invalidate();
@@ -92,7 +93,18 @@ function RootComponent() {
 
   return (
     <GlobalErrorBoundary>
-      <Outlet />
+      {/* Главный каркас приложения */}
+      <div className="flex min-h-screen flex-col relative">
+        
+        {/* Контент страницы (растягивается на всю свободную высоту) */}
+        <main className="flex-1 flex flex-col">
+          <Outlet />
+        </main>
+        
+        {/* Глобальный сквозной футер (всегда внизу) */}
+        <Footer />
+        
+      </div>
       <Toaster />
     </GlobalErrorBoundary>
   );

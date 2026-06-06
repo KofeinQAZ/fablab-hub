@@ -105,18 +105,17 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-3 md:px-8">
           
           {/* МЯГКИЙ ЛОГОТИП С ТЕКСТОМ ДЛЯ ВСЕХ УСТРОЙСТВ */}
-<Link to="/" onClick={closeMenu} className="flex min-w-0 items-center gap-2 md:gap-3 group shrink-1 overflow-hidden mr-2">
-  {/* Наш новый фирменный логотип вместо синего квадрата */}
-  <img 
-    src="/fablab-logo.png" 
-    alt="FabLab Logo" 
-    className="h-8 w-8 md:h-10 md:w-10 object-contain transition-transform duration-300 group-hover:scale-105"
-  />
-  <div className="min-w-0 flex flex-col">
-    <div className="truncate text-[11px] sm:text-sm md:text-base font-black uppercase tracking-tight text-slate-900 leading-none">FabLab Satbayev</div>
-    <div className="truncate text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase leading-tight tracking-widest text-slate-400 mt-0.5">Platform</div>
-  </div>
-</Link>
+          <Link to="/" onClick={closeMenu} className="flex min-w-0 items-center gap-2 md:gap-3 group shrink-1 overflow-hidden mr-2">
+            <img 
+              src="/fablab-logo.png" 
+              alt="FabLab Logo" 
+              className="h-8 w-8 md:h-10 md:w-10 object-contain transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="min-w-0 flex flex-col">
+              <div className="truncate text-[11px] sm:text-sm md:text-base font-black uppercase tracking-tight text-slate-900 leading-none">FabLab Satbayev</div>
+              <div className="truncate text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase leading-tight tracking-widest text-slate-400 mt-0.5">Platform</div>
+            </div>
+          </Link>
           
           {/* ЧИСТАЯ НАВИГАЦИЯ ДЛЯ DESKTOP СО СЛОВАРЕМ */}
           <nav className="hidden md:flex items-center gap-1">
@@ -134,7 +133,7 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
 
             {profile ? (
               <>
-                {/* КОЛОКОЛЬЧИК ТЕПЕРЬ ВИДЕН И НА МОБИЛЬНОМ */}
+                {/* КОЛОКОЛЬЧИК */}
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 md:h-10 md:w-10 p-0 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-sm shrink-0">
@@ -217,15 +216,6 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-
-                {/* МЯГКАЯ КНОПКА ГАМБУРГЕРА (MOBILE) */}
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  className="md:hidden relative h-8 w-8 p-0 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 transition-all shrink-0 ml-1"
-                >
-                  <Menu className="h-4 w-4" />
-                </Button>
               </>
             ) : (
               /* КНОПКИ ВХОДА СО СЛОВАРЕМ */
@@ -245,6 +235,15 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                 </Button>
               </div>
             )}
+
+            {/* МЯГКАЯ КНОПКА ГАМБУРГЕРА (MOBILE) — ВЫНЕСЕНА СЮДА! ТЕПЕРЬ ОНА ДОСТУПНА ВСЕМ */}
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden relative h-8 w-8 p-0 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 transition-all shrink-0 ml-1"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </header>
@@ -289,8 +288,8 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
               </Link>
             </div>
 
-            {/* Блок профиля */}
-            {profile && (
+            {/* Блок действий (Профиль или Вход/Регистрация) */}
+            {profile ? (
               <div className="mt-8 border-t border-slate-100 pt-6">
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div className="min-w-0">
@@ -321,6 +320,29 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                     <LogOut className="h-4 w-4" /> {t('header.user.logout', 'Выйти')}
                   </button>
                 </div>
+              </div>
+            ) : (
+              /* Кнопки входа для гостей в мобильном меню */
+              <div className="mt-8 border-t border-slate-100 pt-6 space-y-3">
+                <Button
+                  onClick={() => {
+                    closeMenu();
+                    navigate({ to: "/login" });
+                  }}
+                  variant="outline"
+                  className="w-full h-14 rounded-2xl border-2 border-slate-200 font-bold uppercase tracking-widest text-xs text-slate-700 hover:bg-slate-50"
+                >
+                  {t('auth.login', 'Вход')}
+                </Button>
+                <Button
+                  onClick={() => {
+                    closeMenu();
+                    navigate({ to: "/login", search: { mode: "signup" } as never });
+                  }}
+                  className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-widest text-xs shadow-md"
+                >
+                  {t('auth.register', 'Регистрация')}
+                </Button>
               </div>
             )}
           </div>
