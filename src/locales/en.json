@@ -488,5 +488,18 @@
       "btn": "Send Reset Link",
       "sending": "Sending...",
       "back": "Back to Sign In"
-    }
+    },
+  "creators": {
+    "btnPre": "Platform Development",
+    "btnMain": "About the Creators",
+    "modalTitle": "About Creators",
+    "heading": "We are Amira & Rasul",
+    "p1": "Creators of",
+    "p2": "Our goal is to develop convenient booking systems and digital solutions for various fields. We study how users interact with services and build tools that make the process simple, fast, and intuitive.",
+    "p3_start": "The",
+    "p3_middle": "booking system is one example of our work. The project started as a student initiative during our studies at",
+    "p3_end": "and eventually evolved into a full-fledged product.",
+    "p4": "is an independent project entirely conceived and developed by our team.",
+    "contacts": "Contact us"
+  }
 }

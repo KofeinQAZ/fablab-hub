@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wrench, Phone, Mail, MapPin, X, Send, Code2, Zap, Users } from "lucide-react";
+import { Wrench, Phone, Mail, MapPin, X, Send, Code2, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function Footer() {
@@ -46,45 +46,48 @@ export function Footer() {
 
         </div>
         
-        {/* Нижняя панель с копирайтом и кнопкой разработчиков */}
+        {/* Нижняя панель */}
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-slate-600 font-bold tracking-widest uppercase text-xs border-t-2 border-slate-800 pt-8">
-          <div>
+          
+          <div className="text-center md:text-left mb-2 md:mb-0 text-sm md:text-xs">
             © {new Date().getFullYear()} FABLAB SATBAYEV.
           </div>
           
-          {/* ЗАМЕТНАЯ КНОПКА РАЗРАБОТЧИКОВ */}
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="group flex items-center gap-3 bg-slate-800 border-2 border-slate-700 px-5 py-3 hover:border-blue-500 hover:bg-slate-800 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-[4px_4px_0_#3b82f6] hover:-translate-y-0.5 hover:-translate-x-0.5 active:translate-y-0 active:translate-x-0 active:shadow-none"
+            className="group w-full md:w-auto flex items-center justify-center md:justify-start gap-4 bg-slate-800 border-2 border-slate-700 p-3 sm:p-4 pr-6 sm:pr-8 hover:border-blue-500 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-[4px_4px_0_#3b82f6] hover:-translate-y-0.5 hover:-translate-x-0.5 active:translate-y-0 active:translate-x-0 active:shadow-none"
           >
-            <Zap className="w-4 h-4 text-blue-500 group-hover:animate-pulse" />
-            <span className="text-white font-black tracking-widest text-[10px] sm:text-xs">
-              Креативная команда
-            </span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="text-left flex flex-col justify-center">
+              <span className="block text-[10px] sm:text-xs text-slate-400 mb-1 uppercase tracking-widest leading-none">
+                {t('creators.btnPre', 'Разработка платформы')}
+              </span>
+              <span className="block text-xs sm:text-sm text-white font-black uppercase tracking-widest leading-none">
+                {t('creators.btnMain', 'О создателях проекта')}
+              </span>
+            </div>
           </button>
+
         </div>
       </footer>
 
-      {/* ========================================= */}
-      {/* МОДАЛЬНОЕ ОКНО РАЗРАБОТЧИКОВ (ОБЩАЯ ИНФА) */}
-      {/* ========================================= */}
+      {/* МОДАЛЬНОЕ ОКНО */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
           
-          {/* Подложка для закрытия */}
           <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
           
-          {/* Контейнер модалки */}
-          <div className="bg-white border-4 border-slate-900 shadow-[12px_12px_0_#2563eb] max-w-2xl w-full relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div className="bg-white border-4 border-slate-900 shadow-[12px_12px_0_#2563eb] max-w-3xl w-full relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             
-            {/* Шапка модалки */}
             <div className="flex justify-between items-center p-5 md:p-6 border-b-4 border-slate-900 bg-[#FAFAFA] shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
                   <Code2 className="w-4 h-4 text-white" />
                 </div>
                 <h3 className="font-black text-xl md:text-2xl uppercase tracking-tighter text-slate-900 leading-none mt-1">
-                  Разработка платформы
+                  {t('creators.modalTitle', 'О создателях')}
                 </h3>
               </div>
               <button 
@@ -95,60 +98,53 @@ export function Footer() {
               </button>
             </div>
 
-            {/* Тело модалки */}
-            <div className="p-6 md:p-8 overflow-y-auto bg-white">
-              <div className="border-4 border-slate-900 p-6 md:p-8 bg-[#FAFAFA] shadow-[6px_6px_0_#2563eb] relative">
+            <div className="p-4 sm:p-6 md:p-10 overflow-y-auto bg-white">
+              <div className="border-4 border-slate-900 p-5 sm:p-6 md:p-10 bg-[#FAFAFA] shadow-[4px_4px_0_#2563eb] sm:shadow-[6px_6px_0_#2563eb] relative">
                 
-                {/* Декоративный элемент */}
-                <div className="absolute -top-5 -left-5 w-12 h-12 bg-blue-600 border-4 border-slate-900 flex items-center justify-center shadow-[4px_4px_0_#0f172a]">
-                  <Users className="w-6 h-6 text-white" />
+                <div className="absolute -top-6 -left-6 w-12 h-12 md:w-14 md:h-14 bg-blue-600 border-4 border-slate-900 flex items-center justify-center shadow-[4px_4px_0_#0f172a] hidden sm:flex">
+                  <Users className="w-6 h-6 md:w-7 md:h-7 text-white" />
                 </div>
 
-                <h4 className="font-black text-2xl md:text-3xl uppercase tracking-tighter text-slate-900 mb-6 mt-2">
-                  Мы — Амира и Расул
+                <h4 className="font-black text-2xl sm:text-3xl md:text-4xl uppercase tracking-tighter text-slate-900 mb-6 sm:mb-8 mt-1 sm:mt-2">
+                  {t('creators.heading', 'Мы — Амира и Расул')}
                 </h4>
                 
-                <div className="space-y-4 text-sm md:text-base font-medium text-slate-700 leading-relaxed">
+                <div className="space-y-6 text-lg sm:text-xl font-medium text-slate-900 leading-[1.6] sm:leading-[1.7]">
                   <p>
-                    Создатели <span className="font-bold text-blue-600 uppercase tracking-wide">«ASIR»</span>.
+                    {t('creators.p1', 'Создатели')} <span className="font-black text-blue-600 uppercase tracking-wide">«ASIR»</span>.
                   </p>
                   <p>
-                    Наша цель — разрабатывать удобные системы бронирования и цифровые решения для самых разных сфер. Мы изучаем, как пользователи взаимодействуют с сервисами, и создаём инструменты, которые делают процесс простым, быстрым и понятным.
+                    {t('creators.p2', 'Наша цель — разрабатывать удобные системы бронирования и цифровые решения для самых разных сфер. Мы изучаем, как пользователи взаимодействуют с сервисами, и создаём инструменты, которые делают процесс простым, быстрым и понятным.')}
                   </p>
                   <p>
-                    Система бронирования <span className="font-bold text-slate-900 border-b-2 border-blue-600">Satbayev FabLab</span> является одним из примеров нашей работы. Проект появился как студенческая инициатива во время обучения в <span className="font-bold text-slate-900">inVision U</span> и со временем превратился в полноценный продукт.
+                    {t('creators.p3_start', 'Система бронирования')} <span className="font-bold border-b-2 border-blue-600">Satbayev FabLab</span> {t('creators.p3_middle', 'является одним из примеров нашей работы. Проект появился как студенческая инициатива во время обучения в')} <span className="font-black">inVision U</span> {t('creators.p3_end', 'и со временем превратился в полноценный продукт.')}
                   </p>
                   <p>
-                    <span className="font-bold text-blue-600 uppercase tracking-wide">«ASIR»</span> — независимый проект, который был полностью придуман и разработан нашей командой.
+                    <span className="font-black text-blue-600 uppercase tracking-wide">«ASIR»</span> {t('creators.p4', '— независимый проект, который был полностью придуман и разработан нашей командой.')}
                   </p>
                 </div>
 
-                {/* Блок командных контактов */}
-                <div className="mt-8 pt-6 border-t-4 border-slate-900">
-                  <h5 className="font-black text-xs uppercase tracking-widest text-slate-900 mb-4 text-center sm:text-left">
-                    Связаться с нами
+                <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t-4 border-slate-900">
+                  <h5 className="font-black text-sm sm:text-base uppercase tracking-widest text-slate-900 mb-5 sm:mb-6 text-center sm:text-left">
+                    {t('creators.contacts', 'Связаться с нами')}
                   </h5>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {/* Кнопка Telegram */}
-                    <a href="https://t.me/@iamkofein" target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white border-2 border-slate-900 py-3 font-bold text-[10px] tracking-widest uppercase hover:bg-slate-900 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
-                      <Send className="w-4 h-4" /> Telegram
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                    <a href="https://t.me/iamkofein" target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2.5 bg-blue-600 text-white border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-900 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                      <Send className="w-4 h-4 sm:w-5 sm:h-5" /> Telegram
                     </a>
                     
-                    {/* Кнопка Email */}
-                    <a href="mailto:rasul.kapash@invisionu.education" className="flex-1 flex items-center justify-center gap-2 bg-white text-slate-900 border-2 border-slate-900 py-3 font-bold text-[10px] tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
-                      <Mail className="w-4 h-4" /> Email
+                    <a href="mailto:rasul.kapash@invisionu.education" className="flex-1 flex items-center justify-center gap-2.5 bg-white text-slate-900 border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                      <Mail className="w-4 h-4 sm:w-5 sm:h-5" /> Email
                     </a>
 
-                    {/* Кнопка Телефон */}
-                    <a href="tel:+77080781410" className="flex-1 flex items-center justify-center gap-2 bg-white text-slate-900 border-2 border-slate-900 py-3 font-bold text-[10px] tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
-                      <Phone className="w-4 h-4" /> Телефон
+                    <a href="tel:+77080781410" className="flex-1 flex items-center justify-center gap-2.5 bg-white text-slate-900 border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                      <Phone className="w-4 h-4 sm:w-5 sm:h-5" /> Phone
                     </a>
                   </div>
                 </div>
 
               </div>
             </div>
-            
           </div>
         </div>
       )}
