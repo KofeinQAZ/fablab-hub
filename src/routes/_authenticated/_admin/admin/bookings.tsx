@@ -54,7 +54,7 @@ function AdminBookingsPage() {
   const { data: bookings, isLoading: bookingsLoading } = useQuery({
     queryKey: ["admin-bookings"],
     queryFn: async () => {
-      // ВЕРНУЛИ ПРАВИЛЬНЫЙ СИНТАКСИС (без :user_id)
+      // ИСПРАВЛЕНИЕ: Явно указываем Foreign Key, чтобы избежать ошибки PGRST201
       const { data, error } = await supabase
         .from("bookings")
         .select(`
@@ -64,7 +64,7 @@ function AdminBookingsPage() {
           end_time,
           status,
           equipment ( id, name, category ),
-          profiles ( name, contact_phone ) 
+          profiles!bookings_user_profile_fkey ( name, contact_phone ) 
         `)
         .order("start_time", { ascending: true });
 
