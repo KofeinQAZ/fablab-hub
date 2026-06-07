@@ -2,7 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Users, ShieldCheck, Rocket, Calendar, Activity, Trophy, Zap } from "lucide-react";
+import { 
+  Download, Users, ShieldCheck, Rocket, Calendar, 
+  Activity, Trophy, Zap, Clock, AlertCircle, 
+  CheckSquare, Wrench, XCircle 
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/statistics")({
@@ -44,7 +48,6 @@ function AdminStatisticsPage() {
   const { data: bookings } = useQuery({
     queryKey: ["admin-bookings-stats"],
     queryFn: async () => {
-      // ИСПРАВЛЕНО: Явно указали ключ bookings_user_profile_fkey для таблицы profiles
       const { data, error } = await supabase
         .from("bookings")
         .select(`
@@ -87,10 +90,46 @@ function AdminStatisticsPage() {
     const now = new Date();
     const msInDay = 24 * 60 * 60 * 1000;
 
+    // --- БАЗОВЫЕ МЕТРИКИ ---
     const totalStudents = allProfiles.filter((p) => p.role === "student").length || 1; 
     const briefedStudents = allProfiles.filter((p) => p.role === "student" && p.safety_briefing_passed).length;
     const briefingRate = Math.round((briefedStudents / totalStudents) * 100);
 
+    // --- СТАТУСЫ БРОНЕЙ И ЧАСЫ ---
+    let pendingBookings = 0;
+    let activeBookings = 0;
+    let completedBookings = 0;
+    let cancelledBookings = 0;
+    let totalHours = 0;
+
+    allBookings.forEach((b) => {
+      if (b.status === "pending") pendingBookings++;
+      else if (b.status === "active") activeBookings++;
+      else if (b.status === "completed") completedBookings++;
+      else if (b.status === "cancelled") cancelledBookings++;
+
+      const start = new Date(b.start_time);
+      const end = new Date(b.end_time);
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        totalHours += (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      }
+    });
+
+    // --- РОЛИ И ОБОРУДОВАНИЕ ---
+    const roles = { admin: 0, resident: 0, student: 0 };
+    allProfiles.forEach((p) => {
+      if (p.role === "admin") roles.admin++;
+      else if (p.role === "resident") roles.resident++;
+      else roles.student++;
+    });
+
+    const eqStatus = { active: 0, maintenance: 0 };
+    allEquipment.forEach((e) => {
+      if (e.status === "maintenance") eqStatus.maintenance++;
+      else eqStatus.active++;
+    });
+
+    // --- АКТИВНОСТЬ (DAU/WAU/MAU) ---
     const activeUsersByPeriod = (days: number) => {
       return new Set(
         allBookings
@@ -105,6 +144,7 @@ function AdminStatisticsPage() {
     const usersWithBookings = new Set(allBookings.map(b => b.user_id)).size;
     const bookingRate = Math.round((usersWithBookings / totalStudents) * 100);
 
+    // --- ТОП ЮЗЕРОВ ---
     const userBookingCount = new Map<string, { name: string; count: number }>();
     allBookings.forEach((b) => {
       const name = b.profiles?.name || "Студент";
@@ -115,6 +155,7 @@ function AdminStatisticsPage() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 4);
 
+    // --- ЗАГРУЗКА ОБОРУДОВАНИЯ ---
     const byEquipment = new Map<string, number>();
     allBookings.forEach((b) => {
       const name = b.equipment?.name ?? "Удаленный станок";
@@ -125,6 +166,7 @@ function AdminStatisticsPage() {
       .slice(0, 5);
     const maxEqUsage = topEquipment[0]?.[1] || 1;
 
+    // --- ТРЕНДЫ (ГРАФИК) ---
     const dayCounts = [0, 0, 0, 0, 0, 0, 0];
     const dayNames = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
     allBookings.forEach((b) => dayCounts[new Date(b.start_time).getDay()]++);
@@ -137,15 +179,20 @@ function AdminStatisticsPage() {
       const count = allBookings.filter(b => isSameDay(new Date(b.start_time), d)).length;
       return { day: d.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'}), value: count };
     });
+    const maxTrend = Math.max(...trendData.map(t => t.value), 1);
 
     return {
       totalBookings: allBookings.length,
-      totalStudents, briefedStudents, briefingRate,
+      totalProfiles: allProfiles.length,
+      briefedStudents, briefingRate,
+      pendingBookings, completedBookings, cancelledBookings, activeBookings,
+      totalHours: Math.round(totalHours),
+      roles, eqStatus,
       dau, wau, mau, wauRate: Math.round((wau / totalStudents) * 100),
       usersWithBookings, bookingRate,
       topUsers, topEquipment, maxEqUsage,
       busiestDay, avgBookingsPerUser: Math.round((allBookings.length / (usersWithBookings || 1)) * 10) / 10,
-      trendData, totalProjects: allProjects.length
+      trendData, maxTrend, totalProjects: allProjects.length
     };
   }, [bookings, equipment, profiles, projects]);
 
@@ -183,11 +230,19 @@ function AdminStatisticsPage() {
         </button>
       </div>
 
-      {/* ROW 1: MAIN KPIs */}
+      {/* ROW 1: CORE KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-        <MetricCard title="Всего пользователей" value={stats.totalStudents} sub="Зарегистрировано" icon={Users} color="text-blue-600" />
-        <MetricCard title="Всего бронирований" value={stats.totalBookings} sub="За все время" icon={Calendar} color="text-green-600" />
-        <MetricCard title="Проекты на витрине" value={stats.totalProjects} sub="Опубликовано" icon={Rocket} color="text-amber-600" />
+        <MetricCard title="Всего юзеров" value={stats.totalProfiles} sub="Зарегистрировано" icon={Users} color="text-blue-600" />
+        <MetricCard title="Всего броней" value={stats.totalBookings} sub="За все время" icon={Calendar} color="text-green-600" />
+        <MetricCard title="Часов работы" value={stats.totalHours} sub="Общее время броней" icon={Clock} color="text-purple-600" />
+        <MetricCard title="Проекты" value={stats.totalProjects} sub="Опубликовано" icon={Rocket} color="text-amber-600" />
+      </div>
+
+      {/* ROW 2: STATUSES & ACTIVE USERS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+        <MetricCard title="Ожидают апрува" value={stats.pendingBookings} sub="Новые заявки" icon={AlertCircle} color="text-orange-500" />
+        <MetricCard title="Завершено" value={stats.completedBookings} sub="Успешные брони" icon={CheckSquare} color="text-emerald-500" />
+        <MetricCard title="В ремонте" value={stats.eqStatus.maintenance} sub="Оборудование" icon={Wrench} color="text-red-500" />
         <div className="bg-white border-4 border-slate-900 p-4 md:p-6 flex flex-col justify-between shadow-[4px_4px_0_#0f172a] w-full overflow-hidden">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900 truncate pr-2">Активные юзеры</h4>
@@ -201,20 +256,20 @@ function AdminStatisticsPage() {
         </div>
       </div>
 
-      {/* ROW 2: TRENDS & FUNNEL */}
+      {/* ROW 3: TRENDS & FUNNEL */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div className="lg:col-span-2 bg-white border-4 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a] overflow-hidden w-full">
+        <div className="lg:col-span-2 bg-white border-4 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a] overflow-hidden w-full flex flex-col">
           <h3 className="font-black text-base md:text-lg uppercase tracking-tight text-slate-900 mb-6">Тренды активности (7 дней)</h3>
-          <div className="overflow-x-auto pb-2">
-            <div className="h-48 md:h-64 min-w-[300px] flex items-end justify-between gap-1 sm:gap-2 border-b-2 border-slate-200 relative">
+          <div className="overflow-x-auto flex-1">
+            {/* ИСПРАВЛЕН CSS ГРАФИКА: h-full justify-end у flex-элементов */}
+            <div className="h-48 md:h-64 min-w-[300px] flex items-end justify-between gap-1 sm:gap-2 border-b-2 border-slate-200 relative pt-6">
               {stats.trendData.map((d, i) => {
-                const max = Math.max(...stats.trendData.map(t => t.value), 1);
-                const height = `${(d.value / max) * 100}%`;
+                const height = `${(d.value / stats.maxTrend) * 100}%`;
                 return (
-                  <div key={i} className="flex flex-col items-center flex-1 group">
-                    <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-[10px] sm:text-xs font-bold mb-1 sm:mb-2">{d.value}</div>
+                  <div key={i} className="flex flex-col items-center flex-1 group h-full justify-end">
+                    <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-[10px] sm:text-xs font-bold mb-1">{d.value}</div>
                     <div className="w-full bg-blue-600 hover:bg-slate-900 transition-colors" style={{ height: d.value === 0 ? '4px' : height }} />
-                    <div className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-1 sm:mt-2 truncate w-full text-center">{d.day}</div>
+                    <div className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400 mt-2 truncate w-full text-center">{d.day}</div>
                   </div>
                 );
               })}
@@ -223,16 +278,16 @@ function AdminStatisticsPage() {
         </div>
 
         <div className="bg-slate-900 border-4 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#2563eb] text-white flex flex-col w-full">
-          <h3 className="font-black text-base md:text-lg uppercase tracking-tight mb-6">Воронка</h3>
+          <h3 className="font-black text-base md:text-lg uppercase tracking-tight mb-6">Воронка конверсии</h3>
           <div className="space-y-4 md:space-y-6 flex-1 flex flex-col justify-center">
-            <FunnelStep icon={Users} title="Студенты" value={stats.totalStudents} percent={100} />
+            <FunnelStep icon={Users} title="Пользователи" value={stats.totalProfiles} percent={100} />
             <FunnelStep icon={ShieldCheck} title="Прошли ТБ" value={stats.briefedStudents} percent={stats.briefingRate} color="bg-amber-500" />
-            <FunnelStep icon={Zap} title="Брони" value={stats.usersWithBookings} percent={stats.bookingRate} color="bg-blue-500" />
+            <FunnelStep icon={Zap} title="Делали бронь" value={stats.usersWithBookings} percent={stats.bookingRate} color="bg-blue-500" />
           </div>
         </div>
       </div>
 
-      {/* ROW 3: LEADERBOARD & HORIZONTAL BARS */}
+      {/* ROW 4: LEADERBOARD & HORIZONTAL BARS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <div className="bg-white border-4 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a] w-full overflow-hidden">
           <div className="flex items-center gap-3 mb-6">
@@ -274,14 +329,26 @@ function AdminStatisticsPage() {
         </div>
       </div>
 
-      {/* ROW 4: KEY INDICATORS */}
-      <div className="bg-slate-50 border-4 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a] w-full">
-        <h3 className="font-black text-base md:text-lg uppercase tracking-tight text-slate-900 mb-4 md:mb-6">Ключевые показатели</h3>
-        <div className="space-y-3 md:space-y-4">
-          <KeyIndicator label="Инструктаж ТБ" sub="% юзеров с доступом" value={`${stats.briefingRate}%`} />
-          <KeyIndicator label="Броней на юзера" sub="В среднем" value={stats.avgBookingsPerUser} />
-          <KeyIndicator label="Активный день" sub="Пик загрузки" value={stats.busiestDay} />
-          <KeyIndicator label="WAU Rate" sub="% активных за неделю" value={`${stats.wauRate}%`} />
+      {/* ROW 5: EXTENDED METRICS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-slate-50 border-4 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a] w-full">
+          <h3 className="font-black text-base md:text-lg uppercase tracking-tight text-slate-900 mb-4 md:mb-6">Распределение ролей</h3>
+          <div className="space-y-3 md:space-y-4">
+            <KeyIndicator label="Студенты" sub="Обычные юзеры" value={stats.roles.student} />
+            <KeyIndicator label="Резиденты" sub="Опытные мейкеры" value={stats.roles.resident} />
+            <KeyIndicator label="Администраторы" sub="Управление системой" value={stats.roles.admin} />
+            <KeyIndicator label="Охват ТБ" sub="% сданной техники безопасности" value={`${stats.briefingRate}%`} />
+          </div>
+        </div>
+        
+        <div className="bg-slate-50 border-4 border-slate-900 p-4 md:p-6 shadow-[4px_4px_0_#0f172a] w-full">
+          <h3 className="font-black text-base md:text-lg uppercase tracking-tight text-slate-900 mb-4 md:mb-6">Ключевые показатели</h3>
+          <div className="space-y-3 md:space-y-4">
+            <KeyIndicator label="Броней на юзера" sub="В среднем на человека" value={stats.avgBookingsPerUser} />
+            <KeyIndicator label="Активный день" sub="Пик загрузки лабы" value={stats.busiestDay} />
+            <KeyIndicator label="Отмен броней" sub="Отмененные пользователем / Админом" value={stats.cancelledBookings} />
+            <KeyIndicator label="WAU Rate" sub="% активных пользователей за неделю" value={`${stats.wauRate}%`} />
+          </div>
         </div>
       </div>
 
@@ -321,7 +388,7 @@ function FunnelStep({ icon: Icon, title, value, percent, color = "bg-slate-700" 
 
 function KeyIndicator({ label, sub, value }: any) {
   return (
-    <div className="flex items-center justify-between p-3 md:p-4 bg-white border-2 border-slate-200 gap-2">
+    <div className="flex items-center justify-between p-3 md:p-4 bg-white border-2 border-slate-200 gap-2 hover:border-slate-900 transition-colors">
       <div className="min-w-0 pr-2 flex-1">
         <div className="font-black text-xs md:text-sm uppercase tracking-wide text-slate-900 truncate">{label}</div>
         <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-0.5 md:mt-1 truncate">{sub}</div>
