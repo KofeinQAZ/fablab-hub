@@ -13,7 +13,6 @@ type Equipment = { id: string; name: string; status: "active" | "maintenance" };
 type Profile = { id: string; name: string; role: string; safety_briefing_passed: boolean };
 type Project = { id: string; status: string };
 
-// ИСПРАВЛЕНО: Убрали email из типа
 type Booking = {
   id: string;
   user_id: string;
@@ -45,14 +44,18 @@ function AdminStatisticsPage() {
   const { data: bookings } = useQuery({
     queryKey: ["admin-bookings-stats"],
     queryFn: async () => {
+      // ИСПРАВЛЕНО: Явно указали ключ bookings_user_profile_fkey для таблицы profiles
       const { data, error } = await supabase
         .from("bookings")
         .select(`
           id, user_id, start_time, end_time, status, 
           equipment(id,name),
-          profiles(name)
+          profiles!bookings_user_profile_fkey(name)
         `);
-      if (error) throw error;
+      if (error) {
+        console.error("Ошибка загрузки статистики броней:", error);
+        throw error;
+      }
       return (data as Booking[]) ?? [];
     },
   });
@@ -149,7 +152,6 @@ function AdminStatisticsPage() {
   const handleExportCSV = () => {
     if (!bookings || bookings.length === 0) return toast.error("Нет данных");
     
-    // ИСПРАВЛЕНО: Убрали колонку Email
     const headers = ["ID Брони", "Студент", "Оборудование", "Дата начала", "Статус"];
     const csvData = bookings.map(b => [
       b.id, b.profiles?.name || "Неизвестно",
@@ -165,7 +167,6 @@ function AdminStatisticsPage() {
   };
 
   return (
-    // ИСПРАВЛЕНО: Добавлен w-full, чтобы контент не плющило на мобилке
     <div className="w-full space-y-6 animate-in fade-in duration-500 pb-12 p-4 md:p-0">
       
       {/* HEADER */}
@@ -288,7 +289,6 @@ function AdminStatisticsPage() {
   );
 }
 
-// ИСПРАВЛЕНО: Добавлены w-full и overflow-hidden, чтобы карточки не ломались
 function MetricCard({ title, value, sub, icon: Icon, color }: any) {
   return (
     <div className="bg-white border-4 border-slate-900 p-4 md:p-6 flex flex-col justify-between shadow-[4px_4px_0_#0f172a] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_#2563eb] transition-all w-full overflow-hidden">
