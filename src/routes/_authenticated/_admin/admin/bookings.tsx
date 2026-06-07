@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Ban, Clock, User, Activity, Calendar, CheckSquare, AlertCircle } from "lucide-react";
+import { Ban, Clock, User, Activity, Calendar, CheckSquare, AlertCircle, Phone } from "lucide-react";
 import { format, isWithinInterval, isAfter, isBefore } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useMemo, useState } from "react";
@@ -21,7 +21,7 @@ type Booking = {
   end_time: string;
   status: "pending" | "active" | "cancelled" | "completed";
   equipment: { id: string; name: string; category: string } | null;
-  profiles: { name: string } | { name: string }[] | null;
+  profiles: { name: string; contact_phone?: string } | { name: string; contact_phone?: string }[] | null;
 };
 
 function formatTimeRange(start: string, end: string) {
@@ -41,7 +41,6 @@ function isSameDay(date1: Date, date2: Date) {
   );
 }
 
-// Хелпер для получения строковой даты (YYYY-MM-DD) в локальном часовом поясе
 function getLocalDateString(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
@@ -50,12 +49,12 @@ function AdminBookingsPage() {
   const qc = useQueryClient();
   const now = new Date();
   
-  // Стейт теперь хранит строку даты или 'all'
   const [dateFilter, setDateFilter] = useState<string>(() => getLocalDateString(now));
 
   const { data: bookings, isLoading: bookingsLoading } = useQuery({
     queryKey: ["admin-bookings"],
     queryFn: async () => {
+      // ВЕРНУЛИ ПРАВИЛЬНЫЙ СИНТАКСИС (без :user_id)
       const { data, error } = await supabase
         .from("bookings")
         .select(`
@@ -65,11 +64,14 @@ function AdminBookingsPage() {
           end_time,
           status,
           equipment ( id, name, category ),
-          profiles ( name )
+          profiles ( name, contact_phone ) 
         `)
         .order("start_time", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Ошибка загрузки бронирований:", error);
+        throw error;
+      }
       return data as unknown as Booking[];
     },
   });
@@ -153,7 +155,13 @@ function AdminBookingsPage() {
     return booking.profiles?.name ?? "Неизвестный";
   };
 
-  // Генерируем 7 вкладок для фильтра (на неделю вперед)
+  const getStudentPhone = (booking: Booking) => {
+    if (Array.isArray(booking.profiles)) {
+      return booking.profiles[0]?.contact_phone ?? "Нет номера";
+    }
+    return booking.profiles?.contact_phone ?? "Нет номера";
+  };
+
   const dayTabs = useMemo(() => {
     const tabs = [];
     const today = new Date();
@@ -179,14 +187,12 @@ function AdminBookingsPage() {
   const filteredAndSortedActiveBookings = useMemo(() => {
     const active = (bookings ?? []).filter((b) => b.status === "active");
 
-    // 1. Фильтруем по выбранной вкладке даты
     const filtered = active.filter(b => {
       if (dateFilter === 'all') return true;
       const start = new Date(b.start_time);
       return getLocalDateString(start) === dateFilter;
     });
 
-    // 2. Сортируем: сначала в работе -> затем просроченные -> затем будущие
     return filtered.sort((a, b) => {
       const startA = new Date(a.start_time);
       const endA = new Date(a.end_time);
@@ -271,11 +277,12 @@ function AdminBookingsPage() {
                       <div className="font-black text-lg text-slate-900 uppercase tracking-tight">{b.equipment?.name}</div>
                       <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest text-slate-600">
                         <span className="flex items-center gap-2"><User className="h-4 w-4 text-blue-600" /> {getStudentName(b)}</span>
+                        <span className="flex items-center gap-2"><Phone className="h-4 w-4 text-emerald-600" /> {getStudentPhone(b)}</span>
                         <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-600" /> {date}, {fullRange}</span>
                       </div>
                     </div>
-                    <div className="flex gap-3">
-                      <Button onClick={() => updateBooking.mutate({ booking: b, status: "active" })} className="bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-slate-900 font-bold uppercase tracking-widest text-xs shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                    <div className="flex gap-3 mt-2 md:mt-0">
+                      <Button onClick={() => updateBooking.mutate({ booking: b, status: "active" })} className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
                         Одобрить
                       </Button>
                       <Button variant="outline" onClick={() => updateBooking.mutate({ booking: b, status: "cancelled" })} className="border-2 border-slate-900 text-slate-900 hover:bg-red-50 hover:text-red-600 font-bold uppercase tracking-widest text-xs shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
@@ -336,7 +343,7 @@ function AdminBookingsPage() {
                       <div className="flex flex-wrap items-center gap-3">
                         <span className={`font-black text-lg uppercase tracking-tight ${isExpired ? 'text-red-900' : 'text-slate-900'}`}>{b.equipment?.name}</span>
                         {isCurrentlyWorking ? (
-                          <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] animate-pulse shadow-[2px_2px_0_#0f172a]">В РАБОТЕ</Badge>
+                          <Badge className="bg-emerald-500 hover:bg-emerald-500 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] animate-pulse shadow-[2px_2px_0_#0f172a]">В РАБОТЕ</Badge>
                         ) : isExpired ? (
                           <Badge variant="destructive" className="bg-red-600 text-white border-2 border-red-900 font-black uppercase tracking-widest text-[10px] animate-bounce shadow-[2px_2px_0_#7f1d1d]">ВРЕМЯ ИСТЕКЛО</Badge>
                         ) : (
@@ -345,6 +352,7 @@ function AdminBookingsPage() {
                       </div>
                       <div className={`flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-red-700' : 'text-slate-600'}`}>
                         <span className="flex items-center gap-2"><User className="h-4 w-4 opacity-70" /> {getStudentName(b)}</span>
+                        <span className="flex items-center gap-2"><Phone className="h-4 w-4 opacity-70" /> {getStudentPhone(b)}</span>
                         <span className="flex items-center gap-2"><Clock className="h-4 w-4 opacity-70" /> {date}: {fullRange}</span>
                       </div>
                     </div>

@@ -44,12 +44,18 @@ const getLocalized = (obj: any, field: string, lang: string) => {
   return obj[`${field}_${lang}`] || obj[field] || '';
 };
 
+// --- НОВАЯ ФУНКЦИЯ ДЛЯ ПРОВЕРКИ ПРОШЕДШЕГО ВРЕМЕНИ БРОНИ ---
+const isBookingPast = (endTimeIso: string) => {
+  const now = new Date();
+  const endDateTime = new Date(endTimeIso);
+  return now > endDateTime;
+};
+
 function ProfilePage() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
-  // Добавили новую вкладку 'my_applications'
   const [activeTab, setActiveTab] = useState<'info' | 'projects' | 'applications' | 'my_applications'>('info');
   const [residencyDialogOpen, setResidencyDialogOpen] = useState(false);
   const [description, setDescription] = useState("");
@@ -159,7 +165,6 @@ function ProfilePage() {
     },
   });
 
-  // НОВЫЙ ЗАПРОС: Исходящие заявки (куда подался юзер)
   const { data: myApplications = [], isLoading: myAppsLoading } = useQuery({
     queryKey: ["my-outgoing-applications", authData?.userId],
     enabled: !!authData?.userId,
@@ -403,16 +408,22 @@ function ProfilePage() {
   const roleLabel = authData.profile.role === "student" ? t('profile.roles.student') : authData.profile.role === "resident" ? t('profile.roles.resident') : t('profile.roles.admin');
   const briefingStatus = authData.profile.safety_briefing_passed ? t('profile.briefingStatus.passed') : t('profile.briefingStatus.failed');
 
-  const getStatusBadge = (status: string) => {
+  // ОБНОВЛЕННАЯ ФУНКЦИЯ БЕЙДЖЕЙ - ПРИНИМАЕТ ФЛАГ isPast
+  const getStatusBadge = (status: string, isPast: boolean = false) => {
     const bStyle = "font-black uppercase tracking-widest text-[9px] border-2 border-slate-900 px-2 py-0.5 shadow-[2px_2px_0_#0f172a]";
+    
+    // Если бронь "active" или "approved", но время уже прошло - показываем как Завершено
+    if ((status === "active" || status === "approved") && isPast) {
+      return <span className={`bg-slate-300 text-slate-700 flex items-center gap-1 w-max ${bStyle}`}>{t('profile.status.completed', 'ЗАВЕРШЕНО')}</span>;
+    }
+
     switch (status) {
       case "pending": return <span className={`bg-amber-400 text-slate-900 flex items-center gap-1 w-max ${bStyle}`}><Clock4 className="w-3 h-3"/> {t('profile.status.pending', 'Ожидает')}</span>;
       case "approved": 
-      case "accepted": 
-      case "active": return <span className={`bg-emerald-400 text-slate-900 flex items-center gap-1 w-max ${bStyle}`}><CheckCircle2 className="w-3 h-3"/> {t('profile.status.active', 'Принято')}</span>;
+      case "active": return <span className={`bg-emerald-400 text-slate-900 flex items-center gap-1 w-max ${bStyle}`}><CheckCircle2 className="w-3 h-3"/> {t('profile.status.active', 'АКТИВНО')}</span>;
       case "rejected": return <span className={`bg-rose-500 text-white flex items-center gap-1 w-max ${bStyle}`}><XCircle className="w-3 h-3"/> {t('profile.status.rejected', 'Отклонено')}</span>;
       case "cancelled": return <span className={`bg-slate-300 text-slate-700 flex items-center gap-1 w-max ${bStyle}`}>{t('profile.status.cancelled')}</span>;
-      case "completed": return <span className={`bg-blue-500 text-white flex items-center gap-1 w-max ${bStyle}`}>{t('profile.status.completed')}</span>;
+      case "completed": return <span className={`bg-slate-300 text-slate-700 flex items-center gap-1 w-max ${bStyle}`}>{t('profile.status.completed')}</span>;
       default: return <span className={`bg-white text-slate-900 flex items-center gap-1 w-max ${bStyle}`}>{status}</span>;
     }
   };
@@ -575,6 +586,7 @@ function ProfilePage() {
             </div>
           </div>
 
+          {/* === БЛОК: МОИ БРОНИРОВАНИЯ === */}
           <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
             <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900">
               <h2 className="text-xl font-black uppercase tracking-tight">{t('profile.info.myBookings')}</h2>
@@ -593,6 +605,9 @@ function ProfilePage() {
                     const endDate = new Date(booking.end_time);
                     const equipName = booking.equipment?.name || "Станок";
                     
+                    // Проверяем, прошло ли время окончания брони
+                    const isPast = isBookingPast(booking.end_time);
+                    
                     return (
                       <div key={booking.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 border-slate-900 bg-slate-50 hover:bg-blue-50/40 transition-colors gap-4">
                         <div className="space-y-2">
@@ -604,9 +619,11 @@ function ProfilePage() {
                         </div>
                         
                         <div className="flex items-center gap-4 self-start sm:self-auto shrink-0">
-                          {getStatusBadge(booking.status)}
+                          {/* Передаем isPast в функцию получения бейджа */}
+                          {getStatusBadge(booking.status, isPast)}
                           
-                          {(booking.status === "pending" || booking.status === "approved" || booking.status === "active") && (
+                          {/* Кнопку отмены показываем ТОЛЬКО если статус активен/ожидает И ВРЕМЯ ЕЩЕ НЕ ПРОШЛО */}
+                          {(booking.status === "pending" || booking.status === "approved" || booking.status === "active") && !isPast && (
                             <Button 
                               variant="outline" 
                               onClick={() => handleCancelBooking(booking.id)}
@@ -695,7 +712,7 @@ function ProfilePage() {
         </div>
       )}
 
-      {/* НОВАЯ ВКЛАДКА: ИСХОДЯЩИЕ ЗАЯВКИ (КУДА ПОДАЛСЯ ЮЗЕР) */}
+      {/* ИСХОДЯЩИЕ ЗАЯВКИ */}
       {activeTab === 'my_applications' && (
         <div className="space-y-6">
           <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight border-b-2 border-slate-200 pb-4">
@@ -747,7 +764,6 @@ function ProfilePage() {
                         </p>
                       </div>
 
-                      {/* Если заявку приняли, показываем контакты автора (если есть) */}
                       {app.status === 'accepted' && (
                         <div className="pt-4 border-t-2 border-slate-100 mt-4">
                           <p className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-2">🎉 {t('profile.myApplications.acceptedMsg', 'Your application was approved!')}</p>
@@ -779,7 +795,6 @@ function ProfilePage() {
             </button>
           </div>
           
-          {/* ТАБЫ ЯЗЫКОВ */}
           <div className="flex bg-slate-100 border-b-4 border-slate-900">
             {(['ru', 'kz', 'en'] as const).map(lang => (
               <button
@@ -857,19 +872,19 @@ function ProfilePage() {
             </div>
             
             <Button 
-  onClick={() => saveProjectMutation.mutate()} 
-  disabled={
-    !projTitle.ru.trim() || 
-    !projDesc.ru.trim() || 
-    !projImage.trim() || 
-    !isValidUrl(projImage.trim()) || 
-    (projLooking && !projRoles.trim()) || 
-    saveProjectMutation.isPending
-  } 
-  className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black text-sm uppercase tracking-widest rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4 disabled:bg-slate-300 disabled:text-slate-500 disabled:border-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
->
-  {saveProjectMutation.isPending ? t('profile.projectForm.saving') : t('profile.projectForm.saveBtn')}
-</Button>
+              onClick={() => saveProjectMutation.mutate()} 
+              disabled={
+                !projTitle.ru.trim() || 
+                !projDesc.ru.trim() || 
+                !projImage.trim() || 
+                !isValidUrl(projImage.trim()) || 
+                (projLooking && !projRoles.trim()) || 
+                saveProjectMutation.isPending
+              } 
+              className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black text-sm uppercase tracking-widest rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4 disabled:bg-slate-300 disabled:text-slate-500 disabled:border-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+            >
+              {saveProjectMutation.isPending ? t('profile.projectForm.saving') : t('profile.projectForm.saveBtn')}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
