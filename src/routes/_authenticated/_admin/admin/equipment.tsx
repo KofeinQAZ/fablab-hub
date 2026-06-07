@@ -213,7 +213,94 @@ function AdminEquipmentPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    if (!qrModalItem) return;
+
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
+      window.location.origin + '/booking?equipmentId=' + qrModalItem.id
+    )}`;
+    const shortId = qrModalItem.id.split('-')[0].toUpperCase();
+    const equipmentName = qrModalItem.name.toUpperCase();
+
+    const printWindow = window.open('', '_blank', 'width=600,height=700');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>QR — ${equipmentName}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              background: #fff;
+              font-family: 'Arial Black', Arial, sans-serif;
+            }
+            .card {
+              border: 4px solid #0f172a;
+              padding: 40px 32px;
+              text-align: center;
+              width: 340px;
+              background: #fff;
+            }
+            .label {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: 0.2em;
+              text-transform: uppercase;
+              color: #0f172a;
+              margin-bottom: 20px;
+            }
+            .qr-img {
+              width: 220px;
+              height: 220px;
+              border: 4px solid #0f172a;
+              padding: 8px;
+              background: #fff;
+              display: block;
+              margin: 0 auto 20px;
+            }
+            .name {
+              font-size: 16px;
+              font-weight: 900;
+              text-transform: uppercase;
+              letter-spacing: -0.02em;
+              color: #0f172a;
+              margin-bottom: 6px;
+            }
+            .id {
+              font-size: 10px;
+              font-weight: 700;
+              letter-spacing: 0.2em;
+              text-transform: uppercase;
+              color: #64748b;
+            }
+            @media print {
+              body { margin: 0; }
+              @page { margin: 1cm; size: A4; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="label">FABLAB SATBAYEV</div>
+            <img class="qr-img" src="${qrUrl}" alt="QR Code" />
+            <div class="name">${equipmentName}</div>
+            <div class="id">ID: ${shortId}</div>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() { window.print(); }, 300);
+            };
+          <\/script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
