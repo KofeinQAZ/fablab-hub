@@ -15,10 +15,8 @@ function LandingPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   
-  // Добавили стейт для модалки разработчиков
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Реальные экосистемные партнеры FabLab Satbayev
   const partners = [
     { name: "Satbayev University", logo: "/partners/logo_eng.png", url: "https://satbayev.university/" },
     { name: "Chevron", logo: "/partners/Chevron.png", url: "https://www.chevron.com" },
@@ -55,10 +53,8 @@ function LandingPage() {
               className="absolute bottom-0 left-0 md:left-[-5%] w-full md:w-[95%] h-full object-cover object-center md:object-contain md:object-left-bottom pointer-events-none drop-shadow-2xl"
             />
             
-            {/* Градиент */}
             <div className="absolute bottom-0 left-0 md:left-[-5%] w-full md:w-[95%] h-[50%] md:h-[30%] bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/90 to-transparent pointer-events-none" />
 
-            {/* Акцентный блок CTA */}
             <div className="relative z-30 bg-blue-600 text-white p-6 md:p-10 lg:p-12 w-full md:w-[550px] rounded-t-[2rem] md:rounded-t-none md:rounded-tl-[3rem] flex flex-col justify-end shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-t-4 border-[#FAFAFA] md:border-none md:border-t-8 md:border-l-8 md:border-[#FAFAFA] ml-auto">
               <p className="font-bold text-sm md:text-base uppercase tracking-widest mb-4 opacity-90">
                 {t('landing.hero.ctaDesc', '3D-ПЕЧАТЬ, ЧПУ СТАНКИ, СЛЕСАРНАЯ ЗОНА')}
@@ -332,22 +328,20 @@ function LandingPage() {
 
       {/* --- НОВЫЙ БЛОК 8: ASIR TEAM (О РАЗРАБОТЧИКАХ) --- */}
       <section className="bg-slate-100 border-b-4 border-slate-900 py-24 relative overflow-hidden">
-        {/* Декоративный паттерн на фоне */}
         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#0f172a_2px,transparent_2px)] [background-size:32px_32px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="bg-white border-4 border-slate-900 shadow-[12px_12px_0_#2563eb] flex flex-col md:flex-row items-stretch">
             
-            {/* Левая часть - ФОТО (Сюда поставьте свою фотографию) */}
             <div className="w-full md:w-2/5 border-b-4 md:border-b-0 md:border-r-4 border-slate-900 relative bg-slate-200 group p-6 flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px]">
               
-              {/* ЗАГЛУШКА (Удали ее, когда добавишь тег <img />) */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
                  <Users className="w-16 h-16 mb-4 opacity-50" />
-                 <span className="font-black uppercase tracking-widest text-xs border-2 border-slate-400 border-dashed px-4 py-2 bg-white/50 backdrop-blur-sm">Место для вашего фото</span>
+                 <span className="font-black uppercase tracking-widest text-xs border-2 border-slate-400 border-dashed px-4 py-2 bg-white/50 backdrop-blur-sm">
+                   {t('creators.photoPlaceholder', 'МЕСТО ДЛЯ ВАШЕГО ФОТО')}
+                 </span>
               </div>
               
-              {/* РЕАЛЬНОЕ ФОТО (Раскомментируй и поменяй src на путь к вашему фото) */}
               {/* <img src="/ваша-фотка.jpg" alt="ASIR Team" className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 z-10" /> */}
 
               <div className="absolute bottom-6 right-6 z-20 bg-amber-400 border-4 border-slate-900 px-4 py-2 shadow-[4px_4px_0_#0f172a] transform rotate-[-3deg]">
@@ -355,15 +349,14 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* Правая часть - Текст и CTA */}
             <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
               <div className="mb-6">
                 <span className="inline-block bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest px-3 py-1 border-2 border-slate-900 shadow-[2px_2px_0_#3b82f6] mb-4">
                   {t('creators.btnPre', 'РАЗРАБОТКА ПЛАТФОРМЫ')}
                 </span>
                 <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-slate-900 leading-[0.9]">
-                  {i18n.language === 'en' ? 'NEED A SIMILAR' : 'НУЖНА ТАКАЯ ЖЕ'} <br/> 
-                  <span className="text-blue-600">{i18n.language === 'en' ? 'SYSTEM?' : 'СИСТЕМА?'}</span>
+                  {t('creators.needSystem1', 'НУЖНА ТАКАЯ ЖЕ')} <br/> 
+                  <span className="text-blue-600">{t('creators.needSystem2', 'СИСТЕМА?')}</span>
                 </h2>
               </div>
               
