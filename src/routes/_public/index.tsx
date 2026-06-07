@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { 
   ChevronRight, Cpu, Wrench, Lightbulb, MapPin, 
   Mail, Phone, Printer, Rocket, ShieldCheck, 
-  Users, Zap, Target, Layers, ExternalLink
+  Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
 } from "lucide-react";
 
 export const Route = createFileRoute("/_public/")({
@@ -13,6 +14,9 @@ export const Route = createFileRoute("/_public/")({
 function LandingPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  
+  // Добавили стейт для модалки разработчиков
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Реальные экосистемные партнеры FabLab Satbayev
   const partners = [
@@ -263,7 +267,7 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* --- НОВЫЙ БЛОК 7: ЦУР / SUSTAINABLE DEVELOPMENT GOALS --- */}
+      {/* --- 7. ЦУР / SUSTAINABLE DEVELOPMENT GOALS --- */}
       <section className="bg-slate-50 border-b-4 border-slate-900 py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-16">
@@ -281,7 +285,7 @@ function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* СDG 4 - Качественное образование */}
+            {/* СDG 4 */}
             <div className="bg-white border-4 border-slate-900 p-6 md:p-8 shadow-[6px_6px_0_#0f172a] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_#0f172a] transition-all">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#C5192D] text-white flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-slate-900 shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.15)]">
                 4
@@ -295,7 +299,7 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* SDG 7 - Чистая энергия */}
+            {/* SDG 7 */}
             <div className="bg-white border-4 border-slate-900 p-6 md:p-8 shadow-[6px_6px_0_#0f172a] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_#0f172a] transition-all">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#FFB314] text-slate-900 flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-slate-900 shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.1)]">
                 7
@@ -309,7 +313,7 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* SDG 9 - Инновации и Инфраструктура */}
+            {/* SDG 9 */}
             <div className="bg-white border-4 border-slate-900 p-6 md:p-8 shadow-[6px_6px_0_#0f172a] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_#0f172a] transition-all">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#F26A2E] text-white flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-slate-900 shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.15)]">
                 9
@@ -325,6 +329,138 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* --- НОВЫЙ БЛОК 8: ASIR TEAM (О РАЗРАБОТЧИКАХ) --- */}
+      <section className="bg-slate-100 border-b-4 border-slate-900 py-24 relative overflow-hidden">
+        {/* Декоративный паттерн на фоне */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#0f172a_2px,transparent_2px)] [background-size:32px_32px] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="bg-white border-4 border-slate-900 shadow-[12px_12px_0_#2563eb] flex flex-col md:flex-row items-stretch">
+            
+            {/* Левая часть - ФОТО (Сюда поставьте свою фотографию) */}
+            <div className="w-full md:w-2/5 border-b-4 md:border-b-0 md:border-r-4 border-slate-900 relative bg-slate-200 group p-6 flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px]">
+              
+              {/* ЗАГЛУШКА (Удали ее, когда добавишь тег <img />) */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
+                 <Users className="w-16 h-16 mb-4 opacity-50" />
+                 <span className="font-black uppercase tracking-widest text-xs border-2 border-slate-400 border-dashed px-4 py-2 bg-white/50 backdrop-blur-sm">Место для вашего фото</span>
+              </div>
+              
+              {/* РЕАЛЬНОЕ ФОТО (Раскомментируй и поменяй src на путь к вашему фото) */}
+              {/* <img src="/ваша-фотка.jpg" alt="ASIR Team" className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 z-10" /> */}
+
+              <div className="absolute bottom-6 right-6 z-20 bg-amber-400 border-4 border-slate-900 px-4 py-2 shadow-[4px_4px_0_#0f172a] transform rotate-[-3deg]">
+                <span className="font-black text-slate-900 uppercase tracking-tighter text-lg sm:text-xl">ASIR TEAM</span>
+              </div>
+            </div>
+
+            {/* Правая часть - Текст и CTA */}
+            <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
+              <div className="mb-6">
+                <span className="inline-block bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest px-3 py-1 border-2 border-slate-900 shadow-[2px_2px_0_#3b82f6] mb-4">
+                  {t('creators.btnPre', 'РАЗРАБОТКА ПЛАТФОРМЫ')}
+                </span>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-slate-900 leading-[0.9]">
+                  {i18n.language === 'en' ? 'NEED A SIMILAR' : 'НУЖНА ТАКАЯ ЖЕ'} <br/> 
+                  <span className="text-blue-600">{i18n.language === 'en' ? 'SYSTEM?' : 'СИСТЕМА?'}</span>
+                </h2>
+              </div>
+              
+              <p className="text-slate-600 font-medium text-base md:text-lg leading-relaxed mb-8">
+                {t('creators.p2', 'Наша цель — разрабатывать удобные системы бронирования и цифровые решения для самых разных сфер. Мы проектируем и запускаем мощные цифровые продукты, делая процессы простыми и понятными.')}
+              </p>
+
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="group flex items-center justify-center gap-4 bg-slate-900 text-white border-4 border-slate-900 px-8 py-4 hover:bg-blue-600 transition-colors shadow-[6px_6px_0_#3b82f6] hover:shadow-[2px_2px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 w-full sm:w-max"
+              >
+                <Code2 className="w-5 h-5" />
+                <span className="font-black uppercase tracking-widest text-xs sm:text-sm">
+                  {t('creators.contacts', 'СВЯЗАТЬСЯ С НАМИ')}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================= */}
+      {/* МОДАЛЬНОЕ ОКНО РАЗРАБОТЧИКОВ (ПЕРЕНЕСЛИ СЮДА ИЗ ФУТЕРА) */}
+      {/* ========================================= */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
+          
+          <div className="bg-white border-4 border-slate-900 shadow-[12px_12px_0_#2563eb] max-w-3xl w-full relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            
+            <div className="flex justify-between items-center p-5 md:p-6 border-b-4 border-slate-900 bg-[#FAFAFA] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
+                  <Code2 className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="font-black text-xl md:text-2xl uppercase tracking-tighter text-slate-900 leading-none mt-1">
+                  {t('creators.modalTitle', 'О создателях')}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="w-10 h-10 flex items-center justify-center border-2 border-transparent hover:border-slate-900 hover:bg-slate-100 transition-all text-slate-500 hover:text-slate-900"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6 md:p-10 overflow-y-auto bg-white">
+              <div className="border-4 border-slate-900 p-5 sm:p-6 md:p-10 bg-[#FAFAFA] shadow-[4px_4px_0_#2563eb] sm:shadow-[6px_6px_0_#2563eb] relative">
+                
+                <div className="absolute -top-6 -left-6 w-12 h-12 md:w-14 md:h-14 bg-blue-600 border-4 border-slate-900 flex items-center justify-center shadow-[4px_4px_0_#0f172a] hidden sm:flex">
+                  <Users className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                </div>
+
+                <h4 className="font-black text-2xl sm:text-3xl md:text-4xl uppercase tracking-tighter text-slate-900 mb-6 sm:mb-8 mt-1 sm:mt-2">
+                  {t('creators.heading', 'Мы — Амира и Расул')}
+                </h4>
+                
+                <div className="space-y-6 text-lg sm:text-xl font-medium text-slate-900 leading-[1.6] sm:leading-[1.7]">
+                  <p>
+                    {t('creators.p1', 'Создатели')} <span className="font-black text-blue-600 uppercase tracking-wide">«ASIR»</span>.
+                  </p>
+                  <p>
+                    {t('creators.p2', 'Наша цель — разрабатывать удобные системы бронирования и цифровые решения для самых разных сфер. Мы изучаем, как пользователи взаимодействуют с сервисами, и создаём инструменты, которые делают процесс простым, быстрым и понятным.')}
+                  </p>
+                  <p>
+                    {t('creators.p3_start', 'Система бронирования')} <span className="font-bold border-b-2 border-blue-600">Satbayev FabLab</span> {t('creators.p3_middle', 'является одним из примеров нашей работы. Проект появился как студенческая инициатива во время обучения в')} <span className="font-black">inVision U</span> {t('creators.p3_end', 'и со временем превратился в полноценный продукт.')}
+                  </p>
+                  <p>
+                    <span className="font-black text-blue-600 uppercase tracking-wide">«ASIR»</span> {t('creators.p4', '— независимый проект, который был полностью придуман и разработан нашей командой.')}
+                  </p>
+                </div>
+
+                <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t-4 border-slate-900">
+                  <h5 className="font-black text-sm sm:text-base uppercase tracking-widest text-slate-900 mb-5 sm:mb-6 text-center sm:text-left">
+                    {t('creators.contacts', 'Связаться с нами')}
+                  </h5>
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                    <a href="https://t.me/iamkofein" target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2.5 bg-blue-600 text-white border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-900 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                      <Send className="w-4 h-4 sm:w-5 sm:h-5" /> Telegram
+                    </a>
+                    
+                    <a href="mailto:rasul.kapash@invisionu.education" className="flex-1 flex items-center justify-center gap-2.5 bg-white text-slate-900 border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                      <Mail className="w-4 h-4 sm:w-5 sm:h-5" /> Email
+                    </a>
+
+                    <a href="tel:+77080781410" className="flex-1 flex items-center justify-center gap-2.5 bg-white text-slate-900 border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                      <Phone className="w-4 h-4 sm:w-5 sm:h-5" /> Phone
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
