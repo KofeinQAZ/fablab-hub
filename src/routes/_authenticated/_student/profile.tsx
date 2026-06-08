@@ -572,10 +572,51 @@ function ProfilePage() {
                 )}
 
                 {authData.profile.safety_briefing_passed && authData.profile.role === "student" && (
-                  <Button onClick={handleRequestResidency} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-widest text-xs h-14 border-2 border-slate-900 rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-                    {t('profile.info.requestResidencyBtn')}
-                  </Button>
-                )}
+  <>
+    <Button onClick={handleRequestResidency} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-widest text-xs h-14 border-2 border-slate-900 rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+      {t('profile.info.requestResidencyBtn')}
+    </Button>
+
+    <Dialog open={residencyDialogOpen} onOpenChange={setResidencyDialogOpen}>
+      <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] flex flex-col max-h-[85vh] outline-none z-50">
+        <div className="bg-purple-600 p-5 flex justify-between items-start border-b-4 border-slate-900 text-white">
+          <DialogTitle className="text-xl font-black uppercase tracking-tighter">{t('profile.residencyDialog.title', 'Заявка на статус резидента')}</DialogTitle>
+          <button onClick={() => setResidencyDialogOpen(false)} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a]">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto space-y-4">
+          <div className="space-y-1">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.residencyDialog.descLabel', 'Опишите ваш опыт и почему вам нужен доступ')}</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('profile.residencyDialog.descPlaceholder', 'Я занимаюсь 3D-моделированием уже 2 года...')}
+              className="h-32 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-purple-600 resize-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.residencyDialog.cvLabel', 'Ссылка на портфолио / резюме')}</Label>
+            <Input
+              type="url"
+              value={cvUrl}
+              onChange={(e) => setCvUrl(e.target.value)}
+              placeholder="https://..."
+              className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm focus-visible:ring-0 focus-visible:border-purple-600"
+            />
+          </div>
+          <Button
+            onClick={handleSubmitResidencyForm}
+            disabled={submittingForm || !description.trim() || !cvUrl.trim()}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-xs h-12 rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4 disabled:bg-slate-300 disabled:text-slate-500 disabled:border-slate-400 disabled:shadow-none"
+          >
+            {submittingForm ? t('profile.residencyDialog.sending', 'Отправка...') : t('profile.residencyDialog.submitBtn', 'Отправить заявку')}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
+)}
 
                 {authData.profile.role === "resident" && (
                   <div className="border-2 border-emerald-500 bg-emerald-50 p-4 text-center">

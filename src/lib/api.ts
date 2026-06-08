@@ -19,6 +19,7 @@ export async function submitAccessRequest({ data }: { data: { type: 'safety_brie
     throw new Error('У вас уже есть активная заявка этого типа.');
   }
 
+  // Просто сохраняем в БД. Триггер Supabase сам должен поймать это событие.
   const { error } = await (supabase as any)
     .from('access_requests')
     .insert({
