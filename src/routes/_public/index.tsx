@@ -342,7 +342,7 @@ function LandingPage() {
                  </span>
               </div>
               
-              {/* <img src="/ваша-фотка.jpg" alt="ASIR Team" className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 z-10" /> */}
+              {<img src="/asir-team.png" alt="ASIR Team" className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 z-10" />}
 
               <div className="absolute bottom-6 right-6 z-20 bg-amber-400 border-4 border-slate-900 px-4 py-2 shadow-[4px_4px_0_#0f172a] transform rotate-[-3deg]">
                 <span className="font-black text-slate-900 uppercase tracking-tighter text-lg sm:text-xl">ASIR TEAM</span>
