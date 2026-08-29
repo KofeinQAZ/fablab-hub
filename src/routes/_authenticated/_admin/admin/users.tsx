@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, Ban, CheckCircle2, AlertCircle, Search, Lock, Unlock, Crown, Mail, Phone, X, User } from "lucide-react";
+import { Shield, Ban, CheckCircle2, AlertCircle, Search, Lock, Unlock, Crown, Mail, Phone, X, User, Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/users")({
   component: UsersPage,
@@ -29,7 +29,9 @@ interface UserProfile {
   id: string;
   name: string;
   email?: string;
-  role: "student" | "resident" | "admin";
+  role: "student" | "resident" | "staff" | "admin";
+  job_title?: string | null;
+  photo_url?: string | null;
   contact_email?: string;
   contact_phone?: string;
   safety_briefing_passed: boolean;
@@ -40,11 +42,14 @@ interface UserProfile {
 function UsersPage() {
   const qc = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | "student" | "resident" | "admin">("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | "student" | "resident" | "staff" | "admin">("all");
   const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">("all");
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [teamDialog, setTeamDialog] = useState(false);
+  const [jobTitle, setJobTitle] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [roleChangeDialog, setRoleChangeDialog] = useState(false);
-  const [newRole, setNewRole] = useState<"student" | "resident" | "admin">("student");
+  const [newRole, setNewRole] = useState<"student" | "resident" | "staff" | "admin">("student");
 
   // Загрузка всех пользователей
   const { data: users = [], isLoading } = useQuery({
@@ -77,7 +82,7 @@ function UsersPage() {
 
   // Смена роли
   const changeRoleMutation = useMutation({
-    mutationFn: async (params: { userId: string; newRole: string }) => {
+    mutationFn: async (params: { userId: string; newRole: any }) => {
       const { error } = await supabase.rpc("change_user_role", {
         target_user_id: params.userId,
         new_role: params.newRole,
@@ -114,10 +119,30 @@ function UsersPage() {
     },
   });
 
+  // Обновление карточки сотрудника (должность + фото)
+  const updateTeamCardMutation = useMutation({
+    mutationFn: async (params: { userId: string; job_title: string; photo_url: string }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ job_title: params.job_title || null, photo_url: params.photo_url || null })
+        .eq("id", params.userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-all-users"] });
+      qc.invalidateQueries({ queryKey: ["team-members"] });
+      setTeamDialog(false);
+      toast.success("✅ КАРТОЧКА СОТРУДНИКА ОБНОВЛЕНА");
+    },
+    onError: (error: any) => toast.error(error.message || "Ошибка при сохранении"),
+  });
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "admin":
         return <span className="bg-blue-600 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a] flex items-center"><Crown className="h-3 w-3 mr-1" /> АДМИН</span>;
+      case "staff":
+        return <span className="bg-amber-400 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a] flex items-center"><Briefcase className="h-3 w-3 mr-1" /> СОТРУДНИК</span>;
       case "resident":
         return <span className="bg-purple-500 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a] flex items-center"><CheckCircle2 className="h-3 w-3 mr-1" /> РЕЗИДЕНТ</span>;
       default:
@@ -178,6 +203,7 @@ function UsersPage() {
               <SelectItem value="all" className="font-bold uppercase text-xs">Все роли</SelectItem>
               <SelectItem value="student" className="font-bold uppercase text-xs">Студенты</SelectItem>
               <SelectItem value="resident" className="font-bold uppercase text-xs">Резиденты</SelectItem>
+              <SelectItem value="staff" className="font-bold uppercase text-xs">Сотрудники</SelectItem>
               <SelectItem value="admin" className="font-bold uppercase text-xs">Администраторы</SelectItem>
             </SelectContent>
           </Select>
@@ -251,7 +277,7 @@ function UsersPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 mt-auto">
+                <div className="flex flex-wrap gap-3 mt-auto">
                   <Dialog open={selectedUser?.id === user.id && roleChangeDialog} onOpenChange={(open) => {
                     if (!open) setRoleChangeDialog(false);
                     setSelectedUser(open ? user : null);
@@ -287,6 +313,7 @@ function UsersPage() {
                             <SelectContent className="rounded-none border-4 border-slate-900 shadow-[4px_4px_0_#0f172a]">
                               <SelectItem value="student" className="font-bold uppercase text-xs py-3">Студент</SelectItem>
                               <SelectItem value="resident" className="font-bold uppercase text-xs py-3">Резидент</SelectItem>
+                              <SelectItem value="staff" className="font-bold uppercase text-xs py-3">Сотрудник</SelectItem>
                               <SelectItem value="admin" className="font-bold uppercase text-xs py-3">Администратор</SelectItem>
                             </SelectContent>
                           </Select>
@@ -297,6 +324,68 @@ function UsersPage() {
                           className="w-full h-14 bg-emerald-400 hover:bg-emerald-500 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-4"
                         >
                           {changeRoleMutation.isPending ? "СОХРАНЕНИЕ..." : "УТВЕРДИТЬ"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Dialog open={selectedUser?.id === user.id && teamDialog} onOpenChange={(open) => {
+                    if (!open) setTeamDialog(false);
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button
+                        className="flex-1 bg-amber-400 border-2 border-slate-900 text-slate-900 font-black uppercase tracking-widest text-[10px] h-12 rounded-none shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setJobTitle(user.job_title || "");
+                          setPhotoUrl(user.photo_url || "");
+                          setTeamDialog(true);
+                        }}
+                      >
+                        Анкета
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-0 border-4 border-slate-900 bg-white rounded-none shadow-[12px_12px_0_#0f172a] outline-none z-50 [&>button]:hidden">
+                      <div className="bg-slate-900 p-5 flex justify-between items-start border-b-4 border-slate-900 text-white">
+                        <DialogTitle className="text-xl font-black uppercase tracking-tighter">Карточка команды</DialogTitle>
+                        <button onClick={() => setTeamDialog(false)} className="p-1.5 bg-white text-slate-900 border-2 border-slate-900 hover:bg-rose-500 hover:text-white transition-colors shadow-[2px_2px_0_#0f172a]">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="p-6 space-y-4">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          ФИО: <span className="text-slate-900">{user.name}</span>
+                        </p>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Должность</label>
+                          <Input
+                            value={jobTitle}
+                            onChange={(e) => setJobTitle(e.target.value)}
+                            placeholder="НАПРИМЕР: ИНЖЕНЕР ЛАБОРАТОРИИ"
+                            className="h-14 rounded-none border-2 border-slate-900 bg-slate-50 font-bold focus-visible:ring-0"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ссылка на фото</label>
+                          <Input
+                            value={photoUrl}
+                            onChange={(e) => setPhotoUrl(e.target.value)}
+                            placeholder="https://..."
+                            className="h-14 rounded-none border-2 border-slate-900 bg-slate-50 font-bold focus-visible:ring-0"
+                          />
+                        </div>
+                        {photoUrl && (
+                          <img src={photoUrl} alt={user.name} className="h-32 w-32 object-cover border-4 border-slate-900" />
+                        )}
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                          Карточка появится во вкладке «Команда» только у роли «Сотрудник».
+                        </p>
+                        <Button
+                          onClick={() => updateTeamCardMutation.mutate({ userId: user.id, job_title: jobTitle, photo_url: photoUrl })}
+                          disabled={updateTeamCardMutation.isPending}
+                          className="w-full h-14 bg-emerald-400 hover:bg-emerald-500 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                        >
+                          {updateTeamCardMutation.isPending ? "СОХРАНЕНИЕ..." : "СОХРАНИТЬ"}
                         </Button>
                       </div>
                     </DialogContent>

@@ -19,6 +19,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNewsRouteImport } from './routes/_authenticated/news'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicTeamRouteImport } from './routes/_public/team'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as AuthenticatedStudentBookingRouteImport } from './routes/_authenticated/_student/booking'
 import { Route as AuthenticatedStudentPortableRouteImport } from './routes/_authenticated/_student/portable'
@@ -78,6 +79,11 @@ const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicTeamRoute = PublicTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
   getParentRoute: () => PublicRoute,
 } as any)
 const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/news': typeof AuthenticatedNewsRoute
   '/projects': typeof AuthenticatedProjectsRoute
+  '/team': typeof PublicTeamRoute
   '/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/news': typeof AuthenticatedNewsRoute
   '/projects': typeof AuthenticatedProjectsRoute
+  '/team': typeof PublicTeamRoute
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
   '/profile': typeof AuthenticatedStudentProfileRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/news': typeof AuthenticatedNewsRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
+  '/_public/team': typeof PublicTeamRoute
   '/_public/': typeof PublicIndexRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/_authenticated/_student/booking': typeof AuthenticatedStudentBookingRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/news'
     | '/projects'
+    | '/team'
     | '/admin'
     | '/booking'
     | '/portable'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/news'
     | '/projects'
+    | '/team'
     | '/booking'
     | '/portable'
     | '/profile'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/news'
     | '/_authenticated/projects'
+    | '/_public/team'
     | '/_public/'
     | '/_authenticated/_admin/admin'
     | '/_authenticated/_student/booking'
@@ -383,6 +395,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/team': {
+      id: '/_public/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof PublicTeamRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_authenticated/_admin/admin': {
@@ -567,10 +586,12 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface PublicRouteChildren {
+  PublicTeamRoute: typeof PublicTeamRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicTeamRoute: PublicTeamRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 

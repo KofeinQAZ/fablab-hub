@@ -3,7 +3,8 @@
     "home": "Home",
     "booking": "Booking",
     "media": "Media",
-    "projects": "Projects"
+    "projects": "Projects",
+    "team": "Team"
   },
   "auth": {
     "login": "Sign In",
@@ -482,13 +483,13 @@
     "accessDenied": "Access denied. Administrator privileges required"
   },
   "forgotPassword": "Forgot password?",
-    "reset": {
-      "title": "Reset Password",
-      "subtitle": "Enter your email, and we will send you a reset link.",
-      "btn": "Send Reset Link",
-      "sending": "Sending...",
-      "back": "Back to Sign In"
-    },
+  "reset": {
+    "title": "Reset Password",
+    "subtitle": "Enter your email, and we will send you a reset link.",
+    "btn": "Send Reset Link",
+    "sending": "Sending...",
+    "back": "Back to Sign In"
+  },
   "creators": {
     "btnPre": "Platform Development",
     "btnMain": "About the Creators",

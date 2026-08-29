@@ -94,7 +94,7 @@ function NewsFeedPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-blue-600 selection:text-white">
-      <AppHeader profile={profile} />
+      <AppHeader profile={profile ?? null} />
 
       {isLoading ? (
         <div className="p-20 text-center font-black uppercase tracking-widest text-xs text-slate-400 animate-pulse">{t('news.loading')}</div>

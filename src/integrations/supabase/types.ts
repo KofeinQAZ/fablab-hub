@@ -316,7 +316,9 @@ export type Database = {
           created_at: string
           id: string
           is_banned: boolean
+          job_title: string | null
           name: string
+          photo_url: string | null
           role: Database["public"]["Enums"]["app_role"]
           safety_briefing_passed: boolean
           updated_at: string
@@ -328,7 +330,9 @@ export type Database = {
           created_at?: string
           id: string
           is_banned?: boolean
+          job_title?: string | null
           name?: string
+          photo_url?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           safety_briefing_passed?: boolean
           updated_at?: string
@@ -340,7 +344,9 @@ export type Database = {
           created_at?: string
           id?: string
           is_banned?: boolean
+          job_title?: string | null
           name?: string
+          photo_url?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           safety_briefing_passed?: boolean
           updated_at?: string
@@ -504,6 +510,16 @@ export type Database = {
       }
       check_if_admin: { Args: never; Returns: boolean }
       check_if_banned: { Args: never; Returns: boolean }
+      get_team_members: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          job_title: string
+          name: string
+          photo_url: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -518,7 +534,7 @@ export type Database = {
     }
     Enums: {
       access_request_type: "safety_briefing" | "residency"
-      app_role: "student" | "resident" | "admin"
+      app_role: "student" | "resident" | "admin" | "staff"
       application_status: "pending" | "accepted" | "rejected"
       article_category: "news" | "article"
       booking_status: "pending" | "active" | "cancelled" | "completed"
@@ -659,7 +675,7 @@ export const Constants = {
   public: {
     Enums: {
       access_request_type: ["safety_briefing", "residency"],
-      app_role: ["student", "resident", "admin"],
+      app_role: ["student", "resident", "admin", "staff"],
       application_status: ["pending", "accepted", "rejected"],
       article_category: ["news", "article"],
       booking_status: ["pending", "active", "cancelled", "completed"],

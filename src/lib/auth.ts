@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "student" | "resident" | "admin";
+export type AppRole = "student" | "resident" | "staff" | "admin";
 
 export type UserProfile = {
   id: string;
   name: string;
   role: AppRole;
   safety_briefing_passed: boolean;
-  contact_email?: string;
-  contact_phone?: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  job_title?: string | null;
+  photo_url?: string | null;
   is_banned?: boolean;
 };
 
