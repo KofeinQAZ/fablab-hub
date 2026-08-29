@@ -9,34 +9,37 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UpdatePasswordRouteImport } from './routes/update-password'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as PublicIndexRouteImport } from './routes/_public/index'
-import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
-import { Route as AuthenticatedNewsRouteImport } from './routes/_authenticated/news'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/_student'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as UpdatePasswordRouteImport } from './routes/update-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
-import { Route as AuthenticatedStudentStationaryRouteImport } from './routes/_authenticated/_student/stationary'
-import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/_student/profile'
-import { Route as AuthenticatedStudentPortableRouteImport } from './routes/_authenticated/_student/portable'
-import { Route as AuthenticatedStudentBookingRouteImport } from './routes/_authenticated/_student/booking'
+import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/_student'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedNewsRouteImport } from './routes/_authenticated/news'
+import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
+import { Route as AuthenticatedStudentBookingRouteImport } from './routes/_authenticated/_student/booking'
+import { Route as AuthenticatedStudentPortableRouteImport } from './routes/_authenticated/_student/portable'
+import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/_student/profile'
+import { Route as AuthenticatedStudentStationaryRouteImport } from './routes/_authenticated/_student/stationary'
 import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_authenticated/_admin/admin/index'
-import { Route as AuthenticatedAdminAdminUsersRouteImport } from './routes/_authenticated/_admin/admin/users'
-import { Route as AuthenticatedAdminAdminStatisticsRouteImport } from './routes/_authenticated/_admin/admin/statistics'
-import { Route as AuthenticatedAdminAdminScheduleRouteImport } from './routes/_authenticated/_admin/admin/schedule'
-import { Route as AuthenticatedAdminAdminRequestsRouteImport } from './routes/_authenticated/_admin/admin/requests'
-import { Route as AuthenticatedAdminAdminProjectsRouteImport } from './routes/_authenticated/_admin/admin/projects'
-import { Route as AuthenticatedAdminAdminNewsRouteImport } from './routes/_authenticated/_admin/admin/news'
-import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
 import { Route as AuthenticatedAdminAdminBookingsRouteImport } from './routes/_authenticated/_admin/admin/bookings'
+import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
+import { Route as AuthenticatedAdminAdminNewsRouteImport } from './routes/_authenticated/_admin/admin/news'
+import { Route as AuthenticatedAdminAdminProjectsRouteImport } from './routes/_authenticated/_admin/admin/projects'
+import { Route as AuthenticatedAdminAdminRequestsRouteImport } from './routes/_authenticated/_admin/admin/requests'
+import { Route as AuthenticatedAdminAdminScheduleRouteImport } from './routes/_authenticated/_admin/admin/schedule'
+import { Route as AuthenticatedAdminAdminStatisticsRouteImport } from './routes/_authenticated/_admin/admin/statistics'
+import { Route as AuthenticatedAdminAdminUsersRouteImport } from './routes/_authenticated/_admin/admin/users'
 
-const UpdatePasswordRoute = UpdatePasswordRouteImport.update({
-  id: '/update-password',
-  path: '/update-password',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -44,27 +47,17 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicRoute = PublicRouteImport.update({
-  id: '/_public',
+const UpdatePasswordRoute = UpdatePasswordRouteImport.update({
+  id: '/update-password',
+  path: '/update-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PublicIndexRoute = PublicIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PublicRoute,
-} as any)
-const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedNewsRoute = AuthenticatedNewsRouteImport.update({
-  id: '/news',
-  path: '/news',
+const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
+  id: '/_student',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -72,24 +65,30 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
-  id: '/_student',
+const AuthenticatedNewsRoute = AuthenticatedNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/_admin',
+const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedStudentStationaryRoute =
-  AuthenticatedStudentStationaryRouteImport.update({
-    id: '/stationary',
-    path: '/stationary',
-    getParentRoute: () => AuthenticatedStudentRoute,
-  } as any)
-const AuthenticatedStudentProfileRoute =
-  AuthenticatedStudentProfileRouteImport.update({
-    id: '/profile',
-    path: '/profile',
+const PublicIndexRoute = PublicIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedStudentBookingRoute =
+  AuthenticatedStudentBookingRouteImport.update({
+    id: '/booking',
+    path: '/booking',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentPortableRoute =
@@ -98,57 +97,28 @@ const AuthenticatedStudentPortableRoute =
     path: '/portable',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
-const AuthenticatedStudentBookingRoute =
-  AuthenticatedStudentBookingRouteImport.update({
-    id: '/booking',
-    path: '/booking',
+const AuthenticatedStudentProfileRoute =
+  AuthenticatedStudentProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
-const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedAdminRoute,
-} as any)
+const AuthenticatedStudentStationaryRoute =
+  AuthenticatedStudentStationaryRouteImport.update({
+    id: '/stationary',
+    path: '/stationary',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
 const AuthenticatedAdminAdminIndexRoute =
   AuthenticatedAdminAdminIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
-const AuthenticatedAdminAdminUsersRoute =
-  AuthenticatedAdminAdminUsersRouteImport.update({
-    id: '/users',
-    path: '/users',
-    getParentRoute: () => AuthenticatedAdminAdminRoute,
-  } as any)
-const AuthenticatedAdminAdminStatisticsRoute =
-  AuthenticatedAdminAdminStatisticsRouteImport.update({
-    id: '/statistics',
-    path: '/statistics',
-    getParentRoute: () => AuthenticatedAdminAdminRoute,
-  } as any)
-const AuthenticatedAdminAdminScheduleRoute =
-  AuthenticatedAdminAdminScheduleRouteImport.update({
-    id: '/schedule',
-    path: '/schedule',
-    getParentRoute: () => AuthenticatedAdminAdminRoute,
-  } as any)
-const AuthenticatedAdminAdminRequestsRoute =
-  AuthenticatedAdminAdminRequestsRouteImport.update({
-    id: '/requests',
-    path: '/requests',
-    getParentRoute: () => AuthenticatedAdminAdminRoute,
-  } as any)
-const AuthenticatedAdminAdminProjectsRoute =
-  AuthenticatedAdminAdminProjectsRouteImport.update({
-    id: '/projects',
-    path: '/projects',
-    getParentRoute: () => AuthenticatedAdminAdminRoute,
-  } as any)
-const AuthenticatedAdminAdminNewsRoute =
-  AuthenticatedAdminAdminNewsRouteImport.update({
-    id: '/news',
-    path: '/news',
+const AuthenticatedAdminAdminBookingsRoute =
+  AuthenticatedAdminAdminBookingsRouteImport.update({
+    id: '/bookings',
+    path: '/bookings',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
 const AuthenticatedAdminAdminEquipmentRoute =
@@ -157,10 +127,40 @@ const AuthenticatedAdminAdminEquipmentRoute =
     path: '/equipment',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
-const AuthenticatedAdminAdminBookingsRoute =
-  AuthenticatedAdminAdminBookingsRouteImport.update({
-    id: '/bookings',
-    path: '/bookings',
+const AuthenticatedAdminAdminNewsRoute =
+  AuthenticatedAdminAdminNewsRouteImport.update({
+    id: '/news',
+    path: '/news',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminProjectsRoute =
+  AuthenticatedAdminAdminProjectsRouteImport.update({
+    id: '/projects',
+    path: '/projects',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminRequestsRoute =
+  AuthenticatedAdminAdminRequestsRouteImport.update({
+    id: '/requests',
+    path: '/requests',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminScheduleRoute =
+  AuthenticatedAdminAdminScheduleRouteImport.update({
+    id: '/schedule',
+    path: '/schedule',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminStatisticsRoute =
+  AuthenticatedAdminAdminStatisticsRouteImport.update({
+    id: '/statistics',
+    path: '/statistics',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminUsersRoute =
+  AuthenticatedAdminAdminUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
 
@@ -315,18 +315,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/update-password': {
-      id: '/update-password'
-      path: '/update-password'
-      fullPath: '/update-password'
-      preLoaderRoute: typeof UpdatePasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public': {
@@ -336,39 +329,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/': {
-      id: '/_public/'
-      path: '/'
+    '/update-password': {
+      id: '/update-password'
+      path: '/update-password'
+      fullPath: '/update-password'
+      preLoaderRoute: typeof UpdatePasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_admin': {
+      id: '/_authenticated/_admin'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_authenticated/projects': {
-      id: '/_authenticated/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/news': {
-      id: '/_authenticated/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof AuthenticatedNewsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/_student': {
@@ -378,25 +357,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_admin': {
-      id: '/_authenticated/_admin'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_student/stationary': {
-      id: '/_authenticated/_student/stationary'
-      path: '/stationary'
-      fullPath: '/stationary'
-      preLoaderRoute: typeof AuthenticatedStudentStationaryRouteImport
-      parentRoute: typeof AuthenticatedStudentRoute
+    '/_authenticated/news': {
+      id: '/_authenticated/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof AuthenticatedNewsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_student/profile': {
-      id: '/_authenticated/_student/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_public/': {
+      id: '/_public/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_authenticated/_admin/admin': {
+      id: '/_authenticated/_admin/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminAdminRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/_student/booking': {
+      id: '/_authenticated/_student/booking'
+      path: '/booking'
+      fullPath: '/booking'
+      preLoaderRoute: typeof AuthenticatedStudentBookingRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/_student/portable': {
@@ -406,19 +406,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentPortableRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
-    '/_authenticated/_student/booking': {
-      id: '/_authenticated/_student/booking'
-      path: '/booking'
-      fullPath: '/booking'
-      preLoaderRoute: typeof AuthenticatedStudentBookingRouteImport
+    '/_authenticated/_student/profile': {
+      id: '/_authenticated/_student/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
-    '/_authenticated/_admin/admin': {
-      id: '/_authenticated/_admin/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminAdminRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+    '/_authenticated/_student/stationary': {
+      id: '/_authenticated/_student/stationary'
+      path: '/stationary'
+      fullPath: '/stationary'
+      preLoaderRoute: typeof AuthenticatedStudentStationaryRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/_admin/admin/': {
       id: '/_authenticated/_admin/admin/'
@@ -427,46 +427,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
-    '/_authenticated/_admin/admin/users': {
-      id: '/_authenticated/_admin/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthenticatedAdminAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedAdminAdminRoute
-    }
-    '/_authenticated/_admin/admin/statistics': {
-      id: '/_authenticated/_admin/admin/statistics'
-      path: '/statistics'
-      fullPath: '/admin/statistics'
-      preLoaderRoute: typeof AuthenticatedAdminAdminStatisticsRouteImport
-      parentRoute: typeof AuthenticatedAdminAdminRoute
-    }
-    '/_authenticated/_admin/admin/schedule': {
-      id: '/_authenticated/_admin/admin/schedule'
-      path: '/schedule'
-      fullPath: '/admin/schedule'
-      preLoaderRoute: typeof AuthenticatedAdminAdminScheduleRouteImport
-      parentRoute: typeof AuthenticatedAdminAdminRoute
-    }
-    '/_authenticated/_admin/admin/requests': {
-      id: '/_authenticated/_admin/admin/requests'
-      path: '/requests'
-      fullPath: '/admin/requests'
-      preLoaderRoute: typeof AuthenticatedAdminAdminRequestsRouteImport
-      parentRoute: typeof AuthenticatedAdminAdminRoute
-    }
-    '/_authenticated/_admin/admin/projects': {
-      id: '/_authenticated/_admin/admin/projects'
-      path: '/projects'
-      fullPath: '/admin/projects'
-      preLoaderRoute: typeof AuthenticatedAdminAdminProjectsRouteImport
-      parentRoute: typeof AuthenticatedAdminAdminRoute
-    }
-    '/_authenticated/_admin/admin/news': {
-      id: '/_authenticated/_admin/admin/news'
-      path: '/news'
-      fullPath: '/admin/news'
-      preLoaderRoute: typeof AuthenticatedAdminAdminNewsRouteImport
+    '/_authenticated/_admin/admin/bookings': {
+      id: '/_authenticated/_admin/admin/bookings'
+      path: '/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AuthenticatedAdminAdminBookingsRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
     '/_authenticated/_admin/admin/equipment': {
@@ -476,11 +441,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminEquipmentRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
-    '/_authenticated/_admin/admin/bookings': {
-      id: '/_authenticated/_admin/admin/bookings'
-      path: '/bookings'
-      fullPath: '/admin/bookings'
-      preLoaderRoute: typeof AuthenticatedAdminAdminBookingsRouteImport
+    '/_authenticated/_admin/admin/news': {
+      id: '/_authenticated/_admin/admin/news'
+      path: '/news'
+      fullPath: '/admin/news'
+      preLoaderRoute: typeof AuthenticatedAdminAdminNewsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/projects': {
+      id: '/_authenticated/_admin/admin/projects'
+      path: '/projects'
+      fullPath: '/admin/projects'
+      preLoaderRoute: typeof AuthenticatedAdminAdminProjectsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/requests': {
+      id: '/_authenticated/_admin/admin/requests'
+      path: '/requests'
+      fullPath: '/admin/requests'
+      preLoaderRoute: typeof AuthenticatedAdminAdminRequestsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/schedule': {
+      id: '/_authenticated/_admin/admin/schedule'
+      path: '/schedule'
+      fullPath: '/admin/schedule'
+      preLoaderRoute: typeof AuthenticatedAdminAdminScheduleRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/statistics': {
+      id: '/_authenticated/_admin/admin/statistics'
+      path: '/statistics'
+      fullPath: '/admin/statistics'
+      preLoaderRoute: typeof AuthenticatedAdminAdminStatisticsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/users': {
+      id: '/_authenticated/_admin/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
   }
