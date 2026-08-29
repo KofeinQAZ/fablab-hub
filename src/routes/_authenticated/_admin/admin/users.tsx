@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, Ban, CheckCircle2, AlertCircle, Search, Lock, Unlock, Crown, Mail, Phone, X, User } from "lucide-react";
+import { Shield, Ban, CheckCircle2, AlertCircle, Search, Lock, Unlock, Crown, Mail, Phone, X, User, Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/users")({
   component: UsersPage,
@@ -29,7 +29,9 @@ interface UserProfile {
   id: string;
   name: string;
   email?: string;
-  role: "student" | "resident" | "admin";
+  role: "student" | "resident" | "staff" | "admin";
+  job_title?: string | null;
+  photo_url?: string | null;
   contact_email?: string;
   contact_phone?: string;
   safety_briefing_passed: boolean;
@@ -40,7 +42,7 @@ interface UserProfile {
 function UsersPage() {
   const qc = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | "student" | "resident" | "admin">("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | "student" | "resident" | "staff" | "admin">("all");
   const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">("all");
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [roleChangeDialog, setRoleChangeDialog] = useState(false);
@@ -77,7 +79,7 @@ function UsersPage() {
 
   // Смена роли
   const changeRoleMutation = useMutation({
-    mutationFn: async (params: { userId: string; newRole: string }) => {
+    mutationFn: async (params: { userId: string; newRole: any }) => {
       const { error } = await supabase.rpc("change_user_role", {
         target_user_id: params.userId,
         new_role: params.newRole,
@@ -118,6 +120,8 @@ function UsersPage() {
     switch (role) {
       case "admin":
         return <span className="bg-blue-600 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a] flex items-center"><Crown className="h-3 w-3 mr-1" /> АДМИН</span>;
+      case "staff":
+        return <span className="bg-amber-400 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a] flex items-center"><Briefcase className="h-3 w-3 mr-1" /> СОТРУДНИК</span>;
       case "resident":
         return <span className="bg-purple-500 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a] flex items-center"><CheckCircle2 className="h-3 w-3 mr-1" /> РЕЗИДЕНТ</span>;
       default:
@@ -178,6 +182,7 @@ function UsersPage() {
               <SelectItem value="all" className="font-bold uppercase text-xs">Все роли</SelectItem>
               <SelectItem value="student" className="font-bold uppercase text-xs">Студенты</SelectItem>
               <SelectItem value="resident" className="font-bold uppercase text-xs">Резиденты</SelectItem>
+              <SelectItem value="staff" className="font-bold uppercase text-xs">Сотрудники</SelectItem>
               <SelectItem value="admin" className="font-bold uppercase text-xs">Администраторы</SelectItem>
             </SelectContent>
           </Select>
@@ -287,6 +292,7 @@ function UsersPage() {
                             <SelectContent className="rounded-none border-4 border-slate-900 shadow-[4px_4px_0_#0f172a]">
                               <SelectItem value="student" className="font-bold uppercase text-xs py-3">Студент</SelectItem>
                               <SelectItem value="resident" className="font-bold uppercase text-xs py-3">Резидент</SelectItem>
+                              <SelectItem value="staff" className="font-bold uppercase text-xs py-3">Сотрудник</SelectItem>
                               <SelectItem value="admin" className="font-bold uppercase text-xs py-3">Администратор</SelectItem>
                             </SelectContent>
                           </Select>
