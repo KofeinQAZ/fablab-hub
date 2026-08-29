@@ -49,7 +49,7 @@ function UsersPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [roleChangeDialog, setRoleChangeDialog] = useState(false);
-  const [newRole, setNewRole] = useState<"student" | "resident" | "admin">("student");
+  const [newRole, setNewRole] = useState<"student" | "resident" | "staff" | "admin">("student");
 
   // Загрузка всех пользователей
   const { data: users = [], isLoading } = useQuery({

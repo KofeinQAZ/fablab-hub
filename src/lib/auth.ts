@@ -9,8 +9,10 @@ export type UserProfile = {
   name: string;
   role: AppRole;
   safety_briefing_passed: boolean;
-  contact_email?: string;
-  contact_phone?: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  job_title?: string | null;
+  photo_url?: string | null;
   is_banned?: boolean;
 };
 
