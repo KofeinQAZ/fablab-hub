@@ -195,7 +195,15 @@ function BookingPage() {
                     </p>
                   </div>
 
-                  <div className="mt-auto pt-4 border-t-2 border-slate-100">
+                  <div className="mt-auto pt-4 border-t-2 border-slate-100 space-y-3">
+                    <Button
+                      onClick={() => setInfoEquipment(item)}
+                      variant="outline"
+                      className="w-full h-12 border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-black uppercase tracking-widest text-[11px] rounded-none shadow-[3px_3px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                    >
+                      Подробнее
+                    </Button>
+
                     {item.status === 'maintenance' ? (
                       <Button disabled className="w-full h-14 border-2 border-slate-400 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-xs rounded-none cursor-not-allowed shadow-none">
                         <AlertCircle className="w-4 h-4 mr-2 shrink-0" /> {t('booking.card.maintenance')}
