@@ -525,6 +525,27 @@ function AdminEquipmentPage() {
                 <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.specs} onChange={(e) => setForm((prev) => ({ ...prev, specs: e.target.value }))} />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Галерея фото (по одной ссылке в строке)</Label>
+              <Textarea
+                className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-28"
+                placeholder={"https://.../photo-1.jpg\nhttps://.../photo-2.jpg"}
+                value={form.gallery_urls}
+                onChange={(e) => setForm((prev) => ({ ...prev, gallery_urls: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Видео YouTube (ссылка)</Label>
+              <Input
+                className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={form.video_url}
+                onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
+              />
+            </div>
+
           </div>
           
           <div className="p-6 pt-0 flex justify-end gap-3 bg-slate-50 border-t-2 border-slate-200 mt-4">
