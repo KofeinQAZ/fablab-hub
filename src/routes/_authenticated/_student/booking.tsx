@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EquipmentDetailDialog, EquipmentDetails } from "@/components/equipment-detail-dialog";
+import { EquipmentInfoDialog } from "@/components/equipment-info-dialog";
+
 import { Lock, AlertCircle, Laptop, Printer, HardHat, Crown, CheckCircle2, ShieldAlert, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
