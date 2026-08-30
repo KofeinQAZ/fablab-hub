@@ -168,7 +168,7 @@ function BookingPage() {
             return (
               <Card key={item.id} className="border-4 border-slate-900 rounded-none bg-white shadow-[6px_6px_0_#0f172a] hover:shadow-[12px_12px_0_#005BAB] hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 flex flex-col overflow-hidden group">
                 
-                <div className="h-48 bg-slate-900 border-b-4 border-slate-900 relative overflow-hidden shrink-0">
+                <div onClick={() => setInfoEquipment(item)} className="h-48 bg-slate-900 border-b-4 border-slate-900 relative overflow-hidden shrink-0 cursor-pointer">
                   {item.image_url ? (
                     <img src={item.image_url} alt={localizedName} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
                   ) : (
