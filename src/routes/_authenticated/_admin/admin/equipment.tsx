@@ -167,6 +167,11 @@ function AdminEquipmentPage() {
         description_kz: validated.description_kz || null,
         description_en: validated.description_en || null,
         specs: validated.specs || null,
+        gallery_urls: validated.gallery_urls
+          .split(/[\n,]/)
+          .map((v) => v.trim())
+          .filter(Boolean),
+        video_url: validated.video_url || null,
       };
 
       const table = supabase.from("equipment");
@@ -227,6 +232,7 @@ function AdminEquipmentPage() {
       name: item.name, name_kz: item.name_kz || "", name_en: item.name_en || "", category: item.category, status: item.status,
       access_type: item.access_type || "basic", image_url: item.image_url || "",
       description: item.description || "", description_kz: item.description_kz || "", description_en: item.description_en || "", specs: item.specs || "",
+      gallery_urls: (item.gallery_urls ?? []).join("\n"), video_url: item.video_url || "",
     });
     setCatalogOpen(true);
   };
