@@ -240,6 +240,28 @@ function BookingPage() {
         onClose={() => setSelectedEquipment(null)}
         onSuccess={() => setSelectedEquipment(null)}
       />
+
+      <EquipmentInfoDialog
+        open={!!infoEquipment}
+        equipment={infoEquipment}
+        canBook={
+          infoEquipment
+            ? infoEquipment.status !== "maintenance" &&
+              checkAccess(infoEquipment.access_type || "basic").hasAccess
+            : false
+        }
+        bookDisabledReason={
+          infoEquipment?.status === "maintenance"
+            ? t("booking.card.maintenance")
+            : checkAccess(infoEquipment?.access_type || "basic").reason
+        }
+        onClose={() => setInfoEquipment(null)}
+        onBook={() => {
+          setSelectedEquipment(infoEquipment);
+          setInfoEquipment(null);
+        }}
+      />
+
     </main>
   );
 }
