@@ -192,6 +192,7 @@ export type Database = {
           description: string | null
           description_en: string | null
           description_kz: string | null
+          gallery_urls: string[]
           id: string
           image_url: string | null
           name: string
@@ -200,6 +201,7 @@ export type Database = {
           specs: string | null
           status: Database["public"]["Enums"]["equipment_status"]
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           access_type?: Database["public"]["Enums"]["equipment_access_type"]
@@ -208,6 +210,7 @@ export type Database = {
           description?: string | null
           description_en?: string | null
           description_kz?: string | null
+          gallery_urls?: string[]
           id?: string
           image_url?: string | null
           name: string
@@ -216,6 +219,7 @@ export type Database = {
           specs?: string | null
           status?: Database["public"]["Enums"]["equipment_status"]
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           access_type?: Database["public"]["Enums"]["equipment_access_type"]
@@ -224,6 +228,7 @@ export type Database = {
           description?: string | null
           description_en?: string | null
           description_kz?: string | null
+          gallery_urls?: string[]
           id?: string
           image_url?: string | null
           name?: string
@@ -232,6 +237,7 @@ export type Database = {
           specs?: string | null
           status?: Database["public"]["Enums"]["equipment_status"]
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
