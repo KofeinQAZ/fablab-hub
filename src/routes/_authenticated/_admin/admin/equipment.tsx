@@ -131,8 +131,7 @@ function AdminEquipmentPage() {
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [form, setForm] = useState({
     name: "", name_kz: "", name_en: "", category: "stationary" as Equipment["category"], status: "active" as Equipment["status"],
-    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", description_kz: "", description_en: "", specs: "",
-  });
+    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "", });
 
   const { data: equipment } = useQuery({
     queryKey: ["admin-equipment"],
@@ -181,7 +180,7 @@ function AdminEquipmentPage() {
       toast.success(editingEquipment ? "Оборудование обновлено" : "Оборудование добавлено");
       setCatalogOpen(false);
       setEditingEquipment(null);
-      setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "" });
+      setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "" });
       qc.invalidateQueries({ queryKey: ["admin-equipment"] });
     },
     onError: (error: Error) => {
@@ -218,7 +217,7 @@ function AdminEquipmentPage() {
 
   const openCreate = () => {
     setEditingEquipment(null);
-    setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "" });
+    setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "" });
     setCatalogOpen(true);
   };
 
