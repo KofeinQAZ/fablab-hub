@@ -28,6 +28,8 @@ function BookingPage() {
   const { t, i18n } = useTranslation();
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentDetails | null>(null);
   const [category, setCategory] = useState<"stationary" | "portable">("stationary");
+  const [infoEquipment, setInfoEquipment] = useState<EquipmentDetails | null>(null);
+
 
   const { data: profile } = useQuery({
     queryKey: ["user-profile-briefing"],
