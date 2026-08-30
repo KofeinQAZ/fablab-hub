@@ -186,7 +186,7 @@ function BookingPage() {
 
                 <CardContent className="p-6 flex flex-col flex-1 justify-between gap-6">
                   <div className="space-y-4">
-                    <h3 className="font-black text-xl md:text-2xl text-slate-900 uppercase tracking-tight leading-tight line-clamp-2">{localizedName}</h3>
+                    <h3 onClick={() => setInfoEquipment(item)} className="font-black text-xl md:text-2xl text-slate-900 uppercase tracking-tight leading-tight line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors">{localizedName}</h3>
                     
                     {renderAccessMarker(accessType)}
                     
