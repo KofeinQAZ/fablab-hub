@@ -38,6 +38,8 @@ type Equipment = {
   description_kz?: string | null;
   description_en?: string | null;
   specs?: string | null;
+  gallery_urls?: string[] | null;
+  video_url?: string | null;
 };
 
 const htmlTagPattern = /<[^>]*>/;
@@ -91,7 +93,25 @@ const equipmentFormSchema = z.object({
     .string()
     .max(500, "Параметры не должны превышать 500 символов")
     .refine((value) => !htmlTagPattern.test(value), "Параметры содержат недопустимые символы"),
+  gallery_urls: z
+    .string()
+    .max(3000, "Слишком много ссылок")
+    .refine(
+      (value) =>
+        value
+          .split(/[\n,]/)
+          .map((v) => v.trim())
+          .filter(Boolean)
+          .every((v) => /^https?:\/\/.+/i.test(v)),
+      "Каждая ссылка должна начинаться с http(s)://",
+    ),
+  video_url: z
+    .string()
+    .trim()
+    .max(500, "Ссылка слишком длинная")
+    .refine((value) => value === "" || /^https?:\/\/.+/i.test(value), "Введите корректную ссылку на видео"),
 });
+
 
 const renderAccessBadge = (accessType: string) => {
   const baseClasses = "font-black uppercase tracking-widest text-[10px] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]";
