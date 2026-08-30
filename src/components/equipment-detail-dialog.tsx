@@ -16,6 +16,25 @@ const getLocalized = (obj: any, field: string, lang: string) => {
   return obj[`${field}_${lang}`] || obj[field] || '';
 };
 
+export type EquipmentDetails = {
+  id: string;
+  name: string;
+  name_kz?: string | null;
+  name_en?: string | null;
+  description?: string | null;
+  description_kz?: string | null;
+  description_en?: string | null;
+  specs?: string | null;
+  category?: string;
+  status?: string;
+  access_type?: string;
+  image_url?: string | null;
+  gallery_urls?: string[] | null;
+  video_url?: string | null;
+  [key: string]: any;
+};
+
+
 export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSuccess }: any) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();

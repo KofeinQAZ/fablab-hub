@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EquipmentDetailDialog, EquipmentDetails } from "@/components/equipment-detail-dialog";
+import { EquipmentInfoDialog } from "@/components/equipment-info-dialog";
+
 import { Lock, AlertCircle, Laptop, Printer, HardHat, Crown, CheckCircle2, ShieldAlert, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -26,6 +28,8 @@ function BookingPage() {
   const { t, i18n } = useTranslation();
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentDetails | null>(null);
   const [category, setCategory] = useState<"stationary" | "portable">("stationary");
+  const [infoEquipment, setInfoEquipment] = useState<EquipmentDetails | null>(null);
+
 
   const { data: profile } = useQuery({
     queryKey: ["user-profile-briefing"],
@@ -164,7 +168,7 @@ function BookingPage() {
             return (
               <Card key={item.id} className="border-4 border-slate-900 rounded-none bg-white shadow-[6px_6px_0_#0f172a] hover:shadow-[12px_12px_0_#005BAB] hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 flex flex-col overflow-hidden group">
                 
-                <div className="h-48 bg-slate-900 border-b-4 border-slate-900 relative overflow-hidden shrink-0">
+                <div onClick={() => setInfoEquipment(item)} className="h-48 bg-slate-900 border-b-4 border-slate-900 relative overflow-hidden shrink-0 cursor-pointer">
                   {item.image_url ? (
                     <img src={item.image_url} alt={localizedName} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
                   ) : (
@@ -182,7 +186,7 @@ function BookingPage() {
 
                 <CardContent className="p-6 flex flex-col flex-1 justify-between gap-6">
                   <div className="space-y-4">
-                    <h3 className="font-black text-xl md:text-2xl text-slate-900 uppercase tracking-tight leading-tight line-clamp-2">{localizedName}</h3>
+                    <h3 onClick={() => setInfoEquipment(item)} className="font-black text-xl md:text-2xl text-slate-900 uppercase tracking-tight leading-tight line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors">{localizedName}</h3>
                     
                     {renderAccessMarker(accessType)}
                     
@@ -191,7 +195,15 @@ function BookingPage() {
                     </p>
                   </div>
 
-                  <div className="mt-auto pt-4 border-t-2 border-slate-100">
+                  <div className="mt-auto pt-4 border-t-2 border-slate-100 space-y-3">
+                    <Button
+                      onClick={() => setInfoEquipment(item)}
+                      variant="outline"
+                      className="w-full h-12 border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-black uppercase tracking-widest text-[11px] rounded-none shadow-[3px_3px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                    >
+                      Подробнее
+                    </Button>
+
                     {item.status === 'maintenance' ? (
                       <Button disabled className="w-full h-14 border-2 border-slate-400 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-xs rounded-none cursor-not-allowed shadow-none">
                         <AlertCircle className="w-4 h-4 mr-2 shrink-0" /> {t('booking.card.maintenance')}
@@ -228,6 +240,28 @@ function BookingPage() {
         onClose={() => setSelectedEquipment(null)}
         onSuccess={() => setSelectedEquipment(null)}
       />
+
+      <EquipmentInfoDialog
+        open={!!infoEquipment}
+        equipment={infoEquipment}
+        canBook={
+          infoEquipment
+            ? infoEquipment.status !== "maintenance" &&
+              checkAccess(infoEquipment.access_type || "basic").hasAccess
+            : false
+        }
+        bookDisabledReason={
+          infoEquipment?.status === "maintenance"
+            ? t("booking.card.maintenance")
+            : checkAccess(infoEquipment?.access_type || "basic").reason
+        }
+        onClose={() => setInfoEquipment(null)}
+        onBook={() => {
+          setSelectedEquipment(infoEquipment);
+          setInfoEquipment(null);
+        }}
+      />
+
     </main>
   );
 }

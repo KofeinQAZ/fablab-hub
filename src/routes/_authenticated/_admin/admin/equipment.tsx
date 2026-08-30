@@ -38,6 +38,8 @@ type Equipment = {
   description_kz?: string | null;
   description_en?: string | null;
   specs?: string | null;
+  gallery_urls?: string[] | null;
+  video_url?: string | null;
 };
 
 const htmlTagPattern = /<[^>]*>/;
@@ -91,7 +93,25 @@ const equipmentFormSchema = z.object({
     .string()
     .max(500, "Параметры не должны превышать 500 символов")
     .refine((value) => !htmlTagPattern.test(value), "Параметры содержат недопустимые символы"),
+  gallery_urls: z
+    .string()
+    .max(3000, "Слишком много ссылок")
+    .refine(
+      (value) =>
+        value
+          .split(/[\n,]/)
+          .map((v) => v.trim())
+          .filter(Boolean)
+          .every((v) => /^https?:\/\/.+/i.test(v)),
+      "Каждая ссылка должна начинаться с http(s)://",
+    ),
+  video_url: z
+    .string()
+    .trim()
+    .max(500, "Ссылка слишком длинная")
+    .refine((value) => value === "" || /^https?:\/\/.+/i.test(value), "Введите корректную ссылку на видео"),
 });
+
 
 const renderAccessBadge = (accessType: string) => {
   const baseClasses = "font-black uppercase tracking-widest text-[10px] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]";
@@ -111,8 +131,7 @@ function AdminEquipmentPage() {
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [form, setForm] = useState({
     name: "", name_kz: "", name_en: "", category: "stationary" as Equipment["category"], status: "active" as Equipment["status"],
-    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", description_kz: "", description_en: "", specs: "",
-  });
+    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "", });
 
   const { data: equipment } = useQuery({
     queryKey: ["admin-equipment"],
@@ -148,6 +167,11 @@ function AdminEquipmentPage() {
         description_kz: validated.description_kz || null,
         description_en: validated.description_en || null,
         specs: validated.specs || null,
+        gallery_urls: validated.gallery_urls
+          .split(/[\n,]/)
+          .map((v) => v.trim())
+          .filter(Boolean),
+        video_url: validated.video_url || null,
       };
 
       const table = supabase.from("equipment");
@@ -161,7 +185,7 @@ function AdminEquipmentPage() {
       toast.success(editingEquipment ? "Оборудование обновлено" : "Оборудование добавлено");
       setCatalogOpen(false);
       setEditingEquipment(null);
-      setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "" });
+      setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "" });
       qc.invalidateQueries({ queryKey: ["admin-equipment"] });
     },
     onError: (error: Error) => {
@@ -198,7 +222,7 @@ function AdminEquipmentPage() {
 
   const openCreate = () => {
     setEditingEquipment(null);
-    setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "" });
+    setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "" });
     setCatalogOpen(true);
   };
 
@@ -208,6 +232,7 @@ function AdminEquipmentPage() {
       name: item.name, name_kz: item.name_kz || "", name_en: item.name_en || "", category: item.category, status: item.status,
       access_type: item.access_type || "basic", image_url: item.image_url || "",
       description: item.description || "", description_kz: item.description_kz || "", description_en: item.description_en || "", specs: item.specs || "",
+      gallery_urls: (item.gallery_urls ?? []).join("\n"), video_url: item.video_url || "",
     });
     setCatalogOpen(true);
   };
@@ -500,6 +525,27 @@ function AdminEquipmentPage() {
                 <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.specs} onChange={(e) => setForm((prev) => ({ ...prev, specs: e.target.value }))} />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Галерея фото (по одной ссылке в строке)</Label>
+              <Textarea
+                className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-28"
+                placeholder={"https://.../photo-1.jpg\nhttps://.../photo-2.jpg"}
+                value={form.gallery_urls}
+                onChange={(e) => setForm((prev) => ({ ...prev, gallery_urls: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Видео YouTube (ссылка)</Label>
+              <Input
+                className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={form.video_url}
+                onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
+              />
+            </div>
+
           </div>
           
           <div className="p-6 pt-0 flex justify-end gap-3 bg-slate-50 border-t-2 border-slate-200 mt-4">
