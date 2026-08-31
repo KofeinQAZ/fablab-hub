@@ -35,7 +35,8 @@ function BookingPage() {
     queryKey: ["user-profile-briefing"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      const { data } = await supabase.from("profiles").select("id, safety_briefing_passed, role").eq("id", user?.id).single();
+      if (!user) return null;
+      const { data } = await supabase.from("profiles").select("id, safety_briefing_passed, role").eq("id", user.id).single();
       return data;
     },
   });

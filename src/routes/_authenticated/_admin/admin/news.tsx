@@ -33,7 +33,7 @@ function AdminNewsPage() {
 
   // Глобальные настройки (общие для всех языков)
   const [imageUrl, setImageUrl] = useState("");
-  const [category, setCategory] = useState("news");
+  const [category, setCategory] = useState<"news" | "article">("news");
 
   // Локализованные стейты текстов
   const [title, setTitle] = useState("");
@@ -180,7 +180,8 @@ function AdminNewsPage() {
         const { error } = await supabase.from("articles").update(payload).eq("id", editingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("articles").insert({ ...payload, author_id: user?.id });
+        if (!user) throw new Error("Not authenticated");
+        const { error } = await supabase.from("articles").insert({ ...payload, author_id: user.id });
         if (error) throw error;
       }
     },
