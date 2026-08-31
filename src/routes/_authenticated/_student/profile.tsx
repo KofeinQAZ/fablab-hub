@@ -78,7 +78,7 @@ function ProfilePage() {
   const [projImage, setProjImage] = useState("");
   const [projLooking, setProjLooking] = useState(false);
   const [projRoles, setProjRoles] = useState("");
-  const [projStatus, setProjStatus] = useState("in_progress");
+  const [projStatus, setProjStatus] = useState<"in_progress" | "completed" | "paused">("in_progress");
 
   const [addingUpdateFor, setAddingUpdateFor] = useState<any>(null);
   const [updateContent, setUpdateContent] = useState("");
@@ -298,7 +298,7 @@ function ProfilePage() {
 
     setDeletingAccount(true);
     try {
-      const { error } = await supabase.rpc("delete_user_account");
+      const { error } = await (supabase.rpc as any)("delete_user_account");
       if (error) throw error;
       toast.success(t('profile.danger.success'));
       await supabase.auth.signOut();
@@ -664,7 +664,7 @@ function ProfilePage() {
                           {getStatusBadge(booking.status, isPast)}
                           
                           {/* Кнопку отмены показываем ТОЛЬКО если статус активен/ожидает И ВРЕМЯ ЕЩЕ НЕ ПРОШЛО */}
-                          {(booking.status === "pending" || booking.status === "approved" || booking.status === "active") && !isPast && (
+                          {(booking.status === "pending" || booking.status === "active") && !isPast && (
                             <Button 
                               variant="outline" 
                               onClick={() => handleCancelBooking(booking.id)}

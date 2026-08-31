@@ -275,7 +275,7 @@ function ProjectsPage() {
                                 </div>
                               );
                             }
-                            if (appStatus === 'accepted' || appStatus === 'approved' || appStatus === 'active') {
+                            if (appStatus === 'accepted') {
                               return (
                                 <div className="w-full bg-emerald-100 text-emerald-700 border-2 border-emerald-300 rounded-none font-black uppercase tracking-widest text-[10px] py-3 text-center flex items-center justify-center gap-2">
                                   <CheckCircle2 className="w-4 h-4" /> {t('projects_page.appStatus.accepted', 'Вы в команде')}
@@ -431,7 +431,7 @@ function ProjectsPage() {
                           </div>
                         );
                       }
-                      if (appStatus === 'accepted' || appStatus === 'approved' || appStatus === 'active') {
+                      if (appStatus === 'accepted') {
                         return (
                           <div className="w-full h-16 bg-emerald-500 text-slate-900 border-4 border-slate-900 rounded-none font-black text-lg uppercase tracking-widest shadow-[6px_6px_0_#0f172a] flex items-center justify-center gap-3">
                             <CheckCircle2 className="w-6 h-6" /> {t('projects_page.appStatus.accepted', 'Вы в команде')}
@@ -483,7 +483,7 @@ function ProjectsPage() {
             <div className="p-4 bg-slate-50 border-2 border-slate-900 shadow-[4px_4px_0_#0f172a] space-y-2">
               <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{t('projects_page.apply.profileLabel')}</p>
               <div className="font-black text-slate-900 uppercase tracking-tight">{profile?.name}</div>
-              <div className="text-xs font-bold text-slate-500">{profile?.email}</div>
+              <div className="text-xs font-bold text-slate-500">{profile?.contact_email}</div>
             </div>
 
             <div className="space-y-3">
