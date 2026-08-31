@@ -52,7 +52,7 @@ function NewsFeedPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
-        .select("*, profiles:author_id (name)")
+        .select("*, profiles:public_profiles!articles_author_id_fkey (name)")
         .eq("is_published", true)
         .order("created_at", { ascending: false });
       if (error) throw error;

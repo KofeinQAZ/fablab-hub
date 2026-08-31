@@ -57,7 +57,7 @@ function ProjectsPage() {
         .from("projects")
         .select(`
           *, 
-          profiles:author_id (name, contact_email, contact_telegram),
+          profiles:public_profiles!projects_author_id_fkey (name),
           project_updates (id, content, created_at)
         `)
         .eq("is_approved", true)
