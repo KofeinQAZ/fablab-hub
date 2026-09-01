@@ -893,7 +893,7 @@ function ProfilePage() {
             
             <div className="space-y-1">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.projectForm.statusLabel')}</Label>
-              <select className="w-full h-12 px-3 border-2 border-slate-900 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={projStatus} onChange={e => setProjStatus(e.target.value)}>
+              <select className="w-full h-12 px-3 border-2 border-slate-900 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={projStatus} onChange={e => setProjStatus(e.target.value as "in_progress" | "completed" | "paused")}>
                 <option value="idea">{t('profile.projectForm.statusIdea')}</option>
                 <option value="in_progress">{t('profile.projectForm.statusInProgress')}</option>
                 <option value="completed">{t('profile.projectForm.statusCompleted')}</option>
