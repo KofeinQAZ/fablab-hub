@@ -350,7 +350,7 @@ function AdminNewsPage() {
                 <select 
                   className="w-full h-12 px-4 border-2 border-slate-900 rounded-none bg-slate-50 font-bold text-sm outline-none focus:border-blue-600" 
                   value={category} 
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => setCategory(e.target.value as "news" | "article")}
                 >
                   <option value="news">Новость</option>
                   <option value="article">Статья / Гайд</option>
