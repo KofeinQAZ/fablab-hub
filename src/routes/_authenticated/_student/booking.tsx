@@ -60,7 +60,8 @@ function BookingPage() {
 
     const openInfo = (item: EquipmentDetails) => {
       // QR ведёт на карточку с описанием станка; бронирование — по кнопке внутри неё
-      if (item.category && item.category !== category) setCategory(item.category);
+      const itemCategory = (item as any).category as "stationary" | "portable" | undefined;
+      if (itemCategory && itemCategory !== category) setCategory(itemCategory);
       setInfoEquipment(item);
       window.history.replaceState({}, document.title, window.location.pathname);
     };
