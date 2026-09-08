@@ -524,5 +524,15 @@
     "photoPlaceholder": "PLACE FOR YOUR PHOTO",
     "needSystem1": "NEED A SIMILAR",
     "needSystem2": "SYSTEM?"
+  },
+  "approval": {
+    "pendingTitle": "Your request is pending admin approval",
+    "pendingDesc": "You signed up with an email outside the university domain (@stud.satbayev.university), so access is granted manually. An administrator will review your request and open access.",
+    "rejectedTitle": "Request rejected",
+    "rejectedDesc": "An administrator rejected your access request. Contact the lab if you believe this is a mistake.",
+    "hint": "Once approved, you will get a notification and access opens automatically.",
+    "logout": "Log out",
+    "signUpPendingTitle": "Request sent for review",
+    "signUpPendingDesc": "Your email is outside the university domain, so an administrator grants access manually. We will notify you once your request is approved."
   }
 }
