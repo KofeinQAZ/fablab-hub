@@ -36,6 +36,7 @@ interface UserProfile {
   contact_phone?: string;
   safety_briefing_passed: boolean;
   is_banned: boolean;
+  approval_status?: "pending_admin" | "approved" | "rejected";
   created_at: string;
 }
 
@@ -44,6 +45,7 @@ function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "student" | "resident" | "staff" | "admin">("all");
   const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">("all");
+  const [pendingOnly, setPendingOnly] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [teamDialog, setTeamDialog] = useState(false);
   const [jobTitle, setJobTitle] = useState("");
@@ -77,8 +79,29 @@ function UsersPage() {
       (banFilter === "banned" && u.is_banned) ||
       (banFilter === "active" && !u.is_banned);
 
-    return matchesSearch && matchesRole && matchesBan;
+    const matchesPending = !pendingOnly || u.approval_status === "pending_admin";
+
+    return matchesSearch && matchesRole && matchesBan && matchesPending;
   });
+
+  const pendingCount = users.filter((u) => u.approval_status === "pending_admin").length;
+
+  // Одобрение / отклонение доступа (для почт вне университетского домена)
+  const setApprovalMutation = useMutation({
+    mutationFn: async (params: { userId: string; status: "approved" | "rejected" }) => {
+      const { error } = await (supabase as any).rpc("set_user_approval", {
+        target_user_id: params.userId,
+        new_status: params.status,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-all-users"] });
+      toast.success("✅ СТАТУС ЗАЯВКИ ОБНОВЛЕН");
+    },
+    onError: (error: any) => toast.error(error.message || "Ошибка при обновлении заявки"),
+  });
+
 
   // Смена роли
   const changeRoleMutation = useMutation({
@@ -158,6 +181,15 @@ function UsersPage() {
     );
   };
 
+  const getApprovalBadge = (status?: string) => {
+    if (status === "pending_admin")
+      return <span className="bg-amber-400 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a]">⏳ НА РАССМОТРЕНИИ</span>;
+    if (status === "rejected")
+      return <span className="bg-rose-600 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a]">✗ ОТКЛОНЕН</span>;
+    return null;
+  };
+
+
   return (
     <div className="min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -181,6 +213,15 @@ function UsersPage() {
               </p>
             </div>
           </div>
+
+          <Button
+            onClick={() => setPendingOnly(!pendingOnly)}
+            className={`mt-6 h-12 rounded-none border-4 border-slate-900 font-black uppercase tracking-widest text-[10px] px-5 shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all ${
+              pendingOnly ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-amber-400 text-slate-900 hover:bg-amber-500"
+            }`}
+          >
+            {pendingOnly ? "Показать всех" : `Заявки на одобрение (${pendingCount})`}
+          </Button>
         </div>
 
         {/* FILTERS */}
@@ -257,6 +298,7 @@ function UsersPage() {
                   <div className="flex gap-2 mb-6 flex-wrap">
                     {getRoleBadge(user.role)}
                     {getSafetyBadge(user.safety_briefing_passed)}
+                    {getApprovalBadge(user.approval_status)}
                   </div>
 
                   {/* КОНТАКТЫ (КРУПНО И ЧЕТКО) */}
@@ -275,6 +317,26 @@ function UsersPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Одобрение доступа (не университетская почта) */}
+                {user.approval_status && user.approval_status !== "approved" && (
+                  <div className="flex gap-3 mb-4">
+                    <Button
+                      onClick={() => setApprovalMutation.mutate({ userId: user.id, status: "approved" })}
+                      disabled={setApprovalMutation.isPending}
+                      className="flex-1 h-12 rounded-none bg-emerald-400 hover:bg-emerald-500 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                    >
+                      Одобрить
+                    </Button>
+                    <Button
+                      onClick={() => setApprovalMutation.mutate({ userId: user.id, status: "rejected" })}
+                      disabled={setApprovalMutation.isPending || user.approval_status === "rejected"}
+                      className="flex-1 h-12 rounded-none bg-white hover:bg-rose-50 text-rose-600 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                    >
+                      Отклонить
+                    </Button>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-3 mt-auto">

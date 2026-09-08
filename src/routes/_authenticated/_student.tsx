@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/app-header";
+import { ApprovalGate } from "@/components/approval-gate";
 import { useCurrentProfile } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/_student")({
@@ -12,7 +13,9 @@ function StudentLayout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <AppHeader profile={authData?.profile ?? null} />
-      <Outlet />
+      <ApprovalGate profile={authData?.profile ?? null}>
+        <Outlet />
+      </ApprovalGate>
     </div>
   );
 }
