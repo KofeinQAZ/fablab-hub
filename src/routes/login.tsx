@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
+import { isUniversityEmail } from "@/components/approval-gate";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -127,7 +128,9 @@ function LoginPage() {
         },
       });
       if (error) return toast.error(error.message);
-      
+
+      const isUni = isUniversityEmail(validated.data.email);
+
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
         await supabase.from("profiles").upsert({
@@ -138,12 +141,28 @@ function LoginPage() {
           safety_briefing_passed: false,
           is_banned: false
         });
+
+        if (!isUni) {
+          // Уведомляем администраторов в Telegram о заявке на ручное одобрение
+          try {
+            await supabase.functions.invoke("notify-admin-signup");
+          } catch (notifyError) {
+            console.error("notify-admin-signup failed", notifyError);
+          }
+        }
       }
-      
-      toast.success(t('login.toasts.signUpSuccessTitle', '✅ Аккаунт успешно создан!'), {
-        description: t('login.toasts.signUpSuccessDesc', 'Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!'),
-        duration: 10000,
-      });
+
+      if (isUni) {
+        toast.success(t('login.toasts.signUpSuccessTitle', '✅ Аккаунт успешно создан!'), {
+          description: t('login.toasts.signUpSuccessDesc', 'Мы отправили письмо на вашу почту. Обязательно перейдите по ссылке внутри письма, чтобы активировать аккаунт и войти на платформу!'),
+          duration: 10000,
+        });
+      } else {
+        toast.success(t('approval.signUpPendingTitle'), {
+          description: t('approval.signUpPendingDesc'),
+          duration: 12000,
+        });
+      }
     } catch (error: any) {
       toast.error(error.message || t('login.toasts.signUpError', 'Произошла ошибка при регистрации'));
     } finally {
