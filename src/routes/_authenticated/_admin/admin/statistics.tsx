@@ -242,6 +242,7 @@ function AdminStatisticsPage() {
       {/* ROW 2: STATUSES & ACTIVE USERS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
         <MetricCard title="Ожидают апрува" value={stats.pendingBookings} sub="Новые заявки" icon={AlertCircle} color="text-orange-500" />
+        <MetricCard title="Ожидают одобрения аккаунта" value={stats.pendingApprovals} sub="Регистрации на проверке" icon={UserCheck} color="text-amber-600" />
         <MetricCard title="Завершено" value={stats.completedBookings} sub="Успешные брони" icon={CheckSquare} color="text-emerald-500" />
         <MetricCard title="В ремонте" value={stats.eqStatus.maintenance} sub="Оборудование" icon={Wrench} color="text-red-500" />
         <div className="bg-white border-4 border-slate-900 p-4 md:p-6 flex flex-col justify-between shadow-[4px_4px_0_#0f172a] w-full overflow-hidden">
