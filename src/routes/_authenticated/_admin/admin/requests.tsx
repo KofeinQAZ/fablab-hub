@@ -453,6 +453,8 @@ function AdminRequestsPage() {
           </TabsContent>
         </Tabs>
       )}
+      </>
+      )}
     </main>
   );
 }
