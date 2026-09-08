@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   Download, Users, ShieldCheck, Rocket, Calendar, 
   Activity, Trophy, Zap, Clock, AlertCircle, 
-  CheckSquare, Wrench, XCircle 
+  CheckSquare, Wrench, XCircle, UserCheck 
 } from "lucide-react";
 import { toast } from "sonner";
 
