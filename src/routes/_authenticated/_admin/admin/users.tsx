@@ -36,6 +36,7 @@ interface UserProfile {
   contact_phone?: string;
   safety_briefing_passed: boolean;
   is_banned: boolean;
+  approval_status?: "pending_admin" | "approved" | "rejected";
   created_at: string;
 }
 
@@ -44,6 +45,7 @@ function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "student" | "resident" | "staff" | "admin">("all");
   const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">("all");
+  const [pendingOnly, setPendingOnly] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [teamDialog, setTeamDialog] = useState(false);
   const [jobTitle, setJobTitle] = useState("");
