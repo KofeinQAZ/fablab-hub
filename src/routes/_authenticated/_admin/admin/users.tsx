@@ -79,8 +79,29 @@ function UsersPage() {
       (banFilter === "banned" && u.is_banned) ||
       (banFilter === "active" && !u.is_banned);
 
-    return matchesSearch && matchesRole && matchesBan;
+    const matchesPending = !pendingOnly || u.approval_status === "pending_admin";
+
+    return matchesSearch && matchesRole && matchesBan && matchesPending;
   });
+
+  const pendingCount = users.filter((u) => u.approval_status === "pending_admin").length;
+
+  // Одобрение / отклонение доступа (для почт вне университетского домена)
+  const setApprovalMutation = useMutation({
+    mutationFn: async (params: { userId: string; status: "approved" | "rejected" }) => {
+      const { error } = await (supabase as any).rpc("set_user_approval", {
+        target_user_id: params.userId,
+        new_status: params.status,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-all-users"] });
+      toast.success("✅ СТАТУС ЗАЯВКИ ОБНОВЛЕН");
+    },
+    onError: (error: any) => toast.error(error.message || "Ошибка при обновлении заявки"),
+  });
+
 
   // Смена роли
   const changeRoleMutation = useMutation({
