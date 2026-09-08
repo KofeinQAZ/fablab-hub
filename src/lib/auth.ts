@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "student" | "resident" | "staff" | "admin";
 
+export type ApprovalStatus = "pending_admin" | "approved" | "rejected";
+
 export type UserProfile = {
   id: string;
   name: string;
@@ -14,6 +16,7 @@ export type UserProfile = {
   job_title?: string | null;
   photo_url?: string | null;
   is_banned?: boolean;
+  approval_status?: ApprovalStatus;
 };
 
 export async function ensureProfile(userId: string, email: string | undefined, name?: string, phone?: string) {
