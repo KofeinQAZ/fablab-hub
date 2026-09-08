@@ -298,6 +298,7 @@ function UsersPage() {
                   <div className="flex gap-2 mb-6 flex-wrap">
                     {getRoleBadge(user.role)}
                     {getSafetyBadge(user.safety_briefing_passed)}
+                    {getApprovalBadge(user.approval_status)}
                   </div>
 
                   {/* КОНТАКТЫ (КРУПНО И ЧЕТКО) */}
