@@ -61,7 +61,14 @@ Deno.serve(async (req) => {
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'HTML' }),
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: 'HTML',
+        ...(buttons.length
+          ? { reply_markup: { inline_keyboard: buttons.map((b) => [{ text: b.text, url: b.url }]) } }
+          : {}),
+      }),
     });
     const text = await res.text();
     if (!res.ok) {
