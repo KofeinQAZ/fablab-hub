@@ -54,18 +54,31 @@ function BookingPage() {
   });
 
   useEffect(() => {
-    if (equipment.length > 0) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const qrEquipmentId = urlParams.get("equipmentId");
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrEquipmentId = urlParams.get("equipmentId");
+    if (!qrEquipmentId) return;
 
-      if (qrEquipmentId) {
-        const foundItem = equipment.find((item: any) => item.id === qrEquipmentId);
-        if (foundItem) {
-          // QR ведёт на карточку с описанием станка; бронирование — по кнопке внутри неё
-          setInfoEquipment(foundItem);
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }
+    const openInfo = (item: EquipmentDetails) => {
+      // QR ведёт на карточку с описанием станка; бронирование — по кнопке внутри неё
+      if (item.category && item.category !== category) setCategory(item.category);
+      setInfoEquipment(item);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    };
+
+    const foundItem = equipment.find((item: any) => item.id === qrEquipmentId);
+    if (foundItem) {
+      openInfo(foundItem);
+    } else {
+      // Станок может быть в другой вкладке (переносной инвентарь) — загружаем напрямую
+      supabase
+        .from("equipment")
+        .select("*")
+        .eq("id", qrEquipmentId)
+        .single()
+        .then(({ data }) => {
+          if (data) openInfo(data as EquipmentDetails);
+          else window.history.replaceState({}, document.title, window.location.pathname);
+        });
     }
   }, [equipment]);
 
