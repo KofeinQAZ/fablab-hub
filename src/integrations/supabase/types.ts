@@ -269,6 +269,51 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_requests: {
+        Row: {
+          admin_comment: string | null
+          created_at: string
+          id: string
+          message: string
+          status: Database["public"]["Enums"]["feedback_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_comment?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          status?: Database["public"]["Enums"]["feedback_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_comment?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          status?: Database["public"]["Enums"]["feedback_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mentor_schedule: {
         Row: {
           created_at: string
@@ -621,6 +666,7 @@ export type Database = {
         | "resident_only"
       equipment_category: "stationary" | "portable"
       equipment_status: "active" | "maintenance"
+      feedback_status: "new" | "in_review" | "resolved"
       project_status: "in_progress" | "completed" | "paused"
       request_status: "pending" | "approved" | "rejected"
     }
@@ -763,6 +809,7 @@ export const Constants = {
       ],
       equipment_category: ["stationary", "portable"],
       equipment_status: ["active", "maintenance"],
+      feedback_status: ["new", "in_review", "resolved"],
       project_status: ["in_progress", "completed", "paused"],
       request_status: ["pending", "approved", "rejected"],
     },

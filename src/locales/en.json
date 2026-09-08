@@ -216,6 +216,25 @@
       "confirmBtn": "DELETE ACCOUNT",
       "success": "Account successfully deleted",
       "error": "Error deleting account:"
+    },
+    "feedback": {
+      "title": "Feedback / Suggestions",
+      "subtitle": "Got an idea or an issue? Write to us — admins will read it.",
+      "placeholder": "Your suggestion or comment...",
+      "submitBtn": "Submit suggestion",
+      "sending": "Sending...",
+      "success": "Suggestion sent!",
+      "error": "Send error:",
+      "tooShort": "Please write a bit more",
+      "myListTitle": "My suggestions",
+      "loading": "Loading...",
+      "empty": "You have not sent any suggestions yet",
+      "adminComment": "Admin reply",
+      "status": {
+        "new": "New",
+        "in_review": "In review",
+        "resolved": "Resolved"
+      }
     }
   },
   "news": {
