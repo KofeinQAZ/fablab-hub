@@ -727,6 +727,71 @@ function ProfilePage() {
               )}
             </div>
           </div>
+
+          {/* === БЛОК: ОБРАТНАЯ СВЯЗЬ / ПРЕДЛОЖЕНИЯ === */}
+          <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
+            <div className="bg-slate-900 text-white p-4 border-b-4 border-slate-900 flex items-center gap-3">
+              <MessageSquare className="w-5 h-5 text-blue-400" />
+              <h2 className="text-xl font-black uppercase tracking-tight">{t('profile.feedback.title')}</h2>
+            </div>
+            <div className="p-4 md:p-6 space-y-6">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{t('profile.feedback.subtitle')}</p>
+
+              <div className="space-y-3">
+                <Textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder={t('profile.feedback.placeholder')}
+                  className="min-h-[120px] border-2 border-slate-900 rounded-none font-medium"
+                />
+                <Button
+                  onClick={() => {
+                    if (feedbackText.trim().length < 5) {
+                      toast.error(t('profile.feedback.tooShort'));
+                      return;
+                    }
+                    submitFeedback.mutate(feedbackText.trim());
+                  }}
+                  disabled={submitFeedback.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-4 border-slate-900 px-6 py-6 font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {submitFeedback.isPending ? t('profile.feedback.sending') : t('profile.feedback.submitBtn')}
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-black text-xs uppercase tracking-widest text-slate-900">{t('profile.feedback.myListTitle')}</h3>
+                {isFeedbackLoading ? (
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest py-4 animate-pulse">{t('profile.feedback.loading')}</p>
+                ) : myFeedback.length === 0 ? (
+                  <div className="text-center py-8 border-4 border-dashed border-slate-200 bg-slate-50">
+                    <p className="font-black uppercase tracking-widest text-xs text-slate-400">{t('profile.feedback.empty')}</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {myFeedback.map((f: any) => (
+                      <div key={f.id} className="border-2 border-slate-900 bg-slate-50 p-4 space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          {feedbackStatusBadge(f.status)}
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                            {format(new Date(f.created_at), 'dd.MM.yyyy HH:mm')}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium text-slate-700 whitespace-pre-wrap">{f.message}</p>
+                        {f.admin_comment && (
+                          <div className="border-l-4 border-blue-600 bg-white p-3">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('profile.feedback.adminComment')}</p>
+                            <p className="text-sm font-medium text-slate-700 whitespace-pre-wrap">{f.admin_comment}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
