@@ -213,6 +213,15 @@ function UsersPage() {
               </p>
             </div>
           </div>
+
+          <Button
+            onClick={() => setPendingOnly(!pendingOnly)}
+            className={`mt-6 h-12 rounded-none border-4 border-slate-900 font-black uppercase tracking-widest text-[10px] px-5 shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all ${
+              pendingOnly ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-amber-400 text-slate-900 hover:bg-amber-500"
+            }`}
+          >
+            {pendingOnly ? "Показать всех" : `Заявки на одобрение (${pendingCount})`}
+          </Button>
         </div>
 
         {/* FILTERS */}
