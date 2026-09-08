@@ -118,6 +118,50 @@ function ProfilePage() {
     },
   });
 
+  const { data: myFeedback = [], isLoading: isFeedbackLoading } = useQuery({
+    queryKey: ["my-feedback", authData?.userId],
+    enabled: !!authData?.userId,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("feedback_requests")
+        .select("id,message,status,admin_comment,created_at")
+        .eq("user_id", authData!.userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data as any[]) || [];
+    },
+  });
+
+  const submitFeedback = useMutation({
+    mutationFn: async (message: string) => {
+      const { error } = await (supabase as any)
+        .from("feedback_requests")
+        .insert({ user_id: authData!.userId, message });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setFeedbackText("");
+      queryClient.invalidateQueries({ queryKey: ["my-feedback"] });
+      toast.success(t('profile.feedback.success'));
+    },
+    onError: (error: Error) => toast.error(`${t('profile.feedback.error')} ${error.message}`),
+  });
+
+  const feedbackStatusBadge = (status: string) => {
+    const map: Record<string, string> = {
+      new: "bg-blue-600 text-white",
+      in_review: "bg-amber-500 text-white",
+      resolved: "bg-emerald-500 text-white",
+    };
+    return (
+      <span className={`px-2 py-1 border-2 border-slate-900 font-black text-[10px] uppercase tracking-widest ${map[status] || "bg-slate-200 text-slate-900"}`}>
+        {t(`profile.feedback.status.${status}`)}
+      </span>
+    );
+  };
+
+
+
   const { data: userBookings, isLoading: isBookingsLoading } = useQuery({
     queryKey: ["user-bookings", authData?.userId],
     enabled: !!authData?.userId,
