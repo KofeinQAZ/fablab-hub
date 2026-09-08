@@ -403,6 +403,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
           contact_email: string | null
           contact_phone: string | null
           contact_telegram: string | null
@@ -417,6 +418,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
@@ -431,6 +433,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
@@ -630,6 +633,7 @@ export type Database = {
         Returns: undefined
       }
       check_if_admin: { Args: never; Returns: boolean }
+      check_if_approved: { Args: never; Returns: boolean }
       check_if_banned: { Args: never; Returns: boolean }
       get_team_members: {
         Args: never
@@ -648,6 +652,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      set_user_approval: {
+        Args: {
+          new_status: Database["public"]["Enums"]["approval_status"]
+          target_user_id: string
+        }
+        Returns: undefined
+      }
       toggle_user_ban: {
         Args: { is_banned_new: boolean; target_user_id: string }
         Returns: undefined
@@ -657,6 +668,7 @@ export type Database = {
       access_request_type: "safety_briefing" | "residency"
       app_role: "student" | "resident" | "admin" | "staff"
       application_status: "pending" | "accepted" | "rejected"
+      approval_status: "pending_admin" | "approved" | "rejected"
       article_category: "news" | "article"
       booking_status: "pending" | "active" | "cancelled" | "completed"
       equipment_access_type:
@@ -799,6 +811,7 @@ export const Constants = {
       access_request_type: ["safety_briefing", "residency"],
       app_role: ["student", "resident", "admin", "staff"],
       application_status: ["pending", "accepted", "rejected"],
+      approval_status: ["pending_admin", "approved", "rejected"],
       article_category: ["news", "article"],
       booking_status: ["pending", "active", "cancelled", "completed"],
       equipment_access_type: [
