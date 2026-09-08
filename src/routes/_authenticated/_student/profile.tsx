@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
-import { Rocket, Users, Pencil, Trash2, Plus, Megaphone, User, X, Calendar, Clock, AlertTriangle, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard, FileText, CheckCircle2, XCircle, Clock4, Mail } from "lucide-react";
+import { Rocket, Users, Pencil, Trash2, Plus, Megaphone, User, X, Calendar, Clock, AlertTriangle, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard, FileText, CheckCircle2, XCircle, Clock4, Mail, MessageSquare, Send } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_student/profile")({
   component: ProfilePage,
