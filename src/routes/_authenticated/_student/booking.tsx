@@ -57,11 +57,12 @@ function BookingPage() {
     if (equipment.length > 0) {
       const urlParams = new URLSearchParams(window.location.search);
       const qrEquipmentId = urlParams.get("equipmentId");
-      
+
       if (qrEquipmentId) {
         const foundItem = equipment.find((item: any) => item.id === qrEquipmentId);
         if (foundItem) {
-          setSelectedEquipment(foundItem);
+          // QR ведёт на карточку с описанием станка; бронирование — по кнопке внутри неё
+          setInfoEquipment(foundItem);
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       }
