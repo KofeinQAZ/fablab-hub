@@ -87,6 +87,8 @@ function ProfilePage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
 
+  const [feedbackText, setFeedbackText] = useState("");
+
   const isValidUrl = (url: string) => {
     try { new URL(url); return true; } catch { return false; }
   };
