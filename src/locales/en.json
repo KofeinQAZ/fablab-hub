@@ -491,7 +491,8 @@
       "passwordMinLen": "Minimum 8 characters",
       "passwordDigit": "Password must contain a digit",
       "passwordSpecial": "Password must contain a special character"
-    }
+    },
+    "emailDomainHint": "We recommend using your student email (@stud.satbayev.university) — access opens right after email confirmation. Signing up with another email requires admin approval and may take time."
   },
   "errorBoundary": {
     "title": "Oops! Something went wrong. We're fixing it.",

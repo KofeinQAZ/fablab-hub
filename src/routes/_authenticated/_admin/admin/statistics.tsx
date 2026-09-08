@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   Download, Users, ShieldCheck, Rocket, Calendar, 
   Activity, Trophy, Zap, Clock, AlertCircle, 
-  CheckSquare, Wrench, XCircle 
+  CheckSquare, Wrench, XCircle, UserCheck 
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/_admin/admin/statistics")(
 });
 
 type Equipment = { id: string; name: string; status: "active" | "maintenance" };
-type Profile = { id: string; name: string; role: string; safety_briefing_passed: boolean };
+type Profile = { id: string; name: string; role: string; safety_briefing_passed: boolean; approval_status?: string | null };
 type Project = { id: string; status: string };
 
 type Booking = {
@@ -66,7 +66,7 @@ function AdminStatisticsPage() {
   const { data: profiles } = useQuery({
     queryKey: ["admin-profiles-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id,name,role,safety_briefing_passed");
+      const { data, error } = await supabase.from("profiles").select("id,name,role,safety_briefing_passed,approval_status");
       if (error) return [];
       return (data as Profile[]) ?? [];
     },
@@ -184,6 +184,7 @@ function AdminStatisticsPage() {
     return {
       totalBookings: allBookings.length,
       totalProfiles: allProfiles.length,
+      pendingApprovals: allProfiles.filter((p) => p.approval_status === "pending_admin").length,
       briefedStudents, briefingRate,
       pendingBookings, completedBookings, cancelledBookings, activeBookings,
       totalHours: Math.round(totalHours),
@@ -241,6 +242,7 @@ function AdminStatisticsPage() {
       {/* ROW 2: STATUSES & ACTIVE USERS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
         <MetricCard title="Ожидают апрува" value={stats.pendingBookings} sub="Новые заявки" icon={AlertCircle} color="text-orange-500" />
+        <MetricCard title="Ожидают одобрения аккаунта" value={stats.pendingApprovals} sub="Регистрации на проверке" icon={UserCheck} color="text-amber-600" />
         <MetricCard title="Завершено" value={stats.completedBookings} sub="Успешные брони" icon={CheckSquare} color="text-emerald-500" />
         <MetricCard title="В ремонте" value={stats.eqStatus.maintenance} sub="Оборудование" icon={Wrench} color="text-red-500" />
         <div className="bg-white border-4 border-slate-900 p-4 md:p-6 flex flex-col justify-between shadow-[4px_4px_0_#0f172a] w-full overflow-hidden">

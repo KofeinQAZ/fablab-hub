@@ -294,6 +294,9 @@ function LoginPage() {
                     <div className="space-y-2">
                       <Label htmlFor="email-su">{t('login.emailLabel', 'Email')}</Label>
                       <Input id="email-su" type="email" required placeholder="example@satbayev.university" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-2xl" />
+                      <p className="text-xs text-muted-foreground leading-snug">
+                        {t('login.emailDomainHint', 'Рекомендуем использовать студенческую почту (@stud.satbayev.university) — доступ откроется сразу после подтверждения письма. При регистрации с другой почты потребуется одобрение администратора, это может занять время.')}
+                      </p>
                     </div>
                     
                     <div className="space-y-2">
