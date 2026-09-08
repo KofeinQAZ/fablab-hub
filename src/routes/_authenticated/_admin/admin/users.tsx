@@ -181,6 +181,15 @@ function UsersPage() {
     );
   };
 
+  const getApprovalBadge = (status?: string) => {
+    if (status === "pending_admin")
+      return <span className="bg-amber-400 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a]">⏳ НА РАССМОТРЕНИИ</span>;
+    if (status === "rejected")
+      return <span className="bg-rose-600 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-[9px] px-2 py-1 shadow-[2px_2px_0_#0f172a]">✗ ОТКЛОНЕН</span>;
+    return null;
+  };
+
+
   return (
     <div className="min-h-screen p-4 md:p-8 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-8">
