@@ -652,6 +652,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_telegram: { Args: { p_message: string }; Returns: undefined }
       set_user_approval: {
         Args: {
           new_status: Database["public"]["Enums"]["approval_status"]
@@ -659,6 +660,8 @@ export type Database = {
         }
         Returns: undefined
       }
+      tg_esc: { Args: { t: string }; Returns: string }
+      tg_fmt_dt: { Args: { ts: string }; Returns: string }
       toggle_user_ban: {
         Args: { is_banned_new: boolean; target_user_id: string }
         Returns: undefined
