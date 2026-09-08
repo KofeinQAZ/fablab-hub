@@ -25,9 +25,22 @@ interface AccessRequest {
   profile: { name: string | null } | null;
 }
 
+interface FeedbackRequest {
+  id: string;
+  user_id: string;
+  message: string;
+  status: "new" | "in_review" | "resolved";
+  admin_comment: string | null;
+  created_at: string;
+  profile: { name: string | null } | null;
+}
+
 function AdminRequestsPage() {
   const queryClient = useQueryClient();
   const [showArchive, setShowArchive] = useState(false);
+  const [section, setSection] = useState<"requests" | "feedback">("requests");
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["admin-requests"],
