@@ -141,15 +141,8 @@ function LoginPage() {
           safety_briefing_passed: false,
           is_banned: false
         });
-
-        if (!isUni) {
-          // Уведомляем администраторов в Telegram о заявке на ручное одобрение
-          try {
-            await supabase.functions.invoke("notify-admin-signup");
-          } catch (notifyError) {
-            console.error("notify-admin-signup failed", notifyError);
-          }
-        }
+        // Уведомление админов в Telegram о заявке на ручное одобрение
+        // отправляется автоматически триггером БД (profiles -> notify-telegram).
       }
 
       if (isUni) {
