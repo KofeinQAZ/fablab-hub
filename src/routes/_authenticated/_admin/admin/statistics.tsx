@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/_admin/admin/statistics")(
 });
 
 type Equipment = { id: string; name: string; status: "active" | "maintenance" };
-type Profile = { id: string; name: string; role: string; safety_briefing_passed: boolean };
+type Profile = { id: string; name: string; role: string; safety_briefing_passed: boolean; approval_status?: string | null };
 type Project = { id: string; status: string };
 
 type Booking = {
@@ -66,7 +66,7 @@ function AdminStatisticsPage() {
   const { data: profiles } = useQuery({
     queryKey: ["admin-profiles-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id,name,role,safety_briefing_passed");
+      const { data, error } = await supabase.from("profiles").select("id,name,role,safety_briefing_passed,approval_status");
       if (error) return [];
       return (data as Profile[]) ?? [];
     },
@@ -184,6 +184,7 @@ function AdminStatisticsPage() {
     return {
       totalBookings: allBookings.length,
       totalProfiles: allProfiles.length,
+      pendingApprovals: allProfiles.filter((p) => p.approval_status === "pending_admin").length,
       briefedStudents, briefingRate,
       pendingBookings, completedBookings, cancelledBookings, activeBookings,
       totalHours: Math.round(totalHours),
