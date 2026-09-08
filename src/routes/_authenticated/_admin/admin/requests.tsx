@@ -208,14 +208,95 @@ function AdminRequestsPage() {
           </p>
         </div>
         
-        <Button 
-          onClick={() => setShowArchive(!showArchive)}
-          className={`border-4 border-slate-900 px-6 py-6 font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none ${showArchive ? 'bg-slate-900 text-white' : 'bg-white text-slate-900 hover:bg-slate-50'}`}
-        >
-          {showArchive ? <><ClipboardList className="mr-2 h-4 w-4" /> Активные заявки</> : <><Archive className="mr-2 h-4 w-4" /> Архив заявок</>}
-        </Button>
+        {section === "requests" && (
+          <Button 
+            onClick={() => setShowArchive(!showArchive)}
+            className={`border-4 border-slate-900 px-6 py-6 font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 hover:shadow-none ${showArchive ? 'bg-slate-900 text-white' : 'bg-white text-slate-900 hover:bg-slate-50'}`}
+          >
+            {showArchive ? <><ClipboardList className="mr-2 h-4 w-4" /> Активные заявки</> : <><Archive className="mr-2 h-4 w-4" /> Архив заявок</>}
+          </Button>
+        )}
       </div>
 
+      {/* ПЕРЕКЛЮЧАТЕЛЬ РАЗДЕЛОВ */}
+      <div className="grid grid-cols-2 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] bg-slate-900 p-1 gap-1">
+        <button
+          onClick={() => setSection("requests")}
+          className={`py-3 font-black uppercase tracking-widest text-xs transition-colors ${section === "requests" ? "bg-white text-slate-900" : "text-slate-400 hover:text-white"}`}
+        >
+          Бронирования
+        </button>
+        <button
+          onClick={() => setSection("feedback")}
+          className={`relative py-3 font-black uppercase tracking-widest text-xs transition-colors ${section === "feedback" ? "bg-white text-slate-900" : "text-slate-400 hover:text-white"}`}
+        >
+          Обратная связь
+          {feedback.filter((f) => f.status === "new").length > 0 && (
+            <span className="absolute top-1 right-2 flex items-center justify-center bg-blue-500 text-white text-[10px] w-5 h-5 rounded-full border-2 border-slate-900">
+              {feedback.filter((f) => f.status === "new").length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {section === "feedback" ? (
+        <div className="space-y-4">
+          {isFeedbackLoading ? (
+            <LoadingSkeleton />
+          ) : feedback.length === 0 ? (
+            <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] p-8 text-center">
+              <p className="font-bold uppercase tracking-widest text-xs text-slate-400">Пока нет предложений</p>
+            </div>
+          ) : (
+            feedback.map((f) => (
+              <div key={f.id} className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] p-4 md:p-6 space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-lg font-black uppercase tracking-tight text-slate-900">{f.profile?.name || "Студент"}</p>
+                  <Badge className={`${feedbackStatusColor[f.status]} text-white font-black text-[10px] uppercase tracking-widest border-2 border-slate-900`}>
+                    {feedbackStatusLabel[f.status]}
+                  </Badge>
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500">{formatDate(f.created_at)}</span>
+                </div>
+
+                <div className="bg-slate-50 border-2 border-slate-200 p-4">
+                  <p className="text-sm font-medium text-slate-700 whitespace-pre-wrap">{f.message}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(["new", "in_review", "resolved"] as const).map((s) => (
+                    <Button
+                      key={s}
+                      onClick={() => updateFeedback.mutate({ id: f.id, status: s })}
+                      disabled={updateFeedback.isPending || f.status === s}
+                      className={`border-2 border-slate-900 font-bold uppercase tracking-widest text-[10px] px-4 shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all ${f.status === s ? "bg-slate-900 text-white" : "bg-white text-slate-900 hover:bg-slate-100"}`}
+                    >
+                      {feedbackStatusLabel[s]}
+                    </Button>
+                  ))}
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Комментарий администратора</p>
+                  <Textarea
+                    value={commentDrafts[f.id] ?? f.admin_comment ?? ""}
+                    onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [f.id]: e.target.value }))}
+                    placeholder="Ответ пользователю..."
+                    className="min-h-[80px] rounded-none border-2 border-slate-900 font-medium"
+                  />
+                  <Button
+                    onClick={() => updateFeedback.mutate({ id: f.id, admin_comment: commentDrafts[f.id] ?? f.admin_comment ?? "" })}
+                    disabled={updateFeedback.isPending}
+                    className="bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 font-bold uppercase tracking-widest text-[10px] px-6 shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                  >
+                    Сохранить комментарий
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+      <>
       {/* DETAILED STATISTICS BLOCK (Брутальный стиль) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <div className="bg-white border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between">
