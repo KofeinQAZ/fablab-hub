@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Check, ExternalLink, X, Archive, ClipboardList, CheckCircle2, XCircle, FileText, UserCheck, ShieldAlert } from "lucide-react";
 import { approveAccessRequest } from "@/lib/api";
