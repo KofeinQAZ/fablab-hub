@@ -652,7 +652,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      notify_telegram: { Args: { p_message: string }; Returns: undefined }
+      notify_telegram:
+        | { Args: { p_message: string }; Returns: undefined }
+        | { Args: { p_buttons?: Json; p_message: string }; Returns: undefined }
       set_user_approval: {
         Args: {
           new_status: Database["public"]["Enums"]["approval_status"]
