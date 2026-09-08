@@ -136,6 +136,46 @@ function AdminRequestsPage() {
     },
   });
 
+  const { data: feedback = [], isLoading: isFeedbackLoading } = useQuery({
+    queryKey: ["admin-feedback"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("feedback_requests")
+        .select("id,user_id,message,status,admin_comment,created_at,profile:profiles!feedback_requests_user_id_fkey(name)")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data as FeedbackRequest[]) || [];
+    },
+  });
+
+  const updateFeedback = useMutation({
+    mutationFn: async ({ id, status, admin_comment }: { id: string; status?: FeedbackRequest["status"]; admin_comment?: string }) => {
+      const payload: Record<string, unknown> = {};
+      if (status) payload.status = status;
+      if (admin_comment !== undefined) payload.admin_comment = admin_comment;
+      const { error } = await (supabase as any).from("feedback_requests").update(payload).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      toast.success("Заявка обновлена");
+    },
+    onError: (error: Error) => toast.error(error.message || "Ошибка обновления"),
+  });
+
+  const feedbackStatusLabel: Record<FeedbackRequest["status"], string> = {
+    new: "Новая",
+    in_review: "На рассмотрении",
+    resolved: "Решено",
+  };
+  const feedbackStatusColor: Record<FeedbackRequest["status"], string> = {
+    new: "bg-blue-600",
+    in_review: "bg-amber-500",
+    resolved: "bg-emerald-500",
+  };
+
+
+
   const pendingRequests = requests.filter((r) => r.status === "pending");
   const briefingRequests = pendingRequests.filter((r) => r.type === "safety_briefing");
   const residencyRequests = pendingRequests.filter((r) => r.type === "residency");
