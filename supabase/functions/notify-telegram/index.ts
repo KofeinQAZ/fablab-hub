@@ -26,9 +26,23 @@ Deno.serve(async (req) => {
   }
 
   let message = '';
+  let buttons: { text: string; url: string }[] = [];
   try {
     const body = await req.json();
     message = typeof body?.message === 'string' ? body.message.trim() : '';
+    if (Array.isArray(body?.buttons)) {
+      buttons = body.buttons
+        .filter(
+          (b: unknown): b is { text: string; url: string } =>
+            !!b &&
+            typeof (b as any).text === 'string' &&
+            typeof (b as any).url === 'string' &&
+            (b as any).text.trim().length > 0 &&
+            /^https?:\/\//i.test((b as any).url),
+        )
+        .slice(0, 5)
+        .map((b) => ({ text: b.text.trim().slice(0, 30), url: b.url }));
+    }
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: jsonHeaders });
   }
