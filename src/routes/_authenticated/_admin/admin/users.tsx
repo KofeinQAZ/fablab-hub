@@ -318,6 +318,26 @@ function UsersPage() {
                   </div>
                 </div>
 
+                {/* Одобрение доступа (не университетская почта) */}
+                {user.approval_status && user.approval_status !== "approved" && (
+                  <div className="flex gap-3 mb-4">
+                    <Button
+                      onClick={() => setApprovalMutation.mutate({ userId: user.id, status: "approved" })}
+                      disabled={setApprovalMutation.isPending}
+                      className="flex-1 h-12 rounded-none bg-emerald-400 hover:bg-emerald-500 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                    >
+                      Одобрить
+                    </Button>
+                    <Button
+                      onClick={() => setApprovalMutation.mutate({ userId: user.id, status: "rejected" })}
+                      disabled={setApprovalMutation.isPending || user.approval_status === "rejected"}
+                      className="flex-1 h-12 rounded-none bg-white hover:bg-rose-50 text-rose-600 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                    >
+                      Отклонить
+                    </Button>
+                  </div>
+                )}
+
                 {/* Actions */}
                 <div className="flex flex-wrap gap-3 mt-auto">
                   <Dialog open={selectedUser?.id === user.id && roleChangeDialog} onOpenChange={(open) => {
