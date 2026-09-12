@@ -447,7 +447,15 @@
     },
     "errors": {
       "alreadyBusy": "This time slot is already taken! Please refresh the page.",
-      "noPermission": "You do not have permission to perform this action"
+      "noPermission": "You do not have permission to perform this action",
+      "briefingRequired": "You need to pass the safety briefing to book this equipment.",
+      "residentRequired": "This equipment is available to lab residents only.",
+      "equipmentInactive": "This equipment is currently under maintenance.",
+      "banned": "Your account is blocked.",
+      "pastTime": "You cannot book a time in the past.",
+      "tooFarAhead": "Bookings can be made up to 7 days ahead.",
+      "tooLong": "Maximum booking duration is 3 hours.",
+      "generic": "Could not create the booking"
     }
   },
   "login": {
