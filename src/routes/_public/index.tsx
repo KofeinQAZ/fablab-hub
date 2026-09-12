@@ -6,7 +6,7 @@ import {
   Mail, Phone, Printer, Rocket, ShieldCheck, 
   Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
 } from "lucide-react";
-import mitLogo from "@/assets/fablab-mit-logo.png.asset.json";
+import mitLogo from "/fablab-mit-logo.png";
 
 export const Route = createFileRoute("/_public/")({
   component: LandingPage,
@@ -123,7 +123,7 @@ function LandingPage() {
               <p className="text-blue-100 text-base md:text-lg mb-8 font-medium">{t('landing.bento.mitDesc', 'FabLab Satbayev — часть глобальной сети fabrication laboratories, работающей при поддержке и в сотрудничестве с MIT.')}</p>
             </div>
             <div className="relative h-64 bg-white border-4 border-slate-900 flex items-center justify-center p-6 md:p-8">
-               <img src={mitLogo.url} alt={t('landing.bento.mitLogoAlt', 'Fab Lab MIT')} className="w-full h-full max-h-[180px] object-contain" />
+               <img src={mitLogo} alt={t('landing.bento.mitLogoAlt', 'Fab Lab MIT')} className="w-full h-full max-h-[180px] object-contain" />
             </div>
           </div>
 
