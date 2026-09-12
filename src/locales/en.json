@@ -351,10 +351,11 @@
       "equipTitle1": "Thousands of parts.",
       "equipTitle2": "One printer.",
       "equipDesc": "Get access to a fleet of modern 3D printers. From basic PLA to complex engineering plastics — everything is booked online.",
-      "processBadge": "Processes",
-      "processTitle1": "Smart",
-      "processTitle2": "booking",
-      "processDesc": "No more paper logbooks. Interactive schedule, access control, and automated notifications."
+      "mitBadge": "Partnership",
+      "mitTitle1": "Powered by",
+      "mitTitle2": "MIT",
+      "mitDesc": "FabLab Satbayev is part of the global network of fabrication laboratories, supported by and in collaboration with MIT. We share world-class digital fabrication standards, rapid prototyping methodologies, and a maker community.",
+      "mitLogoAlt": "Fab Lab MIT logo"
     },
     "cta": {
       "title1": "From blueprint",
