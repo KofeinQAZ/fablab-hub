@@ -6,6 +6,7 @@ import {
   Mail, Phone, Printer, Rocket, ShieldCheck, 
   Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
 } from "lucide-react";
+import mitLogo from "@/assets/fablab-mit-logo.png.asset.json";
 
 export const Route = createFileRoute("/_public/")({
   component: LandingPage,
