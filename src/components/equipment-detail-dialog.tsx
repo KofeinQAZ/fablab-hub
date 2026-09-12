@@ -145,19 +145,68 @@ export function EquipmentDetailDialog({ open, equipment, userId, onClose, onSucc
         throw new Error(firstError?.message || "Booking validation failed");
       }
 
-      const { data, error } = await supabase.from("bookings").insert({
+      const payload = {
         user_id: userId,
         equipment_id: equipment.id,
         start_time: start.toISOString(),
         end_time: end.toISOString(),
-        status: "pending", 
-      }).select();
+        status: "pending" as const,
+      };
 
-      if (error) throw new Error(t('booking_dialog.errors.alreadyBusy'));
-      
+      const { data, error } = await supabase.from("bookings").insert(payload).select();
+
+      if (error) {
+        // Диагностика: точные данные запроса и ответ бэкенда
+        console.error("[BOOKING ERROR]", {
+          equipment_id: equipment.id,
+          equipment_name: equipment.name,
+          access_type: equipment.access_type,
+          requested_start_local: start.toString(),
+          requested_end_local: end.toString(),
+          requested_start_utc: payload.start_time,
+          requested_end_utc: payload.end_time,
+          known_bookings_for_equipment: bookings,
+          supabase_error: { code: error.code, message: error.message, details: error.details, hint: error.hint },
+        });
+
+        const raw = `${error.message || ""} ${error.details || ""}`.toLowerCase();
+
+        // Реальное пересечение по времени ловим только по коду exclusion constraint
+        if (error.code === "23P01" || raw.includes("bookings_no_overlap")) {
+          throw new Error(t('booking_dialog.errors.alreadyBusy'));
+        }
+        if (raw.includes("safety briefing")) {
+          throw new Error(t('booking_dialog.errors.briefingRequired'));
+        }
+        if (raw.includes("resident role")) {
+          throw new Error(t('booking_dialog.errors.residentRequired'));
+        }
+        if (raw.includes("equipment is not active")) {
+          throw new Error(t('booking_dialog.errors.equipmentInactive'));
+        }
+        if (raw.includes("user is banned")) {
+          throw new Error(t('booking_dialog.errors.banned'));
+        }
+        if (raw.includes("must be in the future")) {
+          throw new Error(t('booking_dialog.errors.pastTime'));
+        }
+        if (raw.includes("more than 7 days")) {
+          throw new Error(t('booking_dialog.errors.tooFarAhead'));
+        }
+        if (raw.includes("duration cannot exceed")) {
+          throw new Error(t('booking_dialog.errors.tooLong'));
+        }
+        if (error.code === "42501" || raw.includes("row-level security")) {
+          throw new Error(t('booking_dialog.errors.noPermission'));
+        }
+
+        throw new Error(`${t('booking_dialog.errors.generic')}: ${error.message}`);
+      }
+
       if (!data || data.length === 0) {
         throw new Error(t('booking_dialog.errors.noPermission'));
       }
+
     },
     onSuccess: () => {
   // Меняем логику тоста, чтобы он всегда говорил об успешной отправке запроса
