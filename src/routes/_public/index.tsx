@@ -117,16 +117,12 @@ function LandingPage() {
 
           <div className="bg-blue-600 border-4 border-slate-900 p-8 md:p-12 shadow-[8px_8px_0_theme(colors.slate.900)] flex flex-col justify-between">
             <div>
-              <div className="inline-block border-2 border-slate-900 px-3 py-1 font-bold text-xs tracking-widest uppercase bg-slate-900 text-white shadow-[4px_4px_0_#ffffff]">{t('landing.bento.processBadge', 'ПРОЦЕССЫ')}</div>
-              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white mt-6 mb-4 leading-none">{t('landing.bento.processTitle1', 'УМНОЕ')}<br/>{t('landing.bento.processTitle2', 'БРОНИРОВАНИЕ')}</h3>
-              <p className="text-blue-100 text-base md:text-lg mb-8 font-medium">{t('landing.bento.processDesc', 'Больше никаких бумажных журналов. Интерактивное расписание, контроль доступов и автоматические уведомления.')}</p>
+              <div className="inline-block border-2 border-slate-900 px-3 py-1 font-bold text-xs tracking-widest uppercase bg-slate-900 text-white shadow-[4px_4px_0_#ffffff]">{t('landing.bento.mitBadge', 'СОТРУДНИЧЕСТВО')}</div>
+              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white mt-6 mb-4 leading-none">{t('landing.bento.mitTitle1', 'ПРИ ПОДДЕРЖКЕ')}<br/>{t('landing.bento.mitTitle2', 'MIT')}</h3>
+              <p className="text-blue-100 text-base md:text-lg mb-8 font-medium">{t('landing.bento.mitDesc', 'FabLab Satbayev — часть глобальной сети fabrication laboratories, работающей при поддержке и в сотрудничестве с MIT.')}</p>
             </div>
-            <div className="relative h-64 bg-slate-900 border-4 border-slate-900 flex items-center justify-center p-6">
-               <div className="w-full h-full border-2 border-slate-700 bg-slate-800 flex flex-col gap-4 p-4">
-                  <div className="w-full h-8 bg-slate-700 animate-pulse" />
-                  <div className="w-2/3 h-6 bg-blue-500 animate-pulse" />
-                  <div className="w-full h-full border-2 border-dashed border-slate-600" />
-               </div>
+            <div className="relative h-64 bg-white border-4 border-slate-900 flex items-center justify-center p-6 md:p-8">
+               <img src={mitLogo.url} alt={t('landing.bento.mitLogoAlt', 'Fab Lab MIT')} className="w-full h-full max-h-[180px] object-contain" />
             </div>
           </div>
 
