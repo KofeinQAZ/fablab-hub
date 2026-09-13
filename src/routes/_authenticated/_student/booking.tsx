@@ -56,6 +56,13 @@ function BookingPage() {
     },
   });
 
+  // QR инвентаря: /booking?inventoryId=... — сразу открываем вкладку «Инвентарь»
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("inventoryId")) setCategory("inventory");
+  }, []);
+
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const qrEquipmentId = urlParams.get("equipmentId");
