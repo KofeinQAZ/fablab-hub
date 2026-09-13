@@ -84,6 +84,7 @@ function ProfilePage() {
 
   const [addingUpdateFor, setAddingUpdateFor] = useState<any>(null);
   const [updateContent, setUpdateContent] = useState("");
+  const [updateImages, setUpdateImages] = useState<string[]>([]);
 
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
