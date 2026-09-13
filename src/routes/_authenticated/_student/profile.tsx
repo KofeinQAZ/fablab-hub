@@ -1069,8 +1069,6 @@ function ProfilePage() {
               disabled={
                 !projTitle.ru.trim() || 
                 !projDesc.ru.trim() || 
-                !projImage.trim() || 
-                !isValidUrl(projImage.trim()) || 
                 (projLooking && !projRoles.trim()) || 
                 saveProjectMutation.isPending
               } 

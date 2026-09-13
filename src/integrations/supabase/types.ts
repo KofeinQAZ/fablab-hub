@@ -726,14 +726,17 @@ export type Database = {
         Row: {
           id: string | null
           name: string | null
+          photo_url: string | null
         }
         Insert: {
           id?: string | null
           name?: string | null
+          photo_url?: string | null
         }
         Update: {
           id?: string | null
           name?: string | null
+          photo_url?: string | null
         }
         Relationships: []
       }
