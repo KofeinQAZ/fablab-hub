@@ -212,6 +212,231 @@ export type Database = {
           },
         ]
       }
+      club_applications: {
+        Row: {
+          applicant_id: string
+          club_id: string
+          cover_letter: string | null
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["application_status"]
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          club_id: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          club_id?: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_applications_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_applications_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_applications_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_members: {
+        Row: {
+          club_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["club_member_role"]
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["club_member_role"]
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["club_member_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_members_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_updates: {
+        Row: {
+          author_id: string | null
+          club_id: string
+          content: string
+          created_at: string
+          id: string
+          image_urls: string[]
+          is_achievement: boolean
+          title: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          club_id: string
+          content: string
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          is_achievement?: boolean
+          title?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          club_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          is_achievement?: boolean
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_updates_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_updates_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_updates_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clubs: {
+        Row: {
+          author_id: string
+          created_at: string
+          description: string
+          description_en: string | null
+          description_kz: string | null
+          id: string
+          image_url: string | null
+          is_approved: boolean
+          is_recruiting: boolean
+          is_rejected: boolean
+          meeting_schedule: string | null
+          tags: string[]
+          title: string
+          title_en: string | null
+          title_kz: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          description?: string
+          description_en?: string | null
+          description_kz?: string | null
+          id?: string
+          image_url?: string | null
+          is_approved?: boolean
+          is_recruiting?: boolean
+          is_rejected?: boolean
+          meeting_schedule?: string | null
+          tags?: string[]
+          title: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          description?: string
+          description_en?: string | null
+          description_kz?: string | null
+          id?: string
+          image_url?: string | null
+          is_approved?: boolean
+          is_recruiting?: boolean
+          is_rejected?: boolean
+          meeting_schedule?: string | null
+          tags?: string[]
+          title?: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clubs_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clubs_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           access_type: Database["public"]["Enums"]["equipment_access_type"]
@@ -616,27 +841,79 @@ export type Database = {
           },
         ]
       }
+      project_members: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_updates: {
         Row: {
           content: string
           created_at: string
           id: string
           image_urls: string[]
+          is_achievement: boolean
           project_id: string
+          title: string | null
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
           image_urls?: string[]
+          is_achievement?: boolean
           project_id: string
+          title?: string | null
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
           image_urls?: string[]
+          is_achievement?: boolean
           project_id?: string
+          title?: string | null
         }
         Relationships: [
           {
@@ -651,6 +928,7 @@ export type Database = {
       projects: {
         Row: {
           author_id: string
+          club_id: string | null
           created_at: string
           description: string
           description_en: string | null
@@ -669,6 +947,7 @@ export type Database = {
         }
         Insert: {
           author_id: string
+          club_id?: string | null
           created_at?: string
           description?: string
           description_en?: string | null
@@ -687,6 +966,7 @@ export type Database = {
         }
         Update: {
           author_id?: string
+          club_id?: string | null
           created_at?: string
           description?: string
           description_en?: string | null
@@ -716,6 +996,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
             referencedColumns: ["id"]
           },
         ]
@@ -798,6 +1085,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_club_captain: {
+        Args: { _club_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_club_moderator: {
+        Args: { _club_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_project_owner: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
       notify_telegram:
         | { Args: { p_message: string }; Returns: undefined }
         | { Args: { p_buttons?: Json; p_message: string }; Returns: undefined }
@@ -847,6 +1146,7 @@ export type Database = {
       approval_status: "pending_admin" | "approved" | "rejected"
       article_category: "news" | "article"
       booking_status: "pending" | "active" | "cancelled" | "completed"
+      club_member_role: "captain" | "moderator" | "member"
       equipment_access_type:
         | "basic"
         | "independent"
@@ -991,6 +1291,7 @@ export const Constants = {
       approval_status: ["pending_admin", "approved", "rejected"],
       article_category: ["news", "article"],
       booking_status: ["pending", "active", "cancelled", "completed"],
+      club_member_role: ["captain", "moderator", "member"],
       equipment_access_type: [
         "basic",
         "independent",
