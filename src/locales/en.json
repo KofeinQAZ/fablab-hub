@@ -54,7 +54,8 @@
     },
     "tabs": {
       "stationary": "Machines",
-      "portable": "Equipment"
+      "portable": "Equipment",
+      "inventory": "Inventory"
     },
     "card": {
       "noPhoto": "NO PHOTO",
@@ -544,5 +545,34 @@
     "logout": "Log out",
     "signUpPendingTitle": "Request sent for review",
     "signUpPendingDesc": "Your email is outside the university domain, so an administrator grants access manually. We will notify you once your request is approved."
+  },
+  "inventory": {
+    "hint": "Scan the QR code on the tool with your phone camera — its card opens and you can check the item out to yourself.",
+    "empty": "Inventory is empty",
+    "descriptionTitle": "Description",
+    "status": {
+      "available": "In stock",
+      "checkedOut": "Checked out",
+      "maintenance": "Maintenance",
+      "mine": "Assigned to you"
+    },
+    "btn": {
+      "take": "Take it",
+      "return": "Return to stock",
+      "open": "Open card"
+    },
+    "toast": {
+      "taken": "Done! The item is assigned to you",
+      "returned": "Thanks! The item is back in stock"
+    },
+    "errors": {
+      "alreadyYours": "This item is already assigned to you",
+      "taken": "The item is already checked out by someone else",
+      "maintenance": "The item is under maintenance",
+      "notApproved": "Your account is not approved yet",
+      "banned": "Your account is blocked",
+      "notYours": "This item is assigned to someone else",
+      "auth": "Please sign in"
+    }
   }
 }

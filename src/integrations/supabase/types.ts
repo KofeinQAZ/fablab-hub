@@ -314,6 +314,121 @@ export type Database = {
           },
         ]
       }
+      inventory_checkouts: {
+        Row: {
+          checked_out_at: string
+          created_at: string
+          id: string
+          item_id: string
+          returned_at: string | null
+          user_id: string
+        }
+        Insert: {
+          checked_out_at?: string
+          created_at?: string
+          id?: string
+          item_id: string
+          returned_at?: string | null
+          user_id: string
+        }
+        Update: {
+          checked_out_at?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          returned_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_checkouts_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_checkouts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_checkouts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_items: {
+        Row: {
+          checked_out_at: string | null
+          created_at: string
+          description: string | null
+          description_en: string | null
+          description_kz: string | null
+          holder_id: string | null
+          id: string
+          image_url: string | null
+          inventory_number: string
+          name: string
+          name_en: string | null
+          name_kz: string | null
+          status: Database["public"]["Enums"]["inventory_status"]
+          updated_at: string
+        }
+        Insert: {
+          checked_out_at?: string | null
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          holder_id?: string | null
+          id?: string
+          image_url?: string | null
+          inventory_number: string
+          name: string
+          name_en?: string | null
+          name_kz?: string | null
+          status?: Database["public"]["Enums"]["inventory_status"]
+          updated_at?: string
+        }
+        Update: {
+          checked_out_at?: string | null
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          holder_id?: string | null
+          id?: string
+          image_url?: string | null
+          inventory_number?: string
+          name?: string
+          name_en?: string | null
+          name_kz?: string | null
+          status?: Database["public"]["Enums"]["inventory_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mentor_schedule: {
         Row: {
           created_at: string
@@ -635,6 +750,31 @@ export type Database = {
       check_if_admin: { Args: never; Returns: boolean }
       check_if_approved: { Args: never; Returns: boolean }
       check_if_banned: { Args: never; Returns: boolean }
+      checkout_inventory_item: {
+        Args: { _item_id: string }
+        Returns: {
+          checked_out_at: string | null
+          created_at: string
+          description: string | null
+          description_en: string | null
+          description_kz: string | null
+          holder_id: string | null
+          id: string
+          image_url: string | null
+          inventory_number: string
+          name: string
+          name_en: string | null
+          name_kz: string | null
+          status: Database["public"]["Enums"]["inventory_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "inventory_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_team_members: {
         Args: never
         Returns: {
@@ -655,6 +795,31 @@ export type Database = {
       notify_telegram:
         | { Args: { p_message: string }; Returns: undefined }
         | { Args: { p_buttons?: Json; p_message: string }; Returns: undefined }
+      return_inventory_item: {
+        Args: { _item_id: string }
+        Returns: {
+          checked_out_at: string | null
+          created_at: string
+          description: string | null
+          description_en: string | null
+          description_kz: string | null
+          holder_id: string | null
+          id: string
+          image_url: string | null
+          inventory_number: string
+          name: string
+          name_en: string | null
+          name_kz: string | null
+          status: Database["public"]["Enums"]["inventory_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "inventory_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_user_approval: {
         Args: {
           new_status: Database["public"]["Enums"]["approval_status"]
@@ -684,6 +849,7 @@ export type Database = {
       equipment_category: "stationary" | "portable"
       equipment_status: "active" | "maintenance"
       feedback_status: "new" | "in_review" | "resolved"
+      inventory_status: "available" | "checked_out" | "maintenance"
       project_status: "in_progress" | "completed" | "paused"
       request_status: "pending" | "approved" | "rejected"
     }
@@ -828,6 +994,7 @@ export const Constants = {
       equipment_category: ["stationary", "portable"],
       equipment_status: ["active", "maintenance"],
       feedback_status: ["new", "in_review", "resolved"],
+      inventory_status: ["available", "checked_out", "maintenance"],
       project_status: ["in_progress", "completed", "paused"],
       request_status: ["pending", "approved", "rejected"],
     },

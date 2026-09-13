@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EquipmentDetailDialog, EquipmentDetails } from "@/components/equipment-detail-dialog";
 import { EquipmentInfoDialog } from "@/components/equipment-info-dialog";
+import { InventorySection } from "@/components/inventory-section";
 
-import { Lock, AlertCircle, Laptop, Printer, HardHat, Crown, CheckCircle2, ShieldAlert, Wrench } from "lucide-react";
+import { Lock, AlertCircle, Laptop, Printer, HardHat, Crown, CheckCircle2, ShieldAlert, Wrench, Package } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -27,7 +28,7 @@ function BookingPage() {
   // Достаем i18n чтобы знать текущий язык
   const { t, i18n } = useTranslation();
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentDetails | null>(null);
-  const [category, setCategory] = useState<"stationary" | "portable">("stationary");
+  const [category, setCategory] = useState<"stationary" | "portable" | "inventory">("stationary");
   const [infoEquipment, setInfoEquipment] = useState<EquipmentDetails | null>(null);
 
 
@@ -41,17 +42,26 @@ function BookingPage() {
     },
   });
 
+  const equipmentCategory: "stationary" | "portable" = category === "inventory" ? "portable" : category;
+
   const { data: equipment = [], isLoading } = useQuery({
-    queryKey: ["equipment-gallery", category],
+    queryKey: ["equipment-gallery", equipmentCategory],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("equipment")
         .select("*")
-        .eq("category", category);
+        .eq("category", equipmentCategory);
       if (error) throw error;
       return data as EquipmentDetails[];
     },
   });
+
+  // QR инвентаря: /booking?inventoryId=... — сразу открываем вкладку «Инвентарь»
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("inventoryId")) setCategory("inventory");
+  }, []);
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -150,8 +160,8 @@ function BookingPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="stationary" onValueChange={(v) => setCategory(v as any)} className="w-full">
-        <TabsList className="grid grid-cols-2 h-auto w-full bg-slate-100 p-1.5 rounded-2xl gap-2">
+      <Tabs value={category} onValueChange={(v) => setCategory(v as any)} className="w-full">
+        <TabsList className="grid grid-cols-3 h-auto w-full bg-slate-100 p-1.5 rounded-2xl gap-2">
           <TabsTrigger 
             value="stationary" 
             className="h-12 md:h-14 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
@@ -164,10 +174,18 @@ function BookingPage() {
           >
             <Laptop className="w-4 h-4 md:w-5 md:h-5 mr-2" /> {t('booking.tabs.portable')}
           </TabsTrigger>
+          <TabsTrigger 
+            value="inventory" 
+            className="h-12 md:h-14 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
+          >
+            <Package className="w-4 h-4 md:w-5 md:h-5 mr-2" /> {t('booking.tabs.inventory', 'Инвентарь')}
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {isLoading ? (
+      {category === "inventory" ? (
+        <InventorySection userId={profile?.id ?? null} active />
+      ) : isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3].map((i) => <div key={i} className="h-96 border-4 border-slate-900 bg-slate-200 animate-pulse" />)}
         </div>
