@@ -11,6 +11,7 @@ import {
   Plus, Trash2, ArrowUp, ArrowDown, Type, Image as ImageIcon, 
   Youtube, Wrench, GripVertical, Heading, Pencil, ArrowLeft, Newspaper 
 } from "lucide-react";
+import { ImageUpload, useUploadFolder } from "@/components/image-upload";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/news")({
   component: AdminNewsPage,
@@ -372,20 +373,13 @@ function AdminNewsPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Обложка URL (Общий)</Label>
-                <Input 
-                  className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
-                  placeholder="https://..." 
-                  value={imageUrl} 
-                  onChange={(e) => setImageUrl(e.target.value)} 
-                />
-                {imageUrl && (
-                  <div className="mt-4 h-40 w-full border-2 border-slate-900 bg-slate-100 overflow-hidden relative">
-                    <img src={imageUrl} alt="Превью" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.src = "")} />
-                  </div>
-                )}
-              </div>
+              <ImageUpload
+                label="Обложка (общая)"
+                bucket="project-covers"
+                folder={uploadFolder}
+                value={imageUrl || null}
+                onChange={(url) => setImageUrl(url ?? "")}
+              />
 
             </div>
           </div>
@@ -465,9 +459,17 @@ function AdminNewsPage() {
                             onChange={(e) => updateBlock(block.id, e.target.value)} 
                           />
                         )}
-                        {(block.type === 'image' || block.type === 'youtube') && (
+                        {block.type === 'image' && (
+                          <ImageUpload
+                            bucket="project-covers"
+                            folder={uploadFolder}
+                            value={block.content || null}
+                            onChange={(url) => updateBlock(block.id, url ?? "")}
+                          />
+                        )}
+                        {block.type === 'youtube' && (
                           <Input 
-                            placeholder="URL ссылка..." 
+                            placeholder="Ссылка на YouTube..." 
                             className="border-2 border-slate-200 rounded-none bg-white h-12 focus-visible:ring-0 focus-visible:border-blue-600 font-medium" 
                             value={block.content} 
                             onChange={(e) => updateBlock(block.id, e.target.value)} 

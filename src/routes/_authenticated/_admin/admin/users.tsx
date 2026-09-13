@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { ImageUpload } from "@/components/image-upload";
 import { Shield, Ban, CheckCircle2, AlertCircle, Search, Lock, Unlock, Crown, Mail, Phone, X, User, Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/users")({
@@ -427,18 +428,15 @@ function UsersPage() {
                             className="h-14 rounded-none border-2 border-slate-900 bg-slate-50 font-bold focus-visible:ring-0"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ссылка на фото</label>
-                          <Input
-                            value={photoUrl}
-                            onChange={(e) => setPhotoUrl(e.target.value)}
-                            placeholder="https://..."
-                            className="h-14 rounded-none border-2 border-slate-900 bg-slate-50 font-bold focus-visible:ring-0"
-                          />
-                        </div>
-                        {photoUrl && (
-                          <img src={photoUrl} alt={user.name} className="h-32 w-32 object-cover border-4 border-slate-900" />
-                        )}
+                        <ImageUpload
+                          label="Фото"
+                          bucket="avatars"
+                          folder={user.id}
+                          square
+                          maxSize={400}
+                          value={photoUrl || null}
+                          onChange={(url) => setPhotoUrl(url ?? "")}
+                        />
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                           Карточка появится во вкладке «Команда» только у роли «Сотрудник».
                         </p>

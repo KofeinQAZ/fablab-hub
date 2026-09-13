@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { ImageUpload, useUploadFolder } from "@/components/image-upload";
 import { Package, Plus, QrCode, Trash2, Pencil, Undo2, X, Printer } from "lucide-react";
 import type { InventoryItem } from "@/components/inventory-item-dialog";
 
@@ -47,6 +48,7 @@ const qrUrlFor = (id: string, size = 180) =>
 
 function AdminInventoryPage() {
   const qc = useQueryClient();
+  const uploadFolder = useUploadFolder();
   const [form, setForm] = useState<FormState | null>(null);
   const [qrItem, setQrItem] = useState<InventoryItem | null>(null);
 
@@ -302,10 +304,13 @@ function AdminInventoryPage() {
                   </select>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="font-black uppercase tracking-widest text-[10px]">Ссылка на фото</Label>
-                <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="rounded-none border-2 border-slate-900" />
-              </div>
+              <ImageUpload
+                label="Фото предмета"
+                bucket="equipment-images"
+                folder={uploadFolder}
+                value={form.image_url || null}
+                onChange={(url) => setForm({ ...form, image_url: url ?? "" })}
+              />
               <div className="space-y-1.5">
                 <Label className="font-black uppercase tracking-widest text-[10px]">Описание (RU)</Label>
                 <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-none border-2 border-slate-900 min-h-24" />

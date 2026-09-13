@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { ImageUpload, ImageUploadMultiple, useUploadFolder } from "@/components/image-upload";
 import { Plus, RefreshCcw, Trash2, Laptop, Printer, HardHat, Crown, QrCode, Printer as PrintIcon, Wrench, Settings, ShieldAlert, Zap } from "lucide-react";
 import { z } from "zod";
 
