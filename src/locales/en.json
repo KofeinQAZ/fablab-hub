@@ -127,7 +127,8 @@
       "cancelSuccess": "Booking successfully cancelled",
       "cancelError": "Failed to cancel booking:",
       "contactsSaved": "Contacts saved!",
-      "contactsError": "Save error:"
+      "contactsError": "Save error:",
+      "avatarLabel": "Profile photo"
     },
     "briefingDialog": {
       "title": "Safety Briefing Registration",
@@ -180,7 +181,8 @@
       "rolesLabel": "Who do you need? (comma separated roles)",
       "rolesPlaceholder": "Frontend, Engineer, 3D Modeler...",
       "saving": "Saving...",
-      "saveBtn": "SAVE PROJECT"
+      "saveBtn": "SAVE PROJECT",
+      "coverLabel": "Project cover"
     },
     "updateForm": {
       "title": "Publish Update",
@@ -188,7 +190,8 @@
       "textPlaceholder": "What's new in the project? Briefly describe the changes...",
       "publishing": "Publishing...",
       "publishBtn": "PUBLISH UPDATE",
-      "success": "Update published!"
+      "success": "Update published!",
+      "imagesLabel": "Photos for the entry (up to 3)"
     },
     "applications": {
       "title": "Join Requests",
@@ -573,6 +576,19 @@
       "banned": "Your account is blocked",
       "notYours": "This item is assigned to someone else",
       "auth": "Please sign in"
+    }
+  },
+  "upload": {
+    "hint": "Drag a file here or click to choose",
+    "choose": "Choose file",
+    "replace": "Replace",
+    "done": "Image uploaded",
+    "errors": {
+      "tooLarge": "File is over 8 MB — pick a smaller image",
+      "notImage": "This is not an image",
+      "unreadable": "Could not read the image",
+      "forbidden": "You are not allowed to upload this file",
+      "max": "Image limit reached"
     }
   }
 }
