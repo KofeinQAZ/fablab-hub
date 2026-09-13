@@ -529,10 +529,33 @@ function ProfilePage() {
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             <div className="bg-white border-4 border-slate-900 p-6 shadow-[6px_6px_0_#0f172a] space-y-6">
-              <div>
-                <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-400 mb-1">{t('profile.info.studentSubtitle')}</h4>
-                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{authData.profile.name}</h2>
-                <p className="text-sm font-bold text-slate-500 mt-1">{authData.email}</p>
+              <div className="flex items-start gap-5">
+                <div className="shrink-0 relative">
+                  <div className="h-24 w-24 rounded-full border-4 border-slate-900 overflow-hidden bg-blue-600 flex items-center justify-center shadow-[4px_4px_0_#0f172a]">
+                    {authData.profile.photo_url ? (
+                      <img src={authData.profile.photo_url} alt={authData.profile.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-white font-black text-3xl uppercase">{authData.profile.name?.slice(0, 1)}</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-400 mb-1">{t('profile.info.studentSubtitle')}</h4>
+                  <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{authData.profile.name}</h2>
+                  <p className="text-sm font-bold text-slate-500 mt-1">{authData.email}</p>
+                </div>
+              </div>
+
+              <div className="border-t-2 border-dashed border-slate-200 pt-4">
+                <ImageUpload
+                  label={t('profile.info.avatarLabel', 'Фото профиля')}
+                  bucket="avatars"
+                  folder={authData.userId}
+                  square
+                  maxSize={400}
+                  value={authData.profile.photo_url ?? null}
+                  onChange={(url) => updateAvatarMutation.mutate(url)}
+                />
               </div>
 
               <div className="border-t-2 border-dashed border-slate-200 pt-4 space-y-4">
