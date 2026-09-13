@@ -418,8 +418,20 @@ function ProfilePage() {
   });
 
   const addUpdateMutation = useMutation({
-    mutationFn: async () => supabase.from("project_updates").insert({ project_id: addingUpdateFor.id, content: updateContent }),
-    onSuccess: () => { toast.success(t('profile.updateForm.success')); setAddingUpdateFor(null); setUpdateContent(""); }
+    mutationFn: async () => supabase.from("project_updates").insert({ project_id: addingUpdateFor.id, content: updateContent, image_urls: updateImages }),
+    onSuccess: () => { toast.success(t('profile.updateForm.success')); setAddingUpdateFor(null); setUpdateContent(""); setUpdateImages([]); queryClient.invalidateQueries({ queryKey: ["my-projects"] }); }
+  });
+
+  const updateAvatarMutation = useMutation({
+    mutationFn: async (url: string | null) => {
+      const { error } = await supabase.from("profiles").update({ photo_url: url }).eq("id", authData!.userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["current-user-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["current-profile"] });
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const openProjectForm = (project: any = null) => {
