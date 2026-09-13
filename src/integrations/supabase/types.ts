@@ -621,18 +621,21 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_urls: string[]
           project_id: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
+          image_urls?: string[]
           project_id: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
+          image_urls?: string[]
           project_id?: string
         }
         Relationships: [
