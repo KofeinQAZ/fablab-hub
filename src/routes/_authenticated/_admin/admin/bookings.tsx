@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +22,7 @@ type Booking = {
   end_time: string;
   status: "pending" | "active" | "cancelled" | "completed";
   equipment: { id: string; name: string; category: string } | null;
-  profiles: { name: string; contact_phone?: string } | { name: string; contact_phone?: string }[] | null;
+  profiles: { name: string; contact_phone?: string; photo_url?: string | null } | { name: string; contact_phone?: string; photo_url?: string | null }[] | null;
 };
 
 function formatTimeRange(start: string, end: string) {
@@ -155,6 +156,13 @@ function AdminBookingsPage() {
     return booking.profiles?.name ?? "Неизвестный";
   };
 
+  const getStudentPhoto = (booking: Booking) => {
+    if (Array.isArray(booking.profiles)) {
+      return booking.profiles[0]?.photo_url ?? null;
+    }
+    return booking.profiles?.photo_url ?? null;
+  };
+
   const getStudentPhone = (booking: Booking) => {
     if (Array.isArray(booking.profiles)) {
       return booking.profiles[0]?.contact_phone ?? "Нет номера";
@@ -276,7 +284,7 @@ function AdminBookingsPage() {
                     <div className="space-y-2">
                       <div className="font-black text-lg text-slate-900 uppercase tracking-tight">{b.equipment?.name}</div>
                       <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest text-slate-600">
-                        <span className="flex items-center gap-2"><User className="h-4 w-4 text-blue-600" /> {getStudentName(b)}</span>
+                        <span className="flex items-center gap-2"><UserAvatar name={getStudentName(b)} url={getStudentPhoto(b)} className="h-6 w-6" /> {getStudentName(b)}</span>
                         <span className="flex items-center gap-2"><Phone className="h-4 w-4 text-emerald-600" /> {getStudentPhone(b)}</span>
                         <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-600" /> {date}, {fullRange}</span>
                       </div>
@@ -351,7 +359,7 @@ function AdminBookingsPage() {
                         )}
                       </div>
                       <div className={`flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-red-700' : 'text-slate-600'}`}>
-                        <span className="flex items-center gap-2"><User className="h-4 w-4 opacity-70" /> {getStudentName(b)}</span>
+                        <span className="flex items-center gap-2"><UserAvatar name={getStudentName(b)} url={getStudentPhoto(b)} className="h-6 w-6" /> {getStudentName(b)}</span>
                         <span className="flex items-center gap-2"><Phone className="h-4 w-4 opacity-70" /> {getStudentPhone(b)}</span>
                         <span className="flex items-center gap-2"><Clock className="h-4 w-4 opacity-70" /> {date}: {fullRange}</span>
                       </div>
