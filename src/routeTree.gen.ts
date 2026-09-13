@@ -29,6 +29,7 @@ import { Route as AuthenticatedStudentStationaryRouteImport } from './routes/_au
 import { Route as AuthenticatedClubsClubIdRouteImport } from './routes/_authenticated/clubs_.$clubId'
 import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_authenticated/_admin/admin/index'
 import { Route as AuthenticatedAdminAdminBookingsRouteImport } from './routes/_authenticated/_admin/admin/bookings'
+import { Route as AuthenticatedAdminAdminClubsRouteImport } from './routes/_authenticated/_admin/admin/clubs'
 import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
 import { Route as AuthenticatedAdminAdminInventoryRouteImport } from './routes/_authenticated/_admin/admin/inventory'
 import { Route as AuthenticatedAdminAdminNewsRouteImport } from './routes/_authenticated/_admin/admin/news'
@@ -141,6 +142,12 @@ const AuthenticatedAdminAdminBookingsRoute =
     path: '/bookings',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
+const AuthenticatedAdminAdminClubsRoute =
+  AuthenticatedAdminAdminClubsRouteImport.update({
+    id: '/clubs',
+    path: '/clubs',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
 const AuthenticatedAdminAdminEquipmentRoute =
   AuthenticatedAdminAdminEquipmentRouteImport.update({
     id: '/equipment',
@@ -206,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/clubs/$clubId': typeof AuthenticatedClubsClubIdRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
@@ -231,6 +239,7 @@ export interface FileRoutesByTo {
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/clubs/$clubId': typeof AuthenticatedClubsClubIdRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
@@ -262,6 +271,7 @@ export interface FileRoutesById {
   '/_authenticated/_student/stationary': typeof AuthenticatedStudentStationaryRoute
   '/_authenticated/clubs_/$clubId': typeof AuthenticatedClubsClubIdRoute
   '/_authenticated/_admin/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/_authenticated/_admin/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/_authenticated/_admin/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/_authenticated/_admin/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/_authenticated/_admin/admin/news': typeof AuthenticatedAdminAdminNewsRoute
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/stationary'
     | '/clubs/$clubId'
     | '/admin/bookings'
+    | '/admin/clubs'
     | '/admin/equipment'
     | '/admin/inventory'
     | '/admin/news'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/stationary'
     | '/clubs/$clubId'
     | '/admin/bookings'
+    | '/admin/clubs'
     | '/admin/equipment'
     | '/admin/inventory'
     | '/admin/news'
@@ -345,6 +357,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_student/stationary'
     | '/_authenticated/clubs_/$clubId'
     | '/_authenticated/_admin/admin/bookings'
+    | '/_authenticated/_admin/admin/clubs'
     | '/_authenticated/_admin/admin/equipment'
     | '/_authenticated/_admin/admin/inventory'
     | '/_authenticated/_admin/admin/news'
@@ -505,6 +518,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminBookingsRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
+    '/_authenticated/_admin/admin/clubs': {
+      id: '/_authenticated/_admin/admin/clubs'
+      path: '/clubs'
+      fullPath: '/admin/clubs'
+      preLoaderRoute: typeof AuthenticatedAdminAdminClubsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
     '/_authenticated/_admin/admin/equipment': {
       id: '/_authenticated/_admin/admin/equipment'
       path: '/equipment'
@@ -566,6 +586,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminAdminRouteChildren {
   AuthenticatedAdminAdminBookingsRoute: typeof AuthenticatedAdminAdminBookingsRoute
+  AuthenticatedAdminAdminClubsRoute: typeof AuthenticatedAdminAdminClubsRoute
   AuthenticatedAdminAdminEquipmentRoute: typeof AuthenticatedAdminAdminEquipmentRoute
   AuthenticatedAdminAdminInventoryRoute: typeof AuthenticatedAdminAdminInventoryRoute
   AuthenticatedAdminAdminNewsRoute: typeof AuthenticatedAdminAdminNewsRoute
@@ -580,6 +601,7 @@ interface AuthenticatedAdminAdminRouteChildren {
 const AuthenticatedAdminAdminRouteChildren: AuthenticatedAdminAdminRouteChildren =
   {
     AuthenticatedAdminAdminBookingsRoute: AuthenticatedAdminAdminBookingsRoute,
+    AuthenticatedAdminAdminClubsRoute: AuthenticatedAdminAdminClubsRoute,
     AuthenticatedAdminAdminEquipmentRoute:
       AuthenticatedAdminAdminEquipmentRoute,
     AuthenticatedAdminAdminInventoryRoute:
