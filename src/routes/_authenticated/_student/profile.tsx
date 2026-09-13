@@ -104,7 +104,7 @@ function ProfilePage() {
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, name, role, safety_briefing_passed, contact_email, contact_phone")
+        .select("id, name, role, safety_briefing_passed, contact_email, contact_phone, photo_url")
         .eq("id", user.id)
         .single();
 
