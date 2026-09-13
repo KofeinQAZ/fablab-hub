@@ -81,10 +81,25 @@ function ProfilePage() {
   const [projLooking, setProjLooking] = useState(false);
   const [projRoles, setProjRoles] = useState("");
   const [projStatus, setProjStatus] = useState<"in_progress" | "completed" | "paused">("in_progress");
+  const [projClubId, setProjClubId] = useState<string>("");
 
   const [addingUpdateFor, setAddingUpdateFor] = useState<any>(null);
   const [updateContent, setUpdateContent] = useState("");
   const [updateImages, setUpdateImages] = useState<string[]>([]);
+  const [updateIsAchievement, setUpdateIsAchievement] = useState(false);
+
+  const { data: myClubs = [] } = useQuery({
+    queryKey: ["my-clubs-for-project"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase
+        .from("club_members")
+        .select("clubs (id, title)")
+        .eq("user_id", user.id);
+      return (data ?? []).map((r: any) => r.clubs).filter(Boolean);
+    },
+  });
 
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -376,7 +391,8 @@ function ProfilePage() {
         image_url: projImage.trim(), 
         is_looking_for_team: projLooking, 
         looking_for_roles: projLooking ? rolesArray : [],
-        status: projStatus 
+        status: projStatus,
+        club_id: projClubId || null
       };
       if (editingProject) {
         await supabase.from("projects").update(payload).eq("id", editingProject.id);
@@ -402,6 +418,13 @@ function ProfilePage() {
       const { error } = await supabase.from("project_applications").update({ status }).eq("id", app.id);
       if (error) throw error;
 
+      if (status === 'accepted') {
+        const { error: memberError } = await supabase
+          .from("project_members")
+          .insert({ project_id: app.project_id, user_id: app.applicant_id });
+        if (memberError && !memberError.message.includes("duplicate")) throw memberError;
+      }
+
       const title = status === 'accepted' ? t('profile.applications.notifyAcceptTitle', '✅ Заявка в команду принята!') : t('profile.applications.notifyRejectTitle', '❌ Заявка отклонена');
       const message = status === 'accepted'
         ? t('profile.applications.notifyAcceptMsg', `Автор проекта "${app.projects.title}" одобрил вашу заявку. Вы теперь в команде!`)
@@ -418,8 +441,8 @@ function ProfilePage() {
   });
 
   const addUpdateMutation = useMutation({
-    mutationFn: async () => supabase.from("project_updates").insert({ project_id: addingUpdateFor.id, content: updateContent, image_urls: updateImages }),
-    onSuccess: () => { toast.success(t('profile.updateForm.success')); setAddingUpdateFor(null); setUpdateContent(""); setUpdateImages([]); queryClient.invalidateQueries({ queryKey: ["my-projects"] }); }
+    mutationFn: async () => supabase.from("project_updates").insert({ project_id: addingUpdateFor.id, content: updateContent, image_urls: updateImages, is_achievement: updateIsAchievement }),
+    onSuccess: () => { toast.success(t('profile.updateForm.success')); setAddingUpdateFor(null); setUpdateContent(""); setUpdateImages([]); setUpdateIsAchievement(false); queryClient.invalidateQueries({ queryKey: ["my-projects"] }); }
   });
 
   const updateAvatarMutation = useMutation({
@@ -441,6 +464,7 @@ function ProfilePage() {
       setProjTitle({ ru: project.title || "", kz: project.title_kz || "", en: project.title_en || "" }); 
       setProjDesc({ ru: project.description || "", kz: project.description_kz || "", en: project.description_en || "" }); 
       setProjImage(project.image_url || ""); 
+      setProjClubId(project.club_id || "");
       setProjLooking(project.is_looking_for_team); 
       setProjRoles(project.looking_for_roles?.join(", ") || ""); 
       setProjStatus(project.status || "in_progress");
@@ -449,6 +473,7 @@ function ProfilePage() {
       setProjTitle({ ru: "", kz: "", en: "" }); 
       setProjDesc({ ru: "", kz: "", en: "" }); 
       setProjImage(""); 
+      setProjClubId("");
       setProjLooking(false); 
       setProjRoles(""); 
       setProjStatus("in_progress");
@@ -1052,6 +1077,20 @@ function ProfilePage() {
               </select>
             </div>
 
+            <div className="space-y-1">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('clubs.project.clubLabel', 'Часть клуба')}</Label>
+              <select
+                className="w-full h-12 px-3 border-2 border-slate-900 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600"
+                value={projClubId}
+                onChange={e => setProjClubId(e.target.value)}
+              >
+                <option value="">{t('clubs.project.clubNone', 'Без клуба')}</option>
+                {myClubs.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.title}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="p-4 bg-slate-100 border-2 border-slate-900">
               <label className="flex items-center gap-3 font-black uppercase tracking-widest text-xs text-slate-900 cursor-pointer">
                 <input type="checkbox" className="w-5 h-5 rounded-none border-2 border-slate-900 accent-blue-600" checked={projLooking} onChange={e => setProjLooking(e.target.checked)} /> {t('profile.projectForm.lookingForTeam')}
@@ -1101,6 +1140,10 @@ function ProfilePage() {
               values={updateImages}
               onChange={setUpdateImages}
             />
+            <label className="flex items-center gap-3 p-3 border-2 border-slate-900 bg-amber-50 cursor-pointer">
+              <input type="checkbox" className="w-5 h-5 accent-amber-500" checked={updateIsAchievement} onChange={e => setUpdateIsAchievement(e.target.checked)} />
+              <span className="font-black uppercase tracking-widest text-[11px]">{t('clubs.markAchievement', 'Отметить как достижение')}</span>
+            </label>
             <Button onClick={() => addUpdateMutation.mutate()} disabled={!updateContent.trim() || addUpdateMutation.isPending} className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-2">
               {addUpdateMutation.isPending ? t('profile.updateForm.publishing') : t('profile.updateForm.publishBtn')}
             </Button>

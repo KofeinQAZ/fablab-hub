@@ -175,7 +175,7 @@ function LandingPage() {
             {t('landing.cta.desc', 'Присоединяйся к сообществу мейкеров, находи команду и создавай проекты, которые изменят мир.')}
           </p>
           <button 
-            onClick={() => navigate({ to: "/projects" })}
+            onClick={() => navigate({ to: "/clubs" })}
             className="bg-blue-600 text-white border-4 border-blue-600 px-8 py-5 font-black uppercase tracking-[0.2em] hover:bg-white hover:text-blue-600 hover:border-white transition-colors text-sm md:text-base shadow-[8px_8px_0_#ffffff] hover:shadow-[4px_4px_0_#2563eb] hover:translate-y-1 hover:translate-x-1"
           >
             {t('landing.cta.btn', 'ИСКАТЬ ПРОЕКТЫ')}

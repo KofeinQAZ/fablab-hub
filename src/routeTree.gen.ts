@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as UpdatePasswordRouteImport } from './routes/update-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
 import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/_student'
+import { Route as AuthenticatedClubsRouteImport } from './routes/_authenticated/clubs'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedNewsRouteImport } from './routes/_authenticated/news'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
@@ -25,8 +26,10 @@ import { Route as AuthenticatedStudentBookingRouteImport } from './routes/_authe
 import { Route as AuthenticatedStudentPortableRouteImport } from './routes/_authenticated/_student/portable'
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/_student/profile'
 import { Route as AuthenticatedStudentStationaryRouteImport } from './routes/_authenticated/_student/stationary'
+import { Route as AuthenticatedClubsClubIdRouteImport } from './routes/_authenticated/clubs_.$clubId'
 import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_authenticated/_admin/admin/index'
 import { Route as AuthenticatedAdminAdminBookingsRouteImport } from './routes/_authenticated/_admin/admin/bookings'
+import { Route as AuthenticatedAdminAdminClubsRouteImport } from './routes/_authenticated/_admin/admin/clubs'
 import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
 import { Route as AuthenticatedAdminAdminInventoryRouteImport } from './routes/_authenticated/_admin/admin/inventory'
 import { Route as AuthenticatedAdminAdminNewsRouteImport } from './routes/_authenticated/_admin/admin/news'
@@ -60,6 +63,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 } as any)
 const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
   id: '/_student',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedClubsRoute = AuthenticatedClubsRouteImport.update({
+  id: '/clubs',
+  path: '/clubs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -116,6 +124,12 @@ const AuthenticatedStudentStationaryRoute =
     path: '/stationary',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
+const AuthenticatedClubsClubIdRoute =
+  AuthenticatedClubsClubIdRouteImport.update({
+    id: '/clubs_/$clubId',
+    path: '/clubs/$clubId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminAdminIndexRoute =
   AuthenticatedAdminAdminIndexRouteImport.update({
     id: '/',
@@ -126,6 +140,12 @@ const AuthenticatedAdminAdminBookingsRoute =
   AuthenticatedAdminAdminBookingsRouteImport.update({
     id: '/bookings',
     path: '/bookings',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminClubsRoute =
+  AuthenticatedAdminAdminClubsRouteImport.update({
+    id: '/clubs',
+    path: '/clubs',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
 const AuthenticatedAdminAdminEquipmentRoute =
@@ -181,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/update-password': typeof UpdatePasswordRoute
+  '/clubs': typeof AuthenticatedClubsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/news': typeof AuthenticatedNewsRoute
   '/projects': typeof AuthenticatedProjectsRoute
@@ -190,7 +211,9 @@ export interface FileRoutesByFullPath {
   '/portable': typeof AuthenticatedStudentPortableRoute
   '/profile': typeof AuthenticatedStudentProfileRoute
   '/stationary': typeof AuthenticatedStudentStationaryRoute
+  '/clubs/$clubId': typeof AuthenticatedClubsClubIdRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
@@ -205,6 +228,7 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/update-password': typeof UpdatePasswordRoute
+  '/clubs': typeof AuthenticatedClubsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/news': typeof AuthenticatedNewsRoute
   '/projects': typeof AuthenticatedProjectsRoute
@@ -213,7 +237,9 @@ export interface FileRoutesByTo {
   '/portable': typeof AuthenticatedStudentPortableRoute
   '/profile': typeof AuthenticatedStudentProfileRoute
   '/stationary': typeof AuthenticatedStudentStationaryRoute
+  '/clubs/$clubId': typeof AuthenticatedClubsClubIdRoute
   '/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
@@ -232,6 +258,7 @@ export interface FileRoutesById {
   '/update-password': typeof UpdatePasswordRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/_student': typeof AuthenticatedStudentRouteWithChildren
+  '/_authenticated/clubs': typeof AuthenticatedClubsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/news': typeof AuthenticatedNewsRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
@@ -242,7 +269,9 @@ export interface FileRoutesById {
   '/_authenticated/_student/portable': typeof AuthenticatedStudentPortableRoute
   '/_authenticated/_student/profile': typeof AuthenticatedStudentProfileRoute
   '/_authenticated/_student/stationary': typeof AuthenticatedStudentStationaryRoute
+  '/_authenticated/clubs_/$clubId': typeof AuthenticatedClubsClubIdRoute
   '/_authenticated/_admin/admin/bookings': typeof AuthenticatedAdminAdminBookingsRoute
+  '/_authenticated/_admin/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/_authenticated/_admin/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/_authenticated/_admin/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/_authenticated/_admin/admin/news': typeof AuthenticatedAdminAdminNewsRoute
@@ -259,6 +288,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/update-password'
+    | '/clubs'
     | '/dashboard'
     | '/news'
     | '/projects'
@@ -268,7 +298,9 @@ export interface FileRouteTypes {
     | '/portable'
     | '/profile'
     | '/stationary'
+    | '/clubs/$clubId'
     | '/admin/bookings'
+    | '/admin/clubs'
     | '/admin/equipment'
     | '/admin/inventory'
     | '/admin/news'
@@ -283,6 +315,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/update-password'
+    | '/clubs'
     | '/dashboard'
     | '/news'
     | '/projects'
@@ -291,7 +324,9 @@ export interface FileRouteTypes {
     | '/portable'
     | '/profile'
     | '/stationary'
+    | '/clubs/$clubId'
     | '/admin/bookings'
+    | '/admin/clubs'
     | '/admin/equipment'
     | '/admin/inventory'
     | '/admin/news'
@@ -309,6 +344,7 @@ export interface FileRouteTypes {
     | '/update-password'
     | '/_authenticated/_admin'
     | '/_authenticated/_student'
+    | '/_authenticated/clubs'
     | '/_authenticated/dashboard'
     | '/_authenticated/news'
     | '/_authenticated/projects'
@@ -319,7 +355,9 @@ export interface FileRouteTypes {
     | '/_authenticated/_student/portable'
     | '/_authenticated/_student/profile'
     | '/_authenticated/_student/stationary'
+    | '/_authenticated/clubs_/$clubId'
     | '/_authenticated/_admin/admin/bookings'
+    | '/_authenticated/_admin/admin/clubs'
     | '/_authenticated/_admin/admin/equipment'
     | '/_authenticated/_admin/admin/inventory'
     | '/_authenticated/_admin/admin/news'
@@ -380,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedStudentRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/clubs': {
+      id: '/_authenticated/clubs'
+      path: '/clubs'
+      fullPath: '/clubs'
+      preLoaderRoute: typeof AuthenticatedClubsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -452,6 +497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentStationaryRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
+    '/_authenticated/clubs_/$clubId': {
+      id: '/_authenticated/clubs_/$clubId'
+      path: '/clubs/$clubId'
+      fullPath: '/clubs/$clubId'
+      preLoaderRoute: typeof AuthenticatedClubsClubIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/_admin/admin/': {
       id: '/_authenticated/_admin/admin/'
       path: '/'
@@ -464,6 +516,13 @@ declare module '@tanstack/react-router' {
       path: '/bookings'
       fullPath: '/admin/bookings'
       preLoaderRoute: typeof AuthenticatedAdminAdminBookingsRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
+    '/_authenticated/_admin/admin/clubs': {
+      id: '/_authenticated/_admin/admin/clubs'
+      path: '/clubs'
+      fullPath: '/admin/clubs'
+      preLoaderRoute: typeof AuthenticatedAdminAdminClubsRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
     '/_authenticated/_admin/admin/equipment': {
@@ -527,6 +586,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminAdminRouteChildren {
   AuthenticatedAdminAdminBookingsRoute: typeof AuthenticatedAdminAdminBookingsRoute
+  AuthenticatedAdminAdminClubsRoute: typeof AuthenticatedAdminAdminClubsRoute
   AuthenticatedAdminAdminEquipmentRoute: typeof AuthenticatedAdminAdminEquipmentRoute
   AuthenticatedAdminAdminInventoryRoute: typeof AuthenticatedAdminAdminInventoryRoute
   AuthenticatedAdminAdminNewsRoute: typeof AuthenticatedAdminAdminNewsRoute
@@ -541,6 +601,7 @@ interface AuthenticatedAdminAdminRouteChildren {
 const AuthenticatedAdminAdminRouteChildren: AuthenticatedAdminAdminRouteChildren =
   {
     AuthenticatedAdminAdminBookingsRoute: AuthenticatedAdminAdminBookingsRoute,
+    AuthenticatedAdminAdminClubsRoute: AuthenticatedAdminAdminClubsRoute,
     AuthenticatedAdminAdminEquipmentRoute:
       AuthenticatedAdminAdminEquipmentRoute,
     AuthenticatedAdminAdminInventoryRoute:
@@ -591,17 +652,21 @@ const AuthenticatedStudentRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedStudentRoute: typeof AuthenticatedStudentRouteWithChildren
+  AuthenticatedClubsRoute: typeof AuthenticatedClubsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNewsRoute: typeof AuthenticatedNewsRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
+  AuthenticatedClubsClubIdRoute: typeof AuthenticatedClubsClubIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedStudentRoute: AuthenticatedStudentRouteWithChildren,
+  AuthenticatedClubsRoute: AuthenticatedClubsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNewsRoute: AuthenticatedNewsRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
+  AuthenticatedClubsClubIdRoute: AuthenticatedClubsClubIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

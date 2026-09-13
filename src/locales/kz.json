@@ -4,7 +4,8 @@
     "booking": "Броньдау",
     "media": "Медиа",
     "projects": "Жобалар",
-    "team": "Команда"
+    "team": "Команда",
+    "clubs": "Клубтар"
   },
   "auth": {
     "login": "Кіру",
@@ -589,6 +590,102 @@
       "unreadable": "Суретті оқу мүмкін болмады",
       "forbidden": "Бұл файлды жүктеуге рұқсат жоқ",
       "max": "Суреттер шегіне жетті"
+    }
+  },
+  "clubs": {
+    "header": {
+      "title": "Клубтар мен жобалар",
+      "subtitle": "Пікірлестер тап, клубтарға қосыл, зертхана жобаларын қадағала"
+    },
+    "search": "Клубтар мен жобалардан іздеу",
+    "createBtn": "Құру",
+    "createClub": "Клуб құру",
+    "createProject": "Жоба құру",
+    "tabs": {
+      "all": "Барлығы",
+      "clubs": "Клубтар",
+      "projects": "Жобалар",
+      "feed": "Лента",
+      "my": "Менің"
+    },
+    "card": {
+      "recruiting": "Мүше жинаудамыз",
+      "members": "қатысушы",
+      "partOf": "Клуб"
+    },
+    "empty": "Әзірге клуб жоқ",
+    "feedEmpty": "Лента бос",
+    "feed": {
+      "newClub": "Жаңа клуб",
+      "newProject": "Жаңа жоба",
+      "clubUpdate": "Клуб девлогы",
+      "projectUpdate": "Жоба девлогы"
+    },
+    "achievement": "Жетістік",
+    "achievements": "Жетістіктер",
+    "back": "Барлық клубтар",
+    "leadership": "Клуб басшылығы",
+    "about": "Клуб туралы",
+    "members": "Қатысушылар",
+    "projects": "Клуб жобалары",
+    "devlog": "Девлог",
+    "devlogEmpty": "Жазба жоқ",
+    "addUpdate": "Жазба қосу",
+    "updateTitleLabel": "Тақырып (міндетті емес)",
+    "markAchievement": "Жетістік деп белгілеу",
+    "applications": "Кіру өтінімдері",
+    "accept": "Қабылдау",
+    "reject": "Бас тарту",
+    "reviewDone": "Дайын",
+    "promote": "Модератор ету",
+    "demote": "Модераторды алу",
+    "roleUpdated": "Рөл жаңартылды",
+    "role": {
+      "captain": "Капитан",
+      "moderator": "Модератор",
+      "member": "Қатысушы"
+    },
+    "join": {
+      "title": "Клубқа кіру",
+      "apply": "Өтінім беру",
+      "send": "Өтінім жіберу",
+      "letterLabel": "Неге кіргің келеді / қалай көмектесе аласың",
+      "pending": "Өтінім қаралуда",
+      "rejected": "Өтінім қабылданбады",
+      "youAreMember": "Сіз қатысушысыз",
+      "leave": "Клубтан шығу"
+    },
+    "applySuccess": "Өтінім жіберілді",
+    "left": "Сіз клубтан шықтыңыз",
+    "updateAdded": "Жазба жарияланды",
+    "contacts": "Байланыс",
+    "contactsLocked": "Байланыс клубқа кіргеннен кейін ашылады",
+    "notify": {
+      "newApplicationTitle": "Клубқа жаңа өтінім",
+      "newApplicationMsg": "{{name}} «{{club}}» клубына кіргісі келеді",
+      "acceptedTitle": "Сіз клубқа қабылдандыңыз",
+      "rejectedTitle": "Клубқа өтінім қабылданбады"
+    },
+    "project": {
+      "membersTitle": "Жоба қатысушылары",
+      "clubLabel": "Клуб бөлігі",
+      "clubNone": "Клубсыз"
+    },
+    "form": {
+      "createTitle": "Клуб құру",
+      "editTitle": "Клубты өңдеу",
+      "nameLabel": "Клуб атауы",
+      "descLabel": "Клуб сипаттамасы",
+      "coverLabel": "Клуб мұқабасы",
+      "tagsLabel": "Бағыттар (үтір арқылы)",
+      "tagsPlaceholder": "робототехника, дрондар",
+      "scheduleLabel": "Кездесу кестесі (міндетті емес)",
+      "schedulePlaceholder": "Әр сейсенбі, 18:00",
+      "recruiting": "Мүше жинаудамыз",
+      "saveBtn": "Сақтау",
+      "saving": "Сақталуда...",
+      "sent": "Клуб модерацияға жіберілді",
+      "updated": "Клуб жаңартылды"
     }
   }
 }

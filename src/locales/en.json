@@ -4,7 +4,8 @@
     "booking": "Booking",
     "media": "Media",
     "projects": "Projects",
-    "team": "Team"
+    "team": "Team",
+    "clubs": "Clubs"
   },
   "auth": {
     "login": "Sign In",
@@ -589,6 +590,102 @@
       "unreadable": "Could not read the image",
       "forbidden": "You are not allowed to upload this file",
       "max": "Image limit reached"
+    }
+  },
+  "clubs": {
+    "header": {
+      "title": "Clubs & Projects",
+      "subtitle": "Find like-minded people, join clubs, follow the lab's projects"
+    },
+    "search": "Search clubs and projects",
+    "createBtn": "Create",
+    "createClub": "Create club",
+    "createProject": "Create project",
+    "tabs": {
+      "all": "All",
+      "clubs": "Clubs",
+      "projects": "Projects",
+      "feed": "Feed",
+      "my": "Mine"
+    },
+    "card": {
+      "recruiting": "Recruiting",
+      "members": "members",
+      "partOf": "Club"
+    },
+    "empty": "No clubs yet",
+    "feedEmpty": "The feed is empty",
+    "feed": {
+      "newClub": "New club",
+      "newProject": "New project",
+      "clubUpdate": "Club devlog",
+      "projectUpdate": "Project devlog"
+    },
+    "achievement": "Achievement",
+    "achievements": "Achievements",
+    "back": "All clubs",
+    "leadership": "Club leadership",
+    "about": "About the club",
+    "members": "Members",
+    "projects": "Club projects",
+    "devlog": "Devlog",
+    "devlogEmpty": "No posts yet",
+    "addUpdate": "Add post",
+    "updateTitleLabel": "Title (optional)",
+    "markAchievement": "Mark as achievement",
+    "applications": "Join requests",
+    "accept": "Accept",
+    "reject": "Reject",
+    "reviewDone": "Done",
+    "promote": "Make moderator",
+    "demote": "Remove moderator",
+    "roleUpdated": "Role updated",
+    "role": {
+      "captain": "Captain",
+      "moderator": "Moderator",
+      "member": "Member"
+    },
+    "join": {
+      "title": "Join the club",
+      "apply": "Apply",
+      "send": "Send request",
+      "letterLabel": "Why do you want to join / how can you help",
+      "pending": "Request pending",
+      "rejected": "Request rejected",
+      "youAreMember": "You are a member",
+      "leave": "Leave club"
+    },
+    "applySuccess": "Request sent",
+    "left": "You left the club",
+    "updateAdded": "Post published",
+    "contacts": "Contacts",
+    "contactsLocked": "Contacts unlock after you join the club",
+    "notify": {
+      "newApplicationTitle": "New club request",
+      "newApplicationMsg": "{{name}} wants to join \"{{club}}\"",
+      "acceptedTitle": "You joined the club",
+      "rejectedTitle": "Club request rejected"
+    },
+    "project": {
+      "membersTitle": "Project members",
+      "clubLabel": "Part of club",
+      "clubNone": "No club"
+    },
+    "form": {
+      "createTitle": "Create club",
+      "editTitle": "Edit club",
+      "nameLabel": "Club name",
+      "descLabel": "Club description",
+      "coverLabel": "Club cover",
+      "tagsLabel": "Tags (comma separated)",
+      "tagsPlaceholder": "robotics, drones",
+      "scheduleLabel": "Meeting schedule (optional)",
+      "schedulePlaceholder": "Every Tuesday, 6 PM",
+      "recruiting": "Recruiting members",
+      "saveBtn": "Save",
+      "saving": "Saving...",
+      "sent": "Club sent for review",
+      "updated": "Club updated"
     }
   }
 }
