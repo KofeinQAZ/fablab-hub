@@ -516,25 +516,27 @@ function AdminEquipmentPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Фото URL</Label>
-                <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.image_url} onChange={(e) => setForm((prev) => ({ ...prev, image_url: e.target.value }))} />
-              </div>
+              <ImageUpload
+                label="Главное фото"
+                bucket="equipment-images"
+                folder={uploadFolder}
+                value={form.image_url || null}
+                onChange={(url) => setForm((prev) => ({ ...prev, image_url: url ?? "" }))}
+              />
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Параметры / Спецификации</Label>
                 <Input className="h-12 border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium" value={form.specs} onChange={(e) => setForm((prev) => ({ ...prev, specs: e.target.value }))} />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Галерея фото (по одной ссылке в строке)</Label>
-              <Textarea
-                className="border-2 border-slate-900 rounded-none focus-visible:ring-0 focus-visible:border-blue-600 font-medium resize-none h-28"
-                placeholder={"https://.../photo-1.jpg\nhttps://.../photo-2.jpg"}
-                value={form.gallery_urls}
-                onChange={(e) => setForm((prev) => ({ ...prev, gallery_urls: e.target.value }))}
-              />
-            </div>
+            <ImageUploadMultiple
+              label="Галерея фото (до 8)"
+              bucket="equipment-images"
+              folder={uploadFolder}
+              max={8}
+              values={form.gallery_urls.split("\n").map((u) => u.trim()).filter(Boolean)}
+              onChange={(urls) => setForm((prev) => ({ ...prev, gallery_urls: urls.join("\n") }))}
+            />
 
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Видео YouTube (ссылка)</Label>
