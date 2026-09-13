@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/app-header";
 import { AdminRouteGuard } from "@/components/admin-route-guard";
-import { ClipboardList, Calendar, Newspaper, Rocket, Users, Menu, X, LayoutDashboard, Wrench } from "lucide-react";
+import { ClipboardList, Calendar, Newspaper, Rocket, Users, Menu, X, LayoutDashboard, Wrench, Package } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/_admin")({
@@ -28,6 +28,12 @@ function AdminLayout() {
         <span className="inline-flex items-center gap-3">
           <Wrench className="h-5 w-5 md:h-4 md:w-4" />
           Оборудование
+        </span>
+      </Link>
+      <Link to="/admin/inventory" onClick={onClick} className={itemClass} activeProps={{ className: activeClass }}>
+        <span className="inline-flex items-center gap-3">
+          <Package className="h-5 w-5 md:h-4 md:w-4" />
+          Инвентарь
         </span>
       </Link>
       <Link to="/admin/bookings" onClick={onClick} className={itemClass} activeProps={{ className: activeClass }}>
