@@ -1035,10 +1035,13 @@ function ProfilePage() {
             
             <div className="w-full h-1 border-b-2 border-dashed border-slate-200 my-4"></div>
 
-            <div className="space-y-1">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.projectForm.urlLabel')}</Label>
-              <Input type="url" placeholder="https://..." className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-blue-600" value={projImage} onChange={e => setProjImage(e.target.value)} />
-            </div>
+            <ImageUpload
+              label={t('profile.projectForm.coverLabel', 'Обложка проекта')}
+              bucket="project-covers"
+              folder={authData.userId}
+              value={projImage || null}
+              onChange={(url) => setProjImage(url ?? "")}
+            />
             
             <div className="space-y-1">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.projectForm.statusLabel')}</Label>
