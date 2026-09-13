@@ -1095,6 +1095,14 @@ function ProfilePage() {
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.updateForm.textLabel')}</Label>
               <Textarea placeholder={t('profile.updateForm.textPlaceholder')} className="h-32 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-blue-600 resize-none" value={updateContent} onChange={e => setUpdateContent(e.target.value)} />
             </div>
+            <ImageUploadMultiple
+              label={t('profile.updateForm.imagesLabel', 'Фото к записи (до 3)')}
+              bucket="devlog-images"
+              folder={authData.userId}
+              max={3}
+              values={updateImages}
+              onChange={setUpdateImages}
+            />
             <Button onClick={() => addUpdateMutation.mutate()} disabled={!updateContent.trim() || addUpdateMutation.isPending} className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-2">
               {addUpdateMutation.isPending ? t('profile.updateForm.publishing') : t('profile.updateForm.publishBtn')}
             </Button>
