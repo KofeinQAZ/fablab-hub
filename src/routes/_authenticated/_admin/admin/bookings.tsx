@@ -64,7 +64,7 @@ function AdminBookingsPage() {
           end_time,
           status,
           equipment ( id, name, category ),
-          profiles!bookings_user_profile_fkey ( name, contact_phone ) 
+          profiles!bookings_user_profile_fkey ( name, contact_phone, photo_url ) 
         `)
         .order("start_time", { ascending: true });
 

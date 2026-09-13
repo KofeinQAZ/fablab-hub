@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -192,11 +192,7 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-10 rounded-full border border-slate-200 bg-white px-2 hover:bg-slate-50 transition-all shadow-sm">
-                        <Avatar className="h-7 w-7 rounded-full">
-                          <AvatarFallback className="bg-blue-100 text-blue-700 text-xs font-bold">
-                            {profile.name.slice(0, 1).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar name={profile.name} url={(profile as any).photo_url} className="h-7 w-7 border" />
                         <span className="mx-2 max-w-[120px] truncate text-xs font-bold uppercase tracking-widest text-slate-700">{profile.name}</span>
                         <ChevronDown className="h-3 w-3 text-slate-400" />
                       </Button>

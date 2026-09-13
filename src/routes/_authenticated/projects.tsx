@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserAvatar } from "@/components/user-avatar";
 import { useState } from "react";
 import { AppHeader } from "@/components/app-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,8 +58,8 @@ function ProjectsPage() {
         .from("projects")
         .select(`
           *, 
-          profiles:public_profiles!projects_author_id_fkey (name),
-          project_updates (id, content, created_at)
+          profiles:public_profiles!projects_author_id_fkey (name, photo_url),
+          project_updates (id, content, created_at, image_urls)
         `)
         .eq("is_approved", true)
         .order("created_at", { ascending: false });
@@ -250,7 +251,7 @@ function ProjectsPage() {
                     <p className="text-slate-600 font-medium text-sm line-clamp-3 mb-6 flex-1 leading-relaxed">{localizedDesc}</p>
                     
                     <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 bg-slate-50 p-2 border-2 border-slate-100 w-fit">
-                      <User className="h-4 w-4 text-slate-400" /> {project.profiles?.name || t('projects_page.card.studentAuthor')}
+                      <UserAvatar name={project.profiles?.name} url={project.profiles?.photo_url} className="h-6 w-6" /> {project.profiles?.name || t('projects_page.card.studentAuthor')}
                     </div>
 
                     {project.is_looking_for_team && project.status !== 'completed' && (
@@ -339,7 +340,7 @@ function ProjectsPage() {
             <div className="p-6 md:p-10 space-y-8">
               
               <div className="flex items-center gap-4 pb-6 border-b-4 border-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                <span className="flex items-center gap-2 bg-slate-200 px-3 py-1 border-2 border-slate-300"><User className="h-4 w-4" /> {selectedProject?.profiles?.name || t('projects_page.card.studentAuthor')}</span>
+                <span className="flex items-center gap-2 bg-slate-200 px-3 py-1 border-2 border-slate-300"><UserAvatar name={selectedProject?.profiles?.name} url={selectedProject?.profiles?.photo_url} className="h-6 w-6" /> {selectedProject?.profiles?.name || t('projects_page.card.studentAuthor')}</span>
                 <span className="flex items-center gap-2 bg-slate-200 px-3 py-1 border-2 border-slate-300"><Calendar className="h-4 w-4" /> {selectedProject && new Date(selectedProject.created_at).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long' })}</span>
               </div>
 
@@ -401,6 +402,15 @@ function ProjectsPage() {
                           {new Date(update.created_at).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', hour: '2-digit', minute:'2-digit' })}
                         </div>
                         <p className="text-slate-700 font-medium whitespace-pre-wrap">{update.content}</p>
+                        {update.image_urls?.length > 0 && (
+                          <div className="flex flex-wrap gap-3 mt-3">
+                            {update.image_urls.map((img: string) => (
+                              <a key={img} href={img} target="_blank" rel="noreferrer" className="block h-28 w-28 border-2 border-slate-900 overflow-hidden">
+                                <img src={img} alt="" className="h-full w-full object-cover" />
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
