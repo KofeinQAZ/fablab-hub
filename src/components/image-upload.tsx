@@ -1,9 +1,25 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ImagePlus, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { MAX_UPLOAD_BYTES, uploadImage, type ImageBucket } from "@/lib/image-upload";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+
+/** Folder used for uploads — must equal the user id for user-owned buckets. */
+export function useUploadFolder() {
+  const [folder, setFolder] = useState<string>("");
+  useEffect(() => {
+    let alive = true;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (alive) setFolder(data.user?.id ?? "");
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return folder;
+}
 
 function errorText(e: unknown, t: (k: string, d: string) => string) {
   const msg = e instanceof Error ? e.message : String(e);
