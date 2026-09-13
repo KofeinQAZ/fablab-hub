@@ -127,6 +127,7 @@ const renderAccessBadge = (accessType: string) => {
 
 function AdminEquipmentPage() {
   const qc = useQueryClient();
+  const uploadFolder = useUploadFolder();
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [qrModalItem, setQrModalItem] = useState<Equipment | null>(null);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);

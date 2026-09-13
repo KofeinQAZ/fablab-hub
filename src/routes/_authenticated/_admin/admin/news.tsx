@@ -27,6 +27,7 @@ interface Block {
 
 function AdminNewsPage() {
   const qc = useQueryClient();
+  const uploadFolder = useUploadFolder();
   
   const [view, setView] = useState<'list' | 'editor'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
