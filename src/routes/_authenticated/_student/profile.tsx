@@ -31,6 +31,7 @@ interface UserProfileData {
   safety_briefing_passed: boolean;
   contact_email?: string;
   contact_phone?: string;
+  photo_url?: string | null;
 }
 
 interface AuthData {
