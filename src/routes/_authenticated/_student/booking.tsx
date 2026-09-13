@@ -41,13 +41,15 @@ function BookingPage() {
     },
   });
 
+  const equipmentCategory: "stationary" | "portable" = category === "inventory" ? "portable" : category;
+
   const { data: equipment = [], isLoading } = useQuery({
-    queryKey: ["equipment-gallery", category],
+    queryKey: ["equipment-gallery", equipmentCategory],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("equipment")
         .select("*")
-        .eq("category", category);
+        .eq("category", equipmentCategory);
       if (error) throw error;
       return data as EquipmentDetails[];
     },
