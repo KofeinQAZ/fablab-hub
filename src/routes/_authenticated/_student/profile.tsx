@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { Rocket, Users, Pencil, Trash2, Plus, Megaphone, User, X, Calendar, Clock, AlertTriangle, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard, FileText, CheckCircle2, XCircle, Clock4, Mail, MessageSquare, Send } from "lucide-react";
+import { ImageUpload, ImageUploadMultiple } from "@/components/image-upload";
 
 export const Route = createFileRoute("/_authenticated/_student/profile")({
   component: ProfilePage,
@@ -30,6 +31,7 @@ interface UserProfileData {
   safety_briefing_passed: boolean;
   contact_email?: string;
   contact_phone?: string;
+  photo_url?: string | null;
 }
 
 interface AuthData {
@@ -82,6 +84,7 @@ function ProfilePage() {
 
   const [addingUpdateFor, setAddingUpdateFor] = useState<any>(null);
   const [updateContent, setUpdateContent] = useState("");
+  const [updateImages, setUpdateImages] = useState<string[]>([]);
 
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -101,7 +104,7 @@ function ProfilePage() {
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, name, role, safety_briefing_passed, contact_email, contact_phone")
+        .select("id, name, role, safety_briefing_passed, contact_email, contact_phone, photo_url")
         .eq("id", user.id)
         .single();
 
@@ -415,8 +418,20 @@ function ProfilePage() {
   });
 
   const addUpdateMutation = useMutation({
-    mutationFn: async () => supabase.from("project_updates").insert({ project_id: addingUpdateFor.id, content: updateContent }),
-    onSuccess: () => { toast.success(t('profile.updateForm.success')); setAddingUpdateFor(null); setUpdateContent(""); }
+    mutationFn: async () => supabase.from("project_updates").insert({ project_id: addingUpdateFor.id, content: updateContent, image_urls: updateImages }),
+    onSuccess: () => { toast.success(t('profile.updateForm.success')); setAddingUpdateFor(null); setUpdateContent(""); setUpdateImages([]); queryClient.invalidateQueries({ queryKey: ["my-projects"] }); }
+  });
+
+  const updateAvatarMutation = useMutation({
+    mutationFn: async (url: string | null) => {
+      const { error } = await supabase.from("profiles").update({ photo_url: url }).eq("id", authData!.userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["current-user-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["current-profile"] });
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const openProjectForm = (project: any = null) => {
@@ -514,10 +529,33 @@ function ProfilePage() {
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             <div className="bg-white border-4 border-slate-900 p-6 shadow-[6px_6px_0_#0f172a] space-y-6">
-              <div>
-                <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-400 mb-1">{t('profile.info.studentSubtitle')}</h4>
-                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{authData.profile.name}</h2>
-                <p className="text-sm font-bold text-slate-500 mt-1">{authData.email}</p>
+              <div className="flex items-start gap-5">
+                <div className="shrink-0 relative">
+                  <div className="h-24 w-24 rounded-full border-4 border-slate-900 overflow-hidden bg-blue-600 flex items-center justify-center shadow-[4px_4px_0_#0f172a]">
+                    {authData.profile.photo_url ? (
+                      <img src={authData.profile.photo_url} alt={authData.profile.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-white font-black text-3xl uppercase">{authData.profile.name?.slice(0, 1)}</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-400 mb-1">{t('profile.info.studentSubtitle')}</h4>
+                  <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{authData.profile.name}</h2>
+                  <p className="text-sm font-bold text-slate-500 mt-1">{authData.email}</p>
+                </div>
+              </div>
+
+              <div className="border-t-2 border-dashed border-slate-200 pt-4">
+                <ImageUpload
+                  label={t('profile.info.avatarLabel', 'Фото профиля')}
+                  bucket="avatars"
+                  folder={authData.userId}
+                  square
+                  maxSize={400}
+                  value={authData.profile.photo_url ?? null}
+                  onChange={(url) => updateAvatarMutation.mutate(url)}
+                />
               </div>
 
               <div className="border-t-2 border-dashed border-slate-200 pt-4 space-y-4">
@@ -997,10 +1035,13 @@ function ProfilePage() {
             
             <div className="w-full h-1 border-b-2 border-dashed border-slate-200 my-4"></div>
 
-            <div className="space-y-1">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.projectForm.urlLabel')}</Label>
-              <Input type="url" placeholder="https://..." className="h-12 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-blue-600" value={projImage} onChange={e => setProjImage(e.target.value)} />
-            </div>
+            <ImageUpload
+              label={t('profile.projectForm.coverLabel', 'Обложка проекта')}
+              bucket="project-covers"
+              folder={authData.userId}
+              value={projImage || null}
+              onChange={(url) => setProjImage(url ?? "")}
+            />
             
             <div className="space-y-1">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.projectForm.statusLabel')}</Label>
@@ -1054,6 +1095,14 @@ function ProfilePage() {
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('profile.updateForm.textLabel')}</Label>
               <Textarea placeholder={t('profile.updateForm.textPlaceholder')} className="h-32 border-2 border-slate-900 rounded-none bg-slate-50 font-medium focus-visible:ring-0 focus-visible:border-blue-600 resize-none" value={updateContent} onChange={e => setUpdateContent(e.target.value)} />
             </div>
+            <ImageUploadMultiple
+              label={t('profile.updateForm.imagesLabel', 'Фото к записи (до 3)')}
+              bucket="devlog-images"
+              folder={authData.userId}
+              max={3}
+              values={updateImages}
+              onChange={setUpdateImages}
+            />
             <Button onClick={() => addUpdateMutation.mutate()} disabled={!updateContent.trim() || addUpdateMutation.isPending} className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all mt-2">
               {addUpdateMutation.isPending ? t('profile.updateForm.publishing') : t('profile.updateForm.publishBtn')}
             </Button>
