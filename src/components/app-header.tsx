@@ -122,7 +122,7 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
             <Link to="/" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.home')}</Link>
             <Link to="/booking" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.booking')}</Link>
             <Link to="/news" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.media')}</Link>
-            <Link to="/projects" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.projects')}</Link>
+            <Link to="/clubs" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.clubs', 'Клубы')}</Link>
             <Link to="/team" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.team', 'Команда')}</Link>
           </nav>
 

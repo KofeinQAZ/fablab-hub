@@ -66,6 +66,12 @@ function AdminLayout() {
           Проекты
         </span>
       </Link>
+      <Link to="/admin/clubs" onClick={onClick} className={itemClass} activeProps={{ className: activeClass }}>
+        <span className="inline-flex items-center gap-3">
+          <Users className="h-5 w-5 md:h-4 md:w-4" />
+          Клубы
+        </span>
+      </Link>
       <Link to="/admin/users" onClick={onClick} className={itemClass} activeProps={{ className: activeClass }}>
         <span className="inline-flex items-center gap-3">
           <Users className="h-5 w-5 md:h-4 md:w-4" />
