@@ -654,6 +654,66 @@ export type Database = {
           },
         ]
       }
+      lab_zones: {
+        Row: {
+          action_type: Database["public"]["Enums"]["lab_zone_action"]
+          booking_enabled: boolean
+          created_at: string
+          description: string | null
+          description_en: string | null
+          description_kz: string | null
+          external_url: string | null
+          gallery_urls: string[]
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          name_en: string | null
+          name_kz: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          action_type?: Database["public"]["Enums"]["lab_zone_action"]
+          booking_enabled?: boolean
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          external_url?: string | null
+          gallery_urls?: string[]
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          name_en?: string | null
+          name_kz?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["lab_zone_action"]
+          booking_enabled?: boolean
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          external_url?: string | null
+          gallery_urls?: string[]
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          name_en?: string | null
+          name_kz?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mentor_schedule: {
         Row: {
           created_at: string
@@ -1007,6 +1067,70 @@ export type Database = {
           },
         ]
       }
+      zone_bookings: {
+        Row: {
+          created_at: string
+          end_time: string
+          event_format: string | null
+          id: string
+          participant_count: number
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"]
+          topic: string
+          updated_at: string
+          user_id: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          event_format?: string | null
+          id?: string
+          participant_count?: number
+          start_time: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          topic: string
+          updated_at?: string
+          user_id: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          event_format?: string | null
+          id?: string
+          participant_count?: number
+          start_time?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          topic?: string
+          updated_at?: string
+          user_id?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_bookings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_bookings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_bookings_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "lab_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       public_profiles: {
@@ -1156,6 +1280,7 @@ export type Database = {
       equipment_status: "active" | "maintenance"
       feedback_status: "new" | "in_review" | "resolved"
       inventory_status: "available" | "checked_out" | "maintenance"
+      lab_zone_action: "info" | "bookable" | "external"
       project_status: "in_progress" | "completed" | "paused"
       request_status: "pending" | "approved" | "rejected"
     }
@@ -1302,6 +1427,7 @@ export const Constants = {
       equipment_status: ["active", "maintenance"],
       feedback_status: ["new", "in_review", "resolved"],
       inventory_status: ["available", "checked_out", "maintenance"],
+      lab_zone_action: ["info", "bookable", "external"],
       project_status: ["in_progress", "completed", "paused"],
       request_status: ["pending", "approved", "rejected"],
     },
