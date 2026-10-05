@@ -43,7 +43,8 @@ function ZoneIcon({ zone }: { zone: LabZone }) {
 
 export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; language: string; onSelect: (zone: LabZone) => void }) {
   const localized = (zone: LabZone, field: "name" | "description") => {
-    const key = language === "ru" ? field : `${field}_${language}` as keyof LabZone;
+    const normalizedLanguage = language.split("-")[0];
+    const key = normalizedLanguage === "ru" ? field : `${field}_${normalizedLanguage}` as keyof LabZone;
     return String(zone[key] || zone[field] || "");
   };
   const ordered = zones.filter((zone) => positions[zone.slug]);

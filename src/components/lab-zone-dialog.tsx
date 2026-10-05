@@ -25,7 +25,8 @@ export function LabZoneDialog({ zone, userId, onClose }: { zone: LabZone | null;
   useEffect(() => { setPhoto(0); }, [zone?.id]);
   const localized = (field: "name" | "description") => {
     if (!zone) return "";
-    const key = i18n.language === "ru" ? field : `${field}_${i18n.language}` as keyof LabZone;
+    const language = i18n.language.split("-")[0];
+    const key = language === "ru" ? field : `${field}_${language}` as keyof LabZone;
     return String(zone[key] || zone[field] || "");
   };
   const photos = useMemo(() => zone ? Array.from(new Set([zone.image_url, ...zone.gallery_urls].filter(Boolean))) as string[] : [], [zone]);

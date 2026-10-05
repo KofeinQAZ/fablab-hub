@@ -16,7 +16,8 @@ import type { EquipmentDetails } from "@/components/equipment-detail-dialog";
 export const Route = createFileRoute("/_authenticated/_student/booking")({ component: BookingPage });
 
 function localized(obj: Record<string, unknown>, field: string, language: string) {
-  const key = language === "ru" ? field : `${field}_${language}`;
+  const normalizedLanguage = language.split("-")[0];
+  const key = normalizedLanguage === "ru" ? field : `${field}_${normalizedLanguage}`;
   return String(obj[key] || obj[field] || "");
 }
 
