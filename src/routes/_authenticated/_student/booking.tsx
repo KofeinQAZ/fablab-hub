@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Box, Map, Package, Plus, ScanLine, Wrench } from "lucide-react";
+import { Boxes, Box, Cpu, GraduationCap, Map, Package, Plus, ScanLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,18 +121,16 @@ function BookingPage() {
               </span>
             </div>
             <div className="flex flex-1 flex-col">
-              {[t("booking.map.capabilities.prototype"), t("booking.map.capabilities.electronics"), t("booking.map.capabilities.education")].map((item, index) => (
-                <div key={item} className={`group flex flex-1 flex-col justify-between gap-3 p-4 transition-colors hover:bg-primary/5 ${index < 2 ? "border-b-2 border-foreground/20" : ""}`}>
-                  <div className="flex items-start justify-between">
-                    <span className="flex h-9 w-9 items-center justify-center border-2 border-foreground bg-card font-mono text-sm font-black transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">0{index + 1}</span>
-                    <span className="font-mono text-[11px] font-bold uppercase text-muted-foreground">SYS // MOD_0{index + 1}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-black uppercase leading-none tracking-tight transition-transform duration-200 group-hover:translate-x-1">{item}</h3>
-                    <div className="mt-2 h-1 w-full overflow-hidden bg-muted">
-                      <div className={`h-full bg-primary ${index === 0 ? "w-2/3" : index === 1 ? "w-full" : "w-1/2"}`} />
-                    </div>
-                  </div>
+              {[
+                { icon: Boxes, label: t("booking.map.capabilities.prototype") },
+                { icon: Cpu, label: t("booking.map.capabilities.electronics") },
+                { icon: GraduationCap, label: t("booking.map.capabilities.education") },
+              ].map(({ icon: Icon, label }, index) => (
+                <div key={label} className={`flex flex-1 items-center gap-4 px-5 py-4 transition-colors hover:bg-primary/5 ${index < 2 ? "border-b-2 border-foreground/20" : ""}`}>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-foreground bg-card transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-base font-black uppercase leading-tight tracking-tight sm:text-lg">{label}</span>
                 </div>
               ))}
             </div>
