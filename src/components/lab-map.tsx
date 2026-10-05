@@ -20,17 +20,31 @@ const positions: Record<string, string> = {
 };
 
 const zoneTone: Record<string, string> = {
-  electronics: "border-primary bg-primary/10",
-  instrumentals: "border-zone-pink bg-zone-pink/10",
-  "3d-print": "border-zone-green bg-zone-green/10",
+  electronics: "border-primary bg-primary/10 shadow-primary/25",
+  instrumentals: "border-zone-pink bg-zone-pink/10 shadow-zone-pink/25",
+  "3d-print": "border-zone-green bg-zone-green/10 shadow-zone-green/25",
   "machine-1": "border-zone-violet bg-zone-violet text-primary-foreground",
   "machine-2": "border-zone-violet bg-zone-violet text-primary-foreground",
   "machine-3": "border-zone-violet bg-zone-violet text-primary-foreground",
-  workshops: "border-zone-pink bg-zone-pink/10",
-  dmark: "border-zone-yellow bg-zone-yellow/10",
+  workshops: "border-zone-pink bg-zone-pink/10 shadow-zone-pink/25",
+  dmark: "border-zone-yellow bg-zone-yellow/10 shadow-zone-yellow/25",
   office: "border-foreground bg-card",
-  storage: "border-zone-yellow bg-zone-yellow/10",
+  storage: "border-zone-yellow bg-zone-yellow/10 shadow-zone-yellow/25",
   "computer-bars": "border-foreground bg-foreground text-background",
+};
+
+const zoneCode: Record<string, string> = {
+  electronics: "ZN–01",
+  instrumentals: "ZN–02",
+  "3d-print": "ZN–03",
+  "machine-1": "MC–01",
+  "machine-2": "MC–02",
+  "machine-3": "MC–03",
+  workshops: "WS–01",
+  storage: "ST–01",
+  dmark: "DM–01",
+  office: "OF–01",
+  "computer-bars": "PC–01",
 };
 
 function ZoneIcon({ zone }: { zone: LabZone }) {
@@ -59,11 +73,17 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto overscroll-x-contain border-4 border-foreground bg-card p-2 shadow-[8px_8px_0_var(--foreground)] [scrollbar-color:var(--primary)_var(--muted)] [scrollbar-width:thin] sm:p-3">
-        <div className="relative h-[440px] min-w-[1040px] border-2 border-foreground bg-muted lg:h-[520px] lg:min-w-0">
-          <div className="absolute left-[12%] top-0 z-20 h-2 w-[4%] bg-destructive" aria-label="Выход" />
-          <div className="absolute bottom-0 left-[45%] z-20 h-2 w-[15%] bg-destructive" aria-label="Ворота" />
-          <div className="absolute bottom-0 left-[40%] z-20 h-2 w-[4%] bg-destructive" aria-label="Дверь" />
+      <div className="border-2 border-foreground bg-card shadow-[6px_6px_0_var(--foreground)]">
+        <div className="flex h-9 items-center justify-between border-b-2 border-foreground px-3 font-mono text-[10px] font-bold uppercase text-muted-foreground sm:px-4">
+          <span>FabLab · Floor 01</span>
+          <span className="hidden sm:inline">Plan / Interactive</span>
+          <span>Rev. 02</span>
+        </div>
+        <div className="overflow-x-auto overscroll-x-contain p-2 [scrollbar-color:var(--primary)_var(--muted)] [scrollbar-width:thin] sm:p-3">
+          <div className="blueprint-grid relative h-[440px] min-w-[1040px] border-2 border-foreground bg-muted/60 lg:h-[520px] lg:min-w-0">
+          <div className="absolute left-[12%] top-0 z-20 h-1.5 w-[4%] bg-destructive" aria-label="Выход" />
+          <div className="absolute bottom-0 left-[45%] z-20 h-1.5 w-[15%] bg-destructive" aria-label="Ворота" />
+          <div className="absolute bottom-0 left-[40%] z-20 h-1.5 w-[4%] bg-destructive" aria-label="Дверь" />
           {ordered.map((zone) => (
             <Button
               key={zone.id}
@@ -71,16 +91,19 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
               variant="outline"
               onClick={() => activate(zone)}
               className={cn(
-                "group absolute min-h-0 whitespace-normal rounded-none border-4 p-3 text-left font-black uppercase tracking-normal shadow-[3px_3px_0_var(--foreground)] transition-[transform,box-shadow] duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--foreground)] focus-visible:z-30 focus-visible:ring-4 focus-visible:ring-primary/40",
+                "group absolute min-h-0 whitespace-normal rounded-none border-2 p-2.5 text-left font-black uppercase tracking-normal shadow-[3px_3px_0_currentColor] transition-[transform,box-shadow,filter] duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:brightness-95 hover:shadow-[5px_5px_0_currentColor] focus-visible:z-30 focus-visible:ring-4 focus-visible:ring-primary/40 motion-reduce:transform-none motion-reduce:transition-none",
                 positions[zone.slug], zoneTone[zone.slug] || "border-foreground bg-card",
               )}
               aria-label={localized(zone, "name")}
             >
               <span className="flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden">
-                <ZoneIcon zone={zone} />
+                <span className="flex w-full items-start justify-between gap-1 font-mono text-[8px] font-bold opacity-60">
+                  <span>{zoneCode[zone.slug] || "ZONE"}</span>
+                  <ZoneIcon zone={zone} />
+                </span>
                 <span
                   className={cn(
-                    "block max-w-full overflow-hidden text-[11px] leading-[1.2] sm:text-xs lg:text-sm",
+                    "block max-w-full overflow-hidden text-[11px] leading-[1.15] sm:text-xs lg:text-sm",
                     zone.slug === "instrumentals" && "text-[9px] sm:text-[10px] lg:text-xs",
                   )}
                 >
@@ -91,6 +114,8 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
           ))}
           <div className="pointer-events-none absolute left-[40%] top-[3%] h-[8%] w-[33.5%] border-2 border-zone-green bg-card px-2 py-1 text-center text-[10px] font-black uppercase leading-none text-foreground">
             Technical zone · cooling
+          </div>
+          <div className="pointer-events-none absolute bottom-2 right-2 font-mono text-[8px] font-bold uppercase text-muted-foreground">N ↑ · Scale 1:50</div>
           </div>
         </div>
       </div>
