@@ -113,14 +113,15 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
               )}
               aria-label={localized(zone, "name")}
             >
-              <span className={cn("flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden", zone.slug === "electronics" && "pl-[38%]")}>
-                <span className="flex w-full items-start justify-between gap-1 font-mono text-[11px] font-bold opacity-70">
+              <span className={cn("flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden", zone.slug === "electronics" && "pl-[34%]")}>
+                <span className="flex w-full items-start justify-between gap-1 font-mono text-xs font-bold opacity-70">
                   <span>{zoneCode[zone.slug] || "ZONE"}</span>
                   <ZoneIcon zone={zone} />
                 </span>
                 <span
                   className={cn(
                     "block max-w-full overflow-hidden text-sm leading-tight",
+                    zone.slug === "electronics" && "break-all text-xs leading-snug lg:text-sm",
                     zone.slug === "instrumentals" && "self-center text-xs [writing-mode:vertical-rl] rotate-180 lg:text-sm",
                     zone.slug === "computer-bars" && placementIndex > 0 && "sr-only",
                   )}
@@ -133,7 +134,7 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
           <div className="pointer-events-none absolute left-[40%] top-[3%] flex h-[8%] w-[33.5%] items-center justify-center border-2 border-zone-green bg-card px-2 text-center text-xs font-black uppercase leading-none text-foreground">
             Technical zone · cooling
           </div>
-          <div className="pointer-events-none absolute bottom-2 right-2 font-mono text-[11px] font-bold uppercase text-muted-foreground">N ↑ · Scale 1:50</div>
+          <div className="pointer-events-none absolute bottom-2 right-2 font-mono text-xs font-bold uppercase text-muted-foreground">N ↑ · Scale 1:50</div>
           </div>
         </div>
       </div>
