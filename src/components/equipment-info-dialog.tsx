@@ -27,17 +27,11 @@ export function getYoutubeEmbedUrl(url?: string | null) {
 export function EquipmentInfoDialog({
   open,
   equipment,
-  canBook,
-  bookDisabledReason,
   onClose,
-  onBook,
 }: {
   open: boolean;
   equipment: EquipmentDetails | null;
-  canBook: boolean;
-  bookDisabledReason?: string;
   onClose: () => void;
-  onBook: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const [index, setIndex] = useState(0);
@@ -146,15 +140,7 @@ export function EquipmentInfoDialog({
             </div>
           )}
 
-          <div className="pt-2">
-            <Button
-              onClick={onBook}
-              disabled={!canBook}
-              className="w-full h-16 rounded-none text-sm font-black uppercase tracking-widest border-4 border-slate-900 bg-blue-600 hover:bg-blue-700 text-white shadow-[6px_6px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:bg-slate-300 disabled:border-slate-400 disabled:shadow-none disabled:text-slate-500"
-            >
-              {canBook ? t("booking.card.selectTime") : bookDisabledReason}
-            </Button>
-          </div>
+          <Button onClick={onClose} variant="outline" className="h-12 w-full rounded-none border-2 border-slate-900 font-black uppercase tracking-widest">{t("booking.map.close")}</Button>
         </div>
       </DialogContent>
     </Dialog>

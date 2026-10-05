@@ -1,36 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { Box, Cpu, Map, Package, Sparkles, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EquipmentDetailDialog, EquipmentDetails } from "@/components/equipment-detail-dialog";
 import { EquipmentInfoDialog } from "@/components/equipment-info-dialog";
 import { InventorySection } from "@/components/inventory-section";
+import { LabMap, type LabZone } from "@/components/lab-map";
+import { LabZoneDialog } from "@/components/lab-zone-dialog";
+import type { EquipmentDetails } from "@/components/equipment-detail-dialog";
 
-import { Lock, AlertCircle, Laptop, Printer, HardHat, Crown, CheckCircle2, ShieldAlert, Wrench, Package } from "lucide-react";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+export const Route = createFileRoute("/_authenticated/_student/booking")({ component: BookingPage });
 
-export const Route = createFileRoute("/_authenticated/_student/booking")({
-  component: BookingPage,
-});
-
-// Добавляем наш универсальный хелпер для локализации
-const getLocalized = (obj: any, field: string, lang: string) => {
-  if (!obj) return '';
-  if (lang === 'ru') return obj[field] || '';
-  return obj[`${field}_${lang}`] || obj[field] || '';
-};
+function localized(obj: Record<string, unknown>, field: string, language: string) {
+  const key = language === "ru" ? field : `${field}_${language}`;
+  return String(obj[key] || obj[field] || "");
+}
 
 function BookingPage() {
-  // Достаем i18n чтобы знать текущий язык
   const { t, i18n } = useTranslation();
+  const [section, setSection] = useState<"map" | "equipment" | "inventory">("map");
+  const [selectedZone, setSelectedZone] = useState<LabZone | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentDetails | null>(null);
-  const [category, setCategory] = useState<"stationary" | "portable" | "inventory">("stationary");
-  const [infoEquipment, setInfoEquipment] = useState<EquipmentDetails | null>(null);
-
 
   const { data: profile } = useQuery({
     queryKey: ["user-profile-briefing"],
@@ -41,261 +35,92 @@ function BookingPage() {
       return data;
     },
   });
-
-  const equipmentCategory: "stationary" | "portable" = category === "inventory" ? "portable" : category;
-
-  const { data: equipment = [], isLoading } = useQuery({
-    queryKey: ["equipment-gallery", equipmentCategory],
+  const { data: zones = [], isLoading: zonesLoading } = useQuery({
+    queryKey: ["lab-zones"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("equipment")
-        .select("*")
-        .eq("category", equipmentCategory);
+      const { data, error } = await supabase.from("lab_zones").select("*").eq("is_active", true).order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: equipment = [], isLoading: equipmentLoading } = useQuery({
+    queryKey: ["equipment-catalog"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("equipment").select("*").order("name");
       if (error) throw error;
       return data as EquipmentDetails[];
     },
   });
 
-  // QR инвентаря: /booking?inventoryId=... — сразу открываем вкладку «Инвентарь»
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("inventoryId")) setCategory("inventory");
-  }, []);
-
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const qrEquipmentId = urlParams.get("equipmentId");
-    if (!qrEquipmentId) return;
-
-    const openInfo = (item: EquipmentDetails) => {
-      // QR ведёт на карточку с описанием станка; бронирование — по кнопке внутри неё
-      const itemCategory = (item as any).category as "stationary" | "portable" | undefined;
-      if (itemCategory && itemCategory !== category) setCategory(itemCategory);
-      setInfoEquipment(item);
+    const inventoryId = params.get("inventoryId");
+    const equipmentId = params.get("equipmentId");
+    if (inventoryId) setSection("inventory");
+    if (!equipmentId) return;
+    setSection("equipment");
+    const item = equipment.find((entry) => entry.id === equipmentId);
+    if (item) {
+      setSelectedEquipment(item);
       window.history.replaceState({}, document.title, window.location.pathname);
-    };
-
-    const foundItem = equipment.find((item: any) => item.id === qrEquipmentId);
-    if (foundItem) {
-      openInfo(foundItem);
-    } else {
-      // Станок может быть в другой вкладке (переносной инвентарь) — загружаем напрямую
-      supabase
-        .from("equipment")
-        .select("*")
-        .eq("id", qrEquipmentId)
-        .single()
-        .then(({ data }) => {
-          if (data) openInfo(data as EquipmentDetails);
-          else window.history.replaceState({}, document.title, window.location.pathname);
-        });
     }
   }, [equipment]);
 
-  const checkAccess = (accessType: string) => {
-    if (!profile) return { hasAccess: false, reason: t('booking.access.authRequired') };
-    if (profile.role === 'admin') return { hasAccess: true };
-
-    switch (accessType) {
-      case 'basic': 
-        return { hasAccess: true };
-      case 'independent': 
-      case 'mentor_required': 
-        return profile.safety_briefing_passed 
-          ? { hasAccess: true } 
-          : { hasAccess: false, reason: t('booking.access.tbRequired') };
-      case 'resident_only': 
-        return profile.role === 'resident' 
-          ? { hasAccess: true } 
-          : { hasAccess: false, reason: t('booking.access.residentOnly') };
-      default: 
-        return { hasAccess: true };
-    }
-  };
-
-  const renderAccessMarker = (accessType: string) => {
-    const baseStyle = "font-black uppercase tracking-widest text-[10px] border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] px-2 py-1 flex items-center gap-1 w-fit";
-    switch (accessType) {
-      case 'basic': return <span className={`bg-emerald-400 text-slate-900 ${baseStyle}`}><Laptop className="w-3 h-3"/> {t('booking.access.basic')}</span>;
-      case 'independent': return <span className={`bg-blue-400 text-white ${baseStyle}`}><Printer className="w-3 h-3"/> {t('booking.access.independent')}</span>;
-      case 'mentor_required': return <span className={`bg-amber-400 text-slate-900 ${baseStyle}`}><HardHat className="w-3 h-3"/> {t('booking.access.mentor')}</span>;
-      case 'resident_only': return <span className={`bg-purple-500 text-white ${baseStyle}`}><Crown className="w-3 h-3"/> {t('booking.access.resident')}</span>;
-      default: return <span className={`bg-slate-200 text-slate-800 ${baseStyle}`}>{t('booking.access.unknown')}</span>;
-    }
-  };
-
   return (
-    <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500 pb-24 w-full overflow-hidden">
-      
-      <div className="border-b-2 border-slate-100 pb-6">
-        <h1 className="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter">{t('booking.pageTitle')}</h1>
-        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm mt-2">{t('booking.pageSubtitle')}</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 border border-slate-200 bg-white rounded-3xl shadow-sm overflow-hidden">
-        <div className="p-5 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center bg-white">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t('booking.status.briefingTitle')}</span>
-          <div className="flex items-center gap-2">
-            {profile?.safety_briefing_passed ? (
-              <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold uppercase tracking-widest text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 w-fit">
-                <CheckCircle2 className="w-4 h-4" /> {t('booking.status.tbPassed')}
-              </span>
-            ) : (
-              <span className="bg-rose-50 text-rose-600 border border-rose-100 font-bold uppercase tracking-widest text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 w-fit">
-                <ShieldAlert className="w-4 h-4" /> {t('booking.status.tbFailed')}
-              </span>
-            )}
+    <main className="mx-auto w-full max-w-7xl space-y-10 overflow-hidden p-4 pb-24 md:p-8">
+      <section className="relative overflow-hidden border-4 border-foreground bg-foreground px-5 py-8 text-background shadow-[8px_8px_0_var(--primary)] sm:px-8 sm:py-10">
+        <div className="absolute right-5 top-5 font-mono text-xs font-bold text-background/50">SATBAYEV · 01</div>
+        <div className="relative max-w-3xl">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center border-2 border-background bg-primary text-primary-foreground"><Sparkles className="h-6 w-6" /></div>
+          <h1 className="max-w-2xl text-4xl font-black uppercase leading-[0.95] tracking-normal sm:text-6xl">{t("booking.map.heroTitle")}</h1>
+          <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-background/75 sm:text-lg">{t("booking.map.heroText")}</p>
+          <div className="mt-7 flex flex-wrap gap-2">
+            {[t("booking.map.capabilities.prototype"), t("booking.map.capabilities.electronics"), t("booking.map.capabilities.education")].map((item) => <span key={item} className="border border-background/40 px-3 py-2 text-xs font-black uppercase tracking-widest">{item}</span>)}
           </div>
         </div>
-        <div className="p-5 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center bg-white">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t('booking.status.roleTitle')}</span>
-          <div className="text-lg font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
-            {profile?.role === 'admin' ? t('booking.status.roleAdmin') : profile?.role === 'resident' ? t('booking.status.roleResident') : t('booking.status.roleStudent')}
-          </div>
-        </div>
-        <div className="p-5 bg-blue-50/50 text-blue-800 text-xs font-medium flex items-center leading-relaxed">
-          <AlertCircle className="w-5 h-5 mr-3 shrink-0 text-blue-500" />
-          {t('booking.status.warning')}
-        </div>
-      </div>
+      </section>
 
-      <Tabs value={category} onValueChange={(v) => setCategory(v as any)} className="w-full">
-        <TabsList className="grid grid-cols-3 h-auto w-full bg-slate-100 p-1.5 rounded-2xl gap-2">
-          <TabsTrigger 
-            value="stationary" 
-            className="h-12 md:h-14 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
-          >
-            <Wrench className="w-4 h-4 md:w-5 md:h-5 mr-2" /> {t('booking.tabs.stationary')}
-          </TabsTrigger>
-          <TabsTrigger 
-            value="portable" 
-            className="h-12 md:h-14 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
-          >
-            <Laptop className="w-4 h-4 md:w-5 md:h-5 mr-2" /> {t('booking.tabs.portable')}
-          </TabsTrigger>
-          <TabsTrigger 
-            value="inventory" 
-            className="h-12 md:h-14 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
-          >
-            <Package className="w-4 h-4 md:w-5 md:h-5 mr-2" /> {t('booking.tabs.inventory', 'Инвентарь')}
-          </TabsTrigger>
+      <Tabs value={section} onValueChange={(value) => setSection(value as typeof section)}>
+        <TabsList className="grid h-auto w-full grid-cols-3 gap-2 rounded-none border-2 border-foreground bg-muted p-2">
+          <TabsTrigger value="map" className="min-h-12 rounded-none font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Map className="mr-2 h-4 w-4" />{t("booking.map.tabs.map")}</TabsTrigger>
+          <TabsTrigger value="equipment" className="min-h-12 rounded-none font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Wrench className="mr-2 h-4 w-4" />{t("booking.map.tabs.equipment")}</TabsTrigger>
+          <TabsTrigger value="inventory" className="min-h-12 rounded-none font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Package className="mr-2 h-4 w-4" />{t("booking.map.tabs.inventory")}</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {category === "inventory" ? (
-        <InventorySection userId={profile?.id ?? null} active />
-      ) : isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3].map((i) => <div key={i} className="h-96 border-4 border-slate-900 bg-slate-200 animate-pulse" />)}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {equipment.map((item: any) => {
-            const accessType = item.access_type || 'basic';
-            const { hasAccess, reason } = checkAccess(accessType);
-            
-            // Получаем локализованные значения
-            const localizedName = getLocalized(item, 'name', i18n.language);
-            const localizedDesc = getLocalized(item, 'description', i18n.language);
-
-            return (
-              <Card key={item.id} className="border-4 border-slate-900 rounded-none bg-white shadow-[6px_6px_0_#0f172a] hover:shadow-[12px_12px_0_#005BAB] hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 flex flex-col overflow-hidden group">
-                
-                <div onClick={() => setInfoEquipment(item)} className="h-48 bg-slate-900 border-b-4 border-slate-900 relative overflow-hidden shrink-0 cursor-pointer">
-                  {item.image_url ? (
-                    <img src={item.image_url} alt={localizedName} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-700 bg-slate-100 font-black text-xs uppercase tracking-widest">{t('booking.card.noPhoto')}</div>
-                  )}
-                  
-                  <div className="absolute top-4 right-4">
-                    <span className={`font-black uppercase tracking-widest text-[9px] border-2 border-slate-900 px-2 py-1 shadow-[2px_2px_0_#0f172a] ${
-                      item.status === 'active' ? 'bg-emerald-400 text-slate-900' : 'bg-rose-500 text-white'
-                    }`}>
-                      {item.status === 'active' ? t('booking.card.statusActive') : t('booking.card.statusRepair')}
-                    </span>
-                  </div>
-                </div>
-
-                <CardContent className="p-6 flex flex-col flex-1 justify-between gap-6">
-                  <div className="space-y-4">
-                    <h3 onClick={() => setInfoEquipment(item)} className="font-black text-xl md:text-2xl text-slate-900 uppercase tracking-tight leading-tight line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors">{localizedName}</h3>
-                    
-                    {renderAccessMarker(accessType)}
-                    
-                    <p className="text-sm text-slate-600 font-medium leading-relaxed line-clamp-3">
-                      {localizedDesc || t('booking.card.defaultDesc')}
-                    </p>
-                  </div>
-
-                  <div className="mt-auto pt-4 border-t-2 border-slate-100 space-y-3">
-                    <Button
-                      onClick={() => setInfoEquipment(item)}
-                      variant="outline"
-                      className="w-full h-12 border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-black uppercase tracking-widest text-[11px] rounded-none shadow-[3px_3px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
-                    >
-                      Подробнее
-                    </Button>
-
-                    {item.status === 'maintenance' ? (
-                      <Button disabled className="w-full h-14 border-2 border-slate-400 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-xs rounded-none cursor-not-allowed shadow-none">
-                        <AlertCircle className="w-4 h-4 mr-2 shrink-0" /> {t('booking.card.maintenance')}
-                      </Button>
-                    ) : hasAccess ? (
-                      <Button 
-                        onClick={() => setSelectedEquipment(item)}
-                        className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white border-2 border-slate-900 font-black uppercase tracking-widest text-xs rounded-none shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
-                      >
-                        {t('booking.card.selectTime')}
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => toast.error(reason)}
-                        variant="secondary"
-                        className="w-full h-14 bg-slate-200 hover:bg-slate-200 text-slate-500 border-2 border-slate-300 font-black uppercase tracking-widest text-xs rounded-none cursor-not-allowed shadow-none flex items-center justify-center gap-2"
-                      >
-                        <Lock className="w-4 h-4 shrink-0 text-slate-400" /> {reason}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+      {section === "map" && (
+        <section className="space-y-5">
+          <div className="flex flex-col justify-between gap-3 border-b-4 border-foreground pb-5 sm:flex-row sm:items-end">
+            <div><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.eyebrow")}</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.title")}</h2></div>
+            <p className="max-w-md text-sm text-muted-foreground">{t("booking.map.hint")}</p>
+          </div>
+          {zonesLoading ? <div className="h-[420px] animate-pulse border-4 border-foreground bg-muted" /> : <LabMap zones={zones} language={i18n.language} onSelect={setSelectedZone} />}
+        </section>
       )}
 
-      <EquipmentDetailDialog
-        open={!!selectedEquipment}
-        equipment={selectedEquipment}
-        userId={profile?.id || null}
-        safetyBriefingPassed={profile?.safety_briefing_passed || false}
-        onClose={() => setSelectedEquipment(null)}
-        onSuccess={() => setSelectedEquipment(null)}
-      />
+      {section === "equipment" && (
+        <section className="space-y-5">
+          <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.catalogEyebrow")}</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.catalogTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.catalogText")}</p></div>
+          {equipmentLoading ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{[1,2,3].map((i) => <div key={i} className="h-80 animate-pulse border-4 border-foreground bg-muted" />)}</div> : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {equipment.map((item) => {
+                const name = localized(item as unknown as Record<string, unknown>, "name", i18n.language);
+                const description = localized(item as unknown as Record<string, unknown>, "description", i18n.language);
+                return <Card key={item.id} className="group overflow-hidden rounded-none border-4 border-foreground shadow-[6px_6px_0_var(--foreground)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[9px_9px_0_var(--primary)]">
+                  <button type="button" onClick={() => setSelectedEquipment(item)} className="block aspect-[16/10] w-full border-b-4 border-foreground bg-muted text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40">
+                    {item.image_url ? <img src={item.image_url} alt={name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : <span className="flex h-full items-center justify-center"><Box className="h-10 w-10 text-muted-foreground" /></span>}
+                  </button>
+                  <CardContent className="space-y-4 p-5"><div className="flex items-start justify-between gap-3"><h3 className="text-xl font-black uppercase leading-tight tracking-normal">{name}</h3><span className="shrink-0 border-2 border-foreground bg-accent px-2 py-1 text-[10px] font-black uppercase">{item.status === "active" ? t("booking.card.statusActive") : t("booking.card.statusRepair")}</span></div><p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{description || t("booking.card.defaultDesc")}</p><Button type="button" variant="outline" onClick={() => setSelectedEquipment(item)} className="h-11 w-full rounded-none border-2 font-black uppercase tracking-widest">{t("booking.map.details")}</Button></CardContent>
+                </Card>;
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
-      <EquipmentInfoDialog
-        open={!!infoEquipment}
-        equipment={infoEquipment}
-        canBook={
-          infoEquipment
-            ? infoEquipment.status !== "maintenance" &&
-              checkAccess(infoEquipment.access_type || "basic").hasAccess
-            : false
-        }
-        bookDisabledReason={
-          infoEquipment?.status === "maintenance"
-            ? t("booking.card.maintenance")
-            : checkAccess(infoEquipment?.access_type || "basic").reason
-        }
-        onClose={() => setInfoEquipment(null)}
-        onBook={() => {
-          setSelectedEquipment(infoEquipment);
-          setInfoEquipment(null);
-        }}
-      />
-
+      {section === "inventory" && <InventorySection userId={profile?.id ?? null} active />}
+      <LabZoneDialog zone={selectedZone} userId={profile?.id ?? null} onClose={() => setSelectedZone(null)} />
+      <EquipmentInfoDialog open={!!selectedEquipment} equipment={selectedEquipment} onClose={() => setSelectedEquipment(null)} />
     </main>
   );
 }
