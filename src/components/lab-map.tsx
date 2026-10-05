@@ -6,7 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 export type LabZone = Database["public"]["Tables"]["lab_zones"]["Row"];
 
 const positions: Record<string, string> = {
-  electronics: "left-[1%] top-[3%] h-[61%] w-[9.5%]",
+  electronics: "left-[6%] top-[3%] h-[61%] w-[8.5%]",
   instrumentals: "left-[16%] top-[3%] h-[30%] w-[7%]",
   "3d-print": "left-[24%] top-[3%] h-[30%] w-[15%]",
   "machine-1": "left-[40%] top-[14%] h-[31%] w-[10.5%]",
@@ -20,10 +20,7 @@ const positions: Record<string, string> = {
 };
 
 const extraPositions: Record<string, string[]> = {
-  "computer-bars": [
-    "left-[1%] top-[3%] h-[61%] w-[4%]",
-    "left-[1%] top-[66%] h-[13%] w-[4%]",
-  ],
+  "computer-bars": ["left-[1%] top-[3%] h-[78%] w-[4%]"],
 };
 
 const zoneTone: Record<string, string> = {
@@ -113,7 +110,7 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
               )}
               aria-label={localized(zone, "name")}
             >
-              <span className={cn("flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden", zone.slug === "electronics" && "pl-[34%]")}>
+              <span className="flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden">
                 <span className="flex w-full items-start justify-between gap-1 font-mono text-xs font-bold opacity-70">
                   <span>{zoneCode[zone.slug] || "ZONE"}</span>
                   <ZoneIcon zone={zone} />
@@ -121,8 +118,8 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
                 <span
                   className={cn(
                     "block max-w-full overflow-hidden text-sm leading-tight",
-                    zone.slug === "electronics" && "break-all text-xs leading-snug lg:text-sm",
-                    zone.slug === "instrumentals" && "self-center text-xs [writing-mode:vertical-rl] rotate-180 lg:text-sm",
+                    (zone.slug === "electronics" || zone.slug === "instrumentals") &&
+                      "self-center text-xs [writing-mode:vertical-rl] rotate-180 lg:text-sm",
                     zone.slug === "computer-bars" && placementIndex > 0 && "sr-only",
                   )}
                 >
