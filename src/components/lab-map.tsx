@@ -6,7 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 export type LabZone = Database["public"]["Tables"]["lab_zones"]["Row"];
 
 const positions: Record<string, string> = {
-  electronics: "left-[1%] top-[3%] h-[61%] w-[9.5%]",
+  electronics: "left-[6%] top-[3%] h-[61%] w-[8.5%]",
   instrumentals: "left-[16%] top-[3%] h-[30%] w-[7%]",
   "3d-print": "left-[24%] top-[3%] h-[30%] w-[15%]",
   "machine-1": "left-[40%] top-[14%] h-[31%] w-[10.5%]",
@@ -20,10 +20,7 @@ const positions: Record<string, string> = {
 };
 
 const extraPositions: Record<string, string[]> = {
-  "computer-bars": [
-    "left-[1%] top-[3%] h-[61%] w-[4%]",
-    "left-[1%] top-[66%] h-[13%] w-[4%]",
-  ],
+  "computer-bars": ["left-[1%] top-[3%] h-[78%] w-[4%]"],
 };
 
 const zoneTone: Record<string, string> = {
