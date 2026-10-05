@@ -31,11 +31,7 @@ function LandingPage() {
       {/* --- 1. АРХИТЕКТУРНАЯ HERO СЕКЦИЯ --- */}
       <section className="relative pt-12 md:pt-16 pb-0 bg-[#FAFAFA] min-h-[calc(100vh-80px)] flex flex-col justify-between">
         <div className="relative z-10 px-4 md:px-12 text-right select-none flex flex-col items-end justify-start w-full mt-4 md:mt-8">
-          
-          <div className="absolute top-[10%] left-[5%] hidden xl:block text-xs font-bold tracking-[0.2em] text-slate-900 uppercase text-left">
-            <span className="text-blue-600 block text-lg mb-1">{t('landing.hero.badge', 'ИННОВАЦИИ В ДЕЙСТВИИ')}</span>
-            {t('landing.hero.subtitle1', 'НАЦИОНАЛЬНЫЙ ИССЛЕДОВАТЕЛЬСКИЙ')}<br/>{t('landing.hero.subtitle2', 'ТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ')}
-          </div>
+
 
           <h1 className="text-[18vw] md:text-[14vw] font-black leading-[0.75] tracking-tighter text-slate-900 uppercase">
             FABLAB
@@ -56,7 +52,7 @@ function LandingPage() {
             
             <div className="absolute bottom-0 left-0 md:left-[-5%] w-full md:w-[95%] h-[50%] md:h-[30%] bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/90 to-transparent pointer-events-none" />
 
-            <div className="relative z-30 bg-blue-600 text-white p-6 md:p-10 lg:p-12 w-full md:w-[550px] rounded-t-[2rem] md:rounded-t-none md:rounded-tl-[3rem] flex flex-col justify-end shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-t-4 border-[#FAFAFA] md:border-none md:border-t-8 md:border-l-8 md:border-[#FAFAFA] ml-auto">
+            <div className="relative z-30 bg-blue-600 text-white p-6 md:p-10 lg:p-12 w-full md:w-[550px] rounded-t-[2rem] md:rounded-t-none md:rounded-tl-[3rem] flex flex-col justify-end shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-t-4 border-[#FAFAFA] md:border-none md:border-t-8 md:border-l-8 md:border-[#FAFAFA] ml-auto md:mr-6 lg:mr-12">
               <p className="font-bold text-sm md:text-base uppercase tracking-widest mb-4 opacity-90">
                 {t('landing.hero.ctaDesc', '3D-ПЕЧАТЬ, ЧПУ СТАНКИ, СЛЕСАРНАЯ ЗОНА')}
               </p>
