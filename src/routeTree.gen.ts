@@ -32,6 +32,7 @@ import { Route as AuthenticatedAdminAdminBookingsRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminAdminClubsRouteImport } from './routes/_authenticated/_admin/admin/clubs'
 import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_authenticated/_admin/admin/equipment'
 import { Route as AuthenticatedAdminAdminInventoryRouteImport } from './routes/_authenticated/_admin/admin/inventory'
+import { Route as AuthenticatedAdminAdminLabMapRouteImport } from './routes/_authenticated/_admin/admin/lab-map'
 import { Route as AuthenticatedAdminAdminNewsRouteImport } from './routes/_authenticated/_admin/admin/news'
 import { Route as AuthenticatedAdminAdminProjectsRouteImport } from './routes/_authenticated/_admin/admin/projects'
 import { Route as AuthenticatedAdminAdminRequestsRouteImport } from './routes/_authenticated/_admin/admin/requests'
@@ -160,6 +161,12 @@ const AuthenticatedAdminAdminInventoryRoute =
     path: '/inventory',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
+const AuthenticatedAdminAdminLabMapRoute =
+  AuthenticatedAdminAdminLabMapRouteImport.update({
+    id: '/lab-map',
+    path: '/lab-map',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
 const AuthenticatedAdminAdminNewsRoute =
   AuthenticatedAdminAdminNewsRouteImport.update({
     id: '/news',
@@ -216,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
+  '/admin/lab-map': typeof AuthenticatedAdminAdminLabMapRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
   '/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
@@ -242,6 +250,7 @@ export interface FileRoutesByTo {
   '/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
+  '/admin/lab-map': typeof AuthenticatedAdminAdminLabMapRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
   '/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
@@ -274,6 +283,7 @@ export interface FileRoutesById {
   '/_authenticated/_admin/admin/clubs': typeof AuthenticatedAdminAdminClubsRoute
   '/_authenticated/_admin/admin/equipment': typeof AuthenticatedAdminAdminEquipmentRoute
   '/_authenticated/_admin/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
+  '/_authenticated/_admin/admin/lab-map': typeof AuthenticatedAdminAdminLabMapRoute
   '/_authenticated/_admin/admin/news': typeof AuthenticatedAdminAdminNewsRoute
   '/_authenticated/_admin/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/_authenticated/_admin/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/admin/clubs'
     | '/admin/equipment'
     | '/admin/inventory'
+    | '/admin/lab-map'
     | '/admin/news'
     | '/admin/projects'
     | '/admin/requests'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/admin/clubs'
     | '/admin/equipment'
     | '/admin/inventory'
+    | '/admin/lab-map'
     | '/admin/news'
     | '/admin/projects'
     | '/admin/requests'
@@ -360,6 +372,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin/admin/clubs'
     | '/_authenticated/_admin/admin/equipment'
     | '/_authenticated/_admin/admin/inventory'
+    | '/_authenticated/_admin/admin/lab-map'
     | '/_authenticated/_admin/admin/news'
     | '/_authenticated/_admin/admin/projects'
     | '/_authenticated/_admin/admin/requests'
@@ -539,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminInventoryRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
+    '/_authenticated/_admin/admin/lab-map': {
+      id: '/_authenticated/_admin/admin/lab-map'
+      path: '/lab-map'
+      fullPath: '/admin/lab-map'
+      preLoaderRoute: typeof AuthenticatedAdminAdminLabMapRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
     '/_authenticated/_admin/admin/news': {
       id: '/_authenticated/_admin/admin/news'
       path: '/news'
@@ -589,6 +609,7 @@ interface AuthenticatedAdminAdminRouteChildren {
   AuthenticatedAdminAdminClubsRoute: typeof AuthenticatedAdminAdminClubsRoute
   AuthenticatedAdminAdminEquipmentRoute: typeof AuthenticatedAdminAdminEquipmentRoute
   AuthenticatedAdminAdminInventoryRoute: typeof AuthenticatedAdminAdminInventoryRoute
+  AuthenticatedAdminAdminLabMapRoute: typeof AuthenticatedAdminAdminLabMapRoute
   AuthenticatedAdminAdminNewsRoute: typeof AuthenticatedAdminAdminNewsRoute
   AuthenticatedAdminAdminProjectsRoute: typeof AuthenticatedAdminAdminProjectsRoute
   AuthenticatedAdminAdminRequestsRoute: typeof AuthenticatedAdminAdminRequestsRoute
@@ -606,6 +627,7 @@ const AuthenticatedAdminAdminRouteChildren: AuthenticatedAdminAdminRouteChildren
       AuthenticatedAdminAdminEquipmentRoute,
     AuthenticatedAdminAdminInventoryRoute:
       AuthenticatedAdminAdminInventoryRoute,
+    AuthenticatedAdminAdminLabMapRoute: AuthenticatedAdminAdminLabMapRoute,
     AuthenticatedAdminAdminNewsRoute: AuthenticatedAdminAdminNewsRoute,
     AuthenticatedAdminAdminProjectsRoute: AuthenticatedAdminAdminProjectsRoute,
     AuthenticatedAdminAdminRequestsRoute: AuthenticatedAdminAdminRequestsRoute,

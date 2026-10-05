@@ -25,6 +25,19 @@ type Booking = {
   profiles: { name: string; contact_phone?: string; photo_url?: string | null } | { name: string; contact_phone?: string; photo_url?: string | null }[] | null;
 };
 
+type ZoneBooking = {
+  id: string;
+  user_id: string;
+  start_time: string;
+  end_time: string;
+  status: "pending" | "active" | "cancelled" | "completed";
+  topic: string;
+  event_format: string | null;
+  participant_count: number;
+  lab_zones: { name: string } | null;
+  profiles: { name: string; contact_phone?: string; photo_url?: string | null } | { name: string; contact_phone?: string; photo_url?: string | null }[] | null;
+};
+
 function formatTimeRange(start: string, end: string) {
   const s = new Date(start);
   const e = new Date(end);
@@ -74,6 +87,18 @@ function AdminBookingsPage() {
         throw error;
       }
       return data as unknown as Booking[];
+    },
+  });
+
+  const { data: zoneBookings = [], isLoading: zoneBookingsLoading } = useQuery({
+    queryKey: ["admin-zone-bookings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("zone_bookings")
+        .select("*, lab_zones(name), profiles!zone_bookings_user_id_fkey(name, contact_phone, photo_url)")
+        .order("start_time", { ascending: true });
+      if (error) throw error;
+      return data as unknown as ZoneBooking[];
     },
   });
 
@@ -149,6 +174,25 @@ function AdminBookingsPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const updateZoneBooking = useMutation({
+    mutationFn: async ({ booking, status }: { booking: ZoneBooking; status: ZoneBooking["status"] }) => {
+      const { error } = await supabase.from("zone_bookings").update({ status }).eq("id", booking.id);
+      if (error) throw error;
+      const zoneName = booking.lab_zones?.name || "зона воркшопов";
+      const messages = {
+        active: ["✅ Заявка подтверждена", `Ваша заявка на «${zoneName}» одобрена.`],
+        cancelled: ["❌ Заявка отклонена", `Заявка на «${zoneName}» была отклонена или отменена.`],
+        completed: ["👍 Мероприятие завершено", `Заявка на «${zoneName}» отмечена завершённой.`],
+        pending: ["Заявка ожидает", `Заявка на «${zoneName}» ожидает решения.`],
+      } as const;
+      const [title, message] = messages[status];
+      const { error: notificationError } = await supabase.from("notifications").insert({ user_id: booking.user_id, title, message, type: "zone_booking" });
+      if (notificationError) throw notificationError;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-zone-bookings"] }); qc.invalidateQueries({ queryKey: ["notifications"] }); toast.success("Статус заявки обновлён"); },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const getStudentName = (booking: Booking) => {
     if (Array.isArray(booking.profiles)) {
       return booking.profiles[0]?.name ?? "Неизвестный";
@@ -169,6 +213,10 @@ function AdminBookingsPage() {
     }
     return booking.profiles?.contact_phone ?? "Нет номера";
   };
+
+  const zoneProfile = (booking: ZoneBooking) => Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles;
+  const pendingZoneBookings = zoneBookings.filter((booking) => booking.status === "pending");
+  const activeZoneBookings = zoneBookings.filter((booking) => booking.status === "active");
 
   const dayTabs = useMemo(() => {
     const tabs = [];
@@ -264,6 +312,25 @@ function AdminBookingsPage() {
             <CheckSquare className="w-5 h-5 text-green-600" />
           </div>
           <div className="text-4xl font-black text-slate-900">{stats.completedToday}</div>
+        </div>
+      </div>
+
+      <div className="border-4 border-slate-900 bg-white shadow-[6px_6px_0_#0f172a]">
+        <div className="flex flex-col gap-2 border-b-4 border-slate-900 bg-amber-400 p-4 md:p-6">
+          <h2 className="text-xl font-black uppercase tracking-tight">Воркшопы и курсы</h2>
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-700">Новые заявки на пространство: {pendingZoneBookings.length}</p>
+        </div>
+        <div className="space-y-4 p-4 md:p-6">
+          {zoneBookingsLoading ? <Skeleton className="h-24 w-full bg-slate-200" /> : [...pendingZoneBookings, ...activeZoneBookings].length === 0 ? (
+            <p className="py-6 text-center text-xs font-bold uppercase tracking-widest text-slate-400">Нет заявок на зону</p>
+          ) : [...pendingZoneBookings, ...activeZoneBookings].map((booking) => {
+            const profile = zoneProfile(booking);
+            const { date, fullRange } = formatTimeRange(booking.start_time, booking.end_time);
+            return <div key={booking.id} className="flex flex-col justify-between gap-4 border-2 border-slate-900 bg-slate-50 p-4 lg:flex-row lg:items-center">
+              <div className="space-y-2"><div className="flex flex-wrap items-center gap-2"><span className="text-lg font-black uppercase tracking-tight">{booking.topic}</span><Badge className={booking.status === "pending" ? "border-2 border-slate-900 bg-amber-400 text-slate-900" : "border-2 border-slate-900 bg-emerald-500 text-slate-900"}>{booking.status === "pending" ? "ОЖИДАЕТ" : "ОДОБРЕНО"}</Badge></div><div className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-slate-600"><span>{booking.lab_zones?.name}</span><span className="flex items-center gap-1"><Clock className="h-4 w-4" />{date}, {fullRange}</span><span className="flex items-center gap-1"><UserAvatar name={profile?.name} url={profile?.photo_url} className="h-6 w-6" />{profile?.name}</span><span>{booking.participant_count} участников</span></div>{booking.event_format && <p className="max-w-2xl text-sm text-slate-600">{booking.event_format}</p>}</div>
+              <div className="flex flex-wrap gap-2">{booking.status === "pending" && <Button onClick={() => updateZoneBooking.mutate({ booking, status: "active" })} className="border-2 border-slate-900 bg-emerald-500 font-black uppercase text-slate-900">Одобрить</Button>}<Button variant="outline" onClick={() => updateZoneBooking.mutate({ booking, status: booking.status === "active" ? "completed" : "cancelled" })} className="border-2 border-slate-900 font-black uppercase">{booking.status === "active" ? "Завершить" : "Отклонить"}</Button></div>
+            </div>;
+          })}
         </div>
       </div>
 
