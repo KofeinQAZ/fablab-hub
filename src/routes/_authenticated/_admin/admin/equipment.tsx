@@ -41,6 +41,7 @@ type Equipment = {
   specs?: string | null;
   gallery_urls?: string[] | null;
   video_url?: string | null;
+  map_slot?: number | null;
 };
 
 const htmlTagPattern = /<[^>]*>/;
@@ -133,7 +134,7 @@ function AdminEquipmentPage() {
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [form, setForm] = useState({
     name: "", name_kz: "", name_en: "", category: "stationary" as Equipment["category"], status: "active" as Equipment["status"],
-    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "", });
+    access_type: "basic" as Equipment["access_type"], image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "", map_slot: "" });
 
   const { data: equipment } = useQuery({
     queryKey: ["admin-equipment"],
@@ -174,7 +175,12 @@ function AdminEquipmentPage() {
           .map((v) => v.trim())
           .filter(Boolean),
         video_url: validated.video_url || null,
+        map_slot: form.category === "stationary" && form.map_slot ? Number(form.map_slot) : null,
       };
+      if (payload.map_slot) {
+        const { error: clearError } = await supabase.from("equipment").update({ map_slot: null } as never).eq("map_slot", payload.map_slot).neq("id", editingEquipment?.id ?? "00000000-0000-0000-0000-000000000000");
+        if (clearError) throw clearError;
+      }
 
       const table = supabase.from("equipment");
       const response = editingEquipment
@@ -187,7 +193,7 @@ function AdminEquipmentPage() {
       toast.success(editingEquipment ? "Оборудование обновлено" : "Оборудование добавлено");
       setCatalogOpen(false);
       setEditingEquipment(null);
-      setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "" });
+      setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "", map_slot: "" });
       qc.invalidateQueries({ queryKey: ["admin-equipment"] });
     },
     onError: (error: Error) => {
@@ -224,7 +230,7 @@ function AdminEquipmentPage() {
 
   const openCreate = () => {
     setEditingEquipment(null);
-    setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "" });
+    setForm({ name: "", name_kz: "", name_en: "", category: "stationary", status: "active", access_type: "basic", image_url: "", description: "", description_kz: "", description_en: "", specs: "", gallery_urls: "", video_url: "", map_slot: "" });
     setCatalogOpen(true);
   };
 
@@ -234,7 +240,7 @@ function AdminEquipmentPage() {
       name: item.name, name_kz: item.name_kz || "", name_en: item.name_en || "", category: item.category, status: item.status,
       access_type: item.access_type || "basic", image_url: item.image_url || "",
       description: item.description || "", description_kz: item.description_kz || "", description_en: item.description_en || "", specs: item.specs || "",
-      gallery_urls: (item.gallery_urls ?? []).join("\n"), video_url: item.video_url || "",
+      gallery_urls: (item.gallery_urls ?? []).join("\n"), video_url: item.video_url || "", map_slot: item.map_slot ? String(item.map_slot) : "",
     });
     setCatalogOpen(true);
   };
@@ -507,6 +513,19 @@ function AdminEquipmentPage() {
               </div>
             </div>
             
+            {form.category === "stationary" && (
+              <div className="space-y-2 border-2 border-slate-900 p-4">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Место на карте лаборатории</Label>
+                <select className="w-full h-12 px-3 border-2 border-slate-900 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={form.map_slot} onChange={(e) => setForm((prev) => ({ ...prev, map_slot: e.target.value }))}>
+                  <option value="">Не показывать на карте</option>
+                  <option value="1">Станок MC–01</option>
+                  <option value="2">Станок MC–02</option>
+                  <option value="3">Станок MC–03</option>
+                </select>
+                <p className="text-xs text-slate-500">Если место уже занято, прежний станок будет снят с карты.</p>
+              </div>
+            )}
+
             <div className="space-y-2 bg-blue-50 border-2 border-blue-200 p-4">
               <Label className="text-[10px] font-black uppercase tracking-widest text-blue-900">Уровень доступа</Label>
               <select className="w-full h-12 px-3 border-2 border-blue-300 rounded-none bg-white font-bold text-sm outline-none focus:border-blue-600" value={form.access_type} onChange={(e) => setForm((prev) => ({ ...prev, access_type: e.target.value as any }))}>

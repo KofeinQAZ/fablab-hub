@@ -448,6 +448,7 @@ export type Database = {
           gallery_urls: string[]
           id: string
           image_url: string | null
+          map_slot: number | null
           name: string
           name_en: string | null
           name_kz: string | null
@@ -466,6 +467,7 @@ export type Database = {
           gallery_urls?: string[]
           id?: string
           image_url?: string | null
+          map_slot?: number | null
           name: string
           name_en?: string | null
           name_kz?: string | null
@@ -484,6 +486,7 @@ export type Database = {
           gallery_urls?: string[]
           id?: string
           image_url?: string | null
+          map_slot?: number | null
           name?: string
           name_en?: string | null
           name_kz?: string | null

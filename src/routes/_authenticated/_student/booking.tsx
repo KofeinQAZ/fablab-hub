@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Box, Map, Package, Plus, ScanLine, Wrench } from "lucide-react";
@@ -52,6 +52,22 @@ function BookingPage() {
       return data as EquipmentDetails[];
     },
   });
+
+  const mapZones = useMemo(() => zones.map((zone) => {
+    const slot = zone.slug.match(/^machine-(\d)$/)?.[1];
+    if (!slot) return zone;
+    const item = equipment.find((entry) => (entry as EquipmentDetails & { map_slot?: number | null }).map_slot === Number(slot));
+    if (!item) return zone;
+    return { ...zone, name: item.name, name_kz: item.name_kz ?? null, name_en: item.name_en ?? null };
+  }), [zones, equipment]);
+  const selectMapZone = (zone: LabZone) => {
+    const slot = zone.slug.match(/^machine-(\d)$/)?.[1];
+    if (slot) {
+      const item = equipment.find((entry) => (entry as EquipmentDetails & { map_slot?: number | null }).map_slot === Number(slot));
+      if (item) { setSelectedEquipment(item); return; }
+    }
+    setSelectedZone(zone);
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -107,7 +123,7 @@ function BookingPage() {
             <div><p className="font-mono text-xs font-black uppercase text-primary">{t("booking.map.eyebrow")} // 01</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.title")}</h2></div>
             <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:justify-self-end">{t("booking.map.hint")}</p>
           </div>
-          {zonesLoading ? <div className="h-[420px] animate-pulse border-4 border-foreground bg-muted" /> : <LabMap zones={zones} language={i18n.language} onSelect={setSelectedZone} />}
+          {zonesLoading ? <div className="h-[420px] animate-pulse border-4 border-foreground bg-muted" /> : <LabMap zones={mapZones} language={i18n.language} onSelect={selectMapZone} />}
         </section>
       )}
 
