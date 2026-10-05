@@ -6,7 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 export type LabZone = Database["public"]["Tables"]["lab_zones"]["Row"];
 
 const positions: Record<string, string> = {
-  electronics: "left-[1%] top-[3%] h-[61%] w-[11%]",
+  electronics: "left-[1%] top-[3%] h-[61%] w-[9.5%]",
   instrumentals: "left-[16%] top-[3%] h-[30%] w-[7%]",
   "3d-print": "left-[24%] top-[3%] h-[30%] w-[15%]",
   "machine-1": "left-[40%] top-[14%] h-[31%] w-[10.5%]",
@@ -17,6 +17,13 @@ const positions: Record<string, string> = {
   dmark: "left-[57%] top-[67%] h-[29%] w-[24%]",
   office: "left-[82%] top-[49%] h-[47%] w-[17%]",
   "computer-bars": "left-[1%] top-[81%] h-[15%] w-[37%]",
+};
+
+const extraPositions: Record<string, string[]> = {
+  "computer-bars": [
+    "left-[1%] top-[3%] h-[61%] w-[4%]",
+    "left-[1%] top-[66%] h-[13%] w-[4%]",
+  ],
 };
 
 const zoneTone: Record<string, string> = {
@@ -61,7 +68,15 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
     const key = normalizedLanguage === "ru" ? field : `${field}_${normalizedLanguage}` as keyof LabZone;
     return String(zone[key] || zone[field] || "");
   };
-  const ordered = zones.filter((zone) => positions[zone.slug]);
+  const ordered = zones.flatMap((zone) => {
+    const primaryPosition = positions[zone.slug];
+    if (!primaryPosition) return [];
+    return [primaryPosition, ...(extraPositions[zone.slug] || [])].map((position, placementIndex) => ({
+      zone,
+      position,
+      placementIndex,
+    }));
+  });
 
   const activate = (zone: LabZone) => {
     if (zone.action_type === "external" && zone.external_url) {
@@ -74,7 +89,7 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
   return (
     <div className="w-full">
       <div className="border-2 border-foreground bg-card shadow-[6px_6px_0_var(--foreground)]">
-        <div className="flex h-9 items-center justify-between border-b-2 border-foreground px-3 font-mono text-[10px] font-bold uppercase text-muted-foreground sm:px-4">
+        <div className="flex h-10 items-center justify-between border-b-2 border-foreground px-3 font-mono text-xs font-bold uppercase text-muted-foreground sm:px-4">
           <span>FabLab · Floor 01</span>
           <span className="hidden sm:inline">Plan / Interactive</span>
           <span>Rev. 02</span>
@@ -84,27 +99,30 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
           <div className="absolute left-[12%] top-0 z-20 h-1.5 w-[4%] bg-destructive" aria-label="Выход" />
           <div className="absolute bottom-0 left-[45%] z-20 h-1.5 w-[15%] bg-destructive" aria-label="Ворота" />
           <div className="absolute bottom-0 left-[40%] z-20 h-1.5 w-[4%] bg-destructive" aria-label="Дверь" />
-          {ordered.map((zone) => (
+          {ordered.map(({ zone, position, placementIndex }) => (
             <Button
-              key={zone.id}
+              key={`${zone.id}-${placementIndex}`}
               type="button"
               variant="outline"
               onClick={() => activate(zone)}
               className={cn(
                 "group absolute min-h-0 whitespace-normal rounded-none border-2 p-2.5 text-left font-black uppercase tracking-normal shadow-[3px_3px_0_currentColor] transition-[transform,box-shadow,filter] duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:brightness-95 hover:shadow-[5px_5px_0_currentColor] focus-visible:z-30 focus-visible:ring-4 focus-visible:ring-primary/40 motion-reduce:transform-none motion-reduce:transition-none",
-                positions[zone.slug], zoneTone[zone.slug] || "border-foreground bg-card",
+                position,
+                zone.slug === "computer-bars" && "z-10",
+                zoneTone[zone.slug] || "border-foreground bg-card",
               )}
               aria-label={localized(zone, "name")}
             >
-              <span className="flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden">
-                <span className="flex w-full items-start justify-between gap-1 font-mono text-[8px] font-bold opacity-60">
+              <span className={cn("flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden", zone.slug === "electronics" && "pl-[38%]")}>
+                <span className="flex w-full items-start justify-between gap-1 font-mono text-[11px] font-bold opacity-70">
                   <span>{zoneCode[zone.slug] || "ZONE"}</span>
                   <ZoneIcon zone={zone} />
                 </span>
                 <span
                   className={cn(
-                    "block max-w-full overflow-hidden text-[11px] leading-[1.15] sm:text-xs lg:text-sm",
-                    zone.slug === "instrumentals" && "text-[9px] sm:text-[10px] lg:text-xs",
+                    "block max-w-full overflow-hidden text-sm leading-tight",
+                    zone.slug === "instrumentals" && "self-center text-xs [writing-mode:vertical-rl] rotate-180 lg:text-sm",
+                    zone.slug === "computer-bars" && placementIndex > 0 && "sr-only",
                   )}
                 >
                   {localized(zone, "name")}
@@ -112,10 +130,10 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
               </span>
             </Button>
           ))}
-          <div className="pointer-events-none absolute left-[40%] top-[3%] h-[8%] w-[33.5%] border-2 border-zone-green bg-card px-2 py-1 text-center text-[10px] font-black uppercase leading-none text-foreground">
+          <div className="pointer-events-none absolute left-[40%] top-[3%] flex h-[8%] w-[33.5%] items-center justify-center border-2 border-zone-green bg-card px-2 text-center text-xs font-black uppercase leading-none text-foreground">
             Technical zone · cooling
           </div>
-          <div className="pointer-events-none absolute bottom-2 right-2 font-mono text-[8px] font-bold uppercase text-muted-foreground">N ↑ · Scale 1:50</div>
+          <div className="pointer-events-none absolute bottom-2 right-2 font-mono text-[11px] font-bold uppercase text-muted-foreground">N ↑ · Scale 1:50</div>
           </div>
         </div>
       </div>
