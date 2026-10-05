@@ -69,8 +69,16 @@
     "map": {
       "heroTitle": "Create at FabLab Satbayev",
       "heroText": "An open digital fabrication lab with equipment, electronics, prototyping and space for hands-on workshops.",
-      "capabilities": { "prototype": "Prototyping", "electronics": "Electronics", "education": "Workshops" },
-      "tabs": { "map": "Map", "equipment": "Equipment", "inventory": "Inventory" },
+      "capabilities": {
+        "prototype": "Prototyping",
+        "electronics": "Electronics",
+        "education": "Workshops"
+      },
+      "tabs": {
+        "map": "Map",
+        "equipment": "Equipment",
+        "inventory": "Inventory"
+      },
       "eyebrow": "Lab space",
       "title": "Choose a zone",
       "hint": "Select a zone to learn more. The workshop zone accepts requests for classes and events.",
@@ -100,6 +108,12 @@
         "success": "Request sent to an administrator",
         "required": "Enter a date, time and topic",
         "disabled": "Requests for this zone are temporarily paused"
+      },
+      "capPanel": {
+        "label": "Modules // Capabilities",
+        "title": "Lab Resource Matrix",
+        "online": "Online",
+        "footerStatus": "Lab online"
       }
     }
   },
