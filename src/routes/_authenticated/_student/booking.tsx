@@ -97,22 +97,22 @@ function BookingPage() {
 
   return (
     <main className="mx-auto w-full max-w-7xl space-y-8 overflow-hidden p-4 pb-24 md:p-8">
-      <section className="relative overflow-hidden border-2 border-foreground bg-foreground text-background shadow-[6px_6px_0_var(--primary)]">
+      <section className="relative overflow-hidden border-4 border-foreground bg-card text-foreground shadow-[8px_8px_0_var(--primary)]">
         <div className="grid min-h-[320px] md:grid-cols-[72px_1fr_280px]">
-          <div className="hidden border-r border-background/20 md:flex md:flex-col md:items-center md:justify-between md:py-6">
+          <div className="hidden border-r-4 border-foreground md:flex md:flex-col md:items-center md:justify-between md:py-6">
             <ScanLine className="h-6 w-6 text-primary" />
-            <span className="rotate-180 font-mono text-xs font-bold uppercase text-background/60 [writing-mode:vertical-rl]">Digital fabrication laboratory</span>
-            <span className="font-mono text-xs text-background/50">01</span>
+            <span className="rotate-180 font-mono text-xs font-bold uppercase text-muted-foreground [writing-mode:vertical-rl]">Digital fabrication laboratory</span>
+            <span className="font-mono text-xs font-bold text-muted-foreground">01</span>
           </div>
           <div className="flex flex-col justify-center px-5 py-10 sm:px-9 md:py-12">
-            <p className="mb-5 font-mono text-xs font-bold uppercase text-primary">SATBAYEV // FABLAB // 01</p>
-            <h1 className="max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-normal sm:text-6xl">{t("booking.map.heroTitle")}</h1>
-            <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-background/70 sm:text-lg">{t("booking.map.heroText")}</p>
+            <p className="mb-5 inline-flex w-max items-center border-2 border-foreground bg-primary px-3 py-1 font-mono text-xs font-bold uppercase text-primary-foreground shadow-[3px_3px_0_var(--foreground)]">SATBAYEV // FABLAB // 01</p>
+            <h1 className="max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-tight sm:text-6xl">{t("booking.map.heroTitle")}</h1>
+            <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">{t("booking.map.heroText")}</p>
           </div>
-          <div className="blueprint-grid-dark flex border-t border-background/20 p-5 md:border-l md:border-t-0 md:p-6">
+          <div className="blueprint-grid flex border-t-4 border-foreground p-5 md:border-l-4 md:border-t-0 md:p-6">
             <div className="mt-auto w-full space-y-2">
               {[t("booking.map.capabilities.prototype"), t("booking.map.capabilities.electronics"), t("booking.map.capabilities.education")].map((item, index) => (
-                <div key={item} className="flex items-center justify-between border-b border-background/25 py-3 font-mono text-xs font-bold uppercase">
+                <div key={item} className="flex items-center justify-between border-b-2 border-foreground/20 py-3 font-mono text-xs font-bold uppercase">
                   <span>{item}</span><span className="text-primary">0{index + 1}</span>
                 </div>
               ))}
