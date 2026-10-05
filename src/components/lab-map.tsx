@@ -7,13 +7,13 @@ export type LabZone = Database["public"]["Tables"]["lab_zones"]["Row"];
 
 const positions: Record<string, string> = {
   electronics: "left-[1%] top-[3%] h-[61%] w-[11%]",
-  instrumentals: "left-[15%] top-[3%] h-[30%] w-[7%]",
-  "3d-print": "left-[23%] top-[3%] h-[30%] w-[15%]",
-  "machine-1": "left-[39%] top-[19%] h-[31%] w-[11.5%]",
-  "machine-2": "left-[51.5%] top-[19%] h-[31%] w-[11.5%]",
-  "machine-3": "left-[64%] top-[19%] h-[31%] w-[11.5%]",
-  storage: "left-[77%] top-[3%] h-[30%] w-[22%]",
-  workshops: "left-[15%] top-[36%] h-[29%] w-[23%]",
+  instrumentals: "left-[16%] top-[3%] h-[30%] w-[7%]",
+  "3d-print": "left-[24%] top-[3%] h-[30%] w-[15%]",
+  "machine-1": "left-[40%] top-[14%] h-[31%] w-[10.5%]",
+  "machine-2": "left-[51.5%] top-[14%] h-[31%] w-[10.5%]",
+  "machine-3": "left-[63%] top-[14%] h-[31%] w-[10.5%]",
+  storage: "left-[76%] top-[3%] h-[30%] w-[20%]",
+  workshops: "left-[16%] top-[36%] h-[36%] w-[23%]",
   dmark: "left-[57%] top-[67%] h-[29%] w-[24%]",
   office: "left-[82%] top-[49%] h-[47%] w-[17%]",
   "computer-bars": "left-[1%] top-[81%] h-[15%] w-[37%]",
@@ -62,8 +62,8 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
       <div className="overflow-x-auto overscroll-x-contain border-4 border-foreground bg-card p-2 shadow-[8px_8px_0_var(--foreground)] [scrollbar-color:var(--primary)_var(--muted)] [scrollbar-width:thin] sm:p-3">
         <div className="relative h-[440px] min-w-[1040px] border-2 border-foreground bg-muted lg:h-[520px] lg:min-w-0">
           <div className="absolute left-[12%] top-0 z-20 h-2 w-[4%] bg-destructive" aria-label="Выход" />
-          <div className="absolute bottom-0 left-[40%] z-20 h-2 w-[20%] bg-destructive" aria-label="Ворота" />
-          <div className="absolute bottom-0 left-[22%] z-20 h-2 w-[6%] bg-destructive" aria-label="Дверь" />
+          <div className="absolute bottom-0 left-[44.5%] z-20 h-2 w-[15%] bg-destructive" aria-label="Ворота" />
+          <div className="absolute bottom-0 left-[40%] z-20 h-2 w-[4.5%] bg-destructive" aria-label="Дверь" />
           {ordered.map((zone) => (
             <Button
               key={zone.id}
@@ -89,7 +89,7 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
               </span>
             </Button>
           ))}
-          <div className="pointer-events-none absolute left-[39%] top-[3%] h-[8%] w-[36.5%] border-2 border-zone-green bg-card px-2 py-1 text-center text-[10px] font-black uppercase leading-none text-foreground">
+          <div className="pointer-events-none absolute left-[40%] top-[3%] h-[8%] w-[33.5%] border-2 border-zone-green bg-card px-2 py-1 text-center text-[10px] font-black uppercase leading-none text-foreground">
             Technical zone · cooling
           </div>
         </div>
