@@ -52,7 +52,7 @@ function LandingPage() {
             
             <div className="absolute bottom-0 left-0 md:left-[-5%] w-full md:w-[95%] h-[50%] md:h-[30%] bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/90 to-transparent pointer-events-none" />
 
-            <div className="relative z-30 bg-blue-600 text-white p-6 md:p-10 lg:p-12 w-full md:w-[550px] rounded-t-[2rem] md:rounded-t-none md:rounded-tl-[3rem] flex flex-col justify-end shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-t-4 border-[#FAFAFA] md:border-none md:border-t-8 md:border-l-8 md:border-[#FAFAFA] ml-auto md:mr-6 lg:mr-12">
+            <div className="relative z-30 bg-blue-600 text-white p-6 md:p-10 lg:p-12 w-full md:w-[550px] rounded-t-[2rem] md:rounded-t-none md:rounded-tl-[3rem] flex flex-col justify-end shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-t-4 border-[#FAFAFA] md:border-none md:border-t-8 md:border-l-8 md:border-[#FAFAFA] ml-auto">
               <p className="font-bold text-sm md:text-base uppercase tracking-widest mb-4 opacity-90">
                 {t('landing.hero.ctaDesc', '3D-ПЕЧАТЬ, ЧПУ СТАНКИ, СЛЕСАРНАЯ ЗОНА')}
               </p>
