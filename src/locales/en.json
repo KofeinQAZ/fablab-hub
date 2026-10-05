@@ -65,6 +65,39 @@
       "defaultDesc": "Reliable industrial workshop equipment to realize your projects.",
       "maintenance": "MAINTENANCE",
       "selectTime": "SELECT TIME"
+    },
+    "map": {
+      "heroTitle": "Create at FabLab Satbayev",
+      "heroText": "An open digital fabrication lab with equipment, electronics, prototyping and space for hands-on workshops.",
+      "capabilities": { "prototype": "Prototyping", "electronics": "Electronics", "education": "Workshops" },
+      "tabs": { "map": "Map", "equipment": "Equipment", "inventory": "Inventory" },
+      "eyebrow": "Lab space",
+      "title": "Choose a zone",
+      "hint": "Select a zone to learn more. The workshop zone accepts requests for classes and events.",
+      "zone": "Lab zone",
+      "bookable": "Requests available",
+      "catalogEyebrow": "FabLab catalog",
+      "catalogTitle": "Lab equipment",
+      "catalogText": "Explore machine photos, specifications and capabilities. Individual equipment booking is no longer required.",
+      "details": "Details",
+      "close": "Close",
+      "openSite": "Open website",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "form": {
+        "title": "Workshop request",
+        "subtitle": "Choose a suitable time and describe your session. An administrator will review the request.",
+        "date": "Date",
+        "time": "Start time",
+        "duration": "Duration, hours",
+        "participants": "Participants",
+        "topic": "Workshop topic",
+        "format": "Format and requirements",
+        "submit": "Send request",
+        "success": "Request sent to an administrator",
+        "required": "Enter a date, time and topic",
+        "disabled": "Requests for this zone are temporarily paused"
+      }
     }
   },
   "profile": {
