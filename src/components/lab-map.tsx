@@ -62,8 +62,8 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
       <div className="overflow-x-auto overscroll-x-contain border-4 border-foreground bg-card p-2 shadow-[8px_8px_0_var(--foreground)] [scrollbar-color:var(--primary)_var(--muted)] [scrollbar-width:thin] sm:p-3">
         <div className="relative h-[440px] min-w-[1040px] border-2 border-foreground bg-muted lg:h-[520px] lg:min-w-0">
           <div className="absolute left-[12%] top-0 z-20 h-2 w-[4%] bg-destructive" aria-label="Выход" />
-          <div className="absolute bottom-0 left-[44.5%] z-20 h-2 w-[15%] bg-destructive" aria-label="Ворота" />
-          <div className="absolute bottom-0 left-[40%] z-20 h-2 w-[4.5%] bg-destructive" aria-label="Дверь" />
+          <div className="absolute bottom-0 left-[45%] z-20 h-2 w-[15%] bg-destructive" aria-label="Ворота" />
+          <div className="absolute bottom-0 left-[40%] z-20 h-2 w-[4%] bg-destructive" aria-label="Дверь" />
           {ordered.map((zone) => (
             <Button
               key={zone.id}
