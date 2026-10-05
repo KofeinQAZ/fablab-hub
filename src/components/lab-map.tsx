@@ -96,7 +96,7 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
               )}
               aria-label={localized(zone, "name")}
             >
-              <span className="flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden text-foreground">
+              <span className="flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden">
                 <span className="flex w-full items-start justify-between gap-1 font-mono text-[8px] font-bold opacity-60">
                   <span>{zoneCode[zone.slug] || "ZONE"}</span>
                   <ZoneIcon zone={zone} />
