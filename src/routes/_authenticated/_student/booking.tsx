@@ -6,7 +6,6 @@ import { Box, Map, Package, Plus, ScanLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EquipmentInfoDialog } from "@/components/equipment-info-dialog";
 import { InventorySection } from "@/components/inventory-section";
 import { LabMap, type LabZone } from "@/components/lab-map";
@@ -21,9 +20,15 @@ function localized(obj: Record<string, unknown>, field: string, language: string
   return String(obj[key] || obj[field] || "");
 }
 
+const SECTION_IDS = ["map", "equipment", "inventory"] as const;
+type SectionId = (typeof SECTION_IDS)[number];
+
+function scrollToSection(id: SectionId) {
+  document.getElementById(`booking-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function BookingPage() {
   const { t, i18n } = useTranslation();
-  const [section, setSection] = useState<"map" | "equipment" | "inventory">("map");
   const [selectedZone, setSelectedZone] = useState<LabZone | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentDetails | null>(null);
 
@@ -73,15 +78,22 @@ function BookingPage() {
     const params = new URLSearchParams(window.location.search);
     const inventoryId = params.get("inventoryId");
     const equipmentId = params.get("equipmentId");
-    if (inventoryId) setSection("inventory");
+    if (inventoryId) scrollToSection("inventory");
     if (!equipmentId) return;
-    setSection("equipment");
     const item = equipment.find((entry) => entry.id === equipmentId);
     if (item) {
       setSelectedEquipment(item);
+      scrollToSection("equipment");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [equipment]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [equipment.length]);
+
+  const sectionNav: { id: SectionId; label: string; icon: typeof Map; index: string }[] = [
+    { id: "map", label: t("booking.map.tabs.map"), icon: Map, index: "01" },
+    { id: "equipment", label: t("booking.map.tabs.equipment"), icon: Wrench, index: "02" },
+    { id: "inventory", label: t("booking.map.tabs.inventory"), icon: Package, index: "03" },
+  ];
 
   return (
     <main className="mx-auto w-full max-w-7xl space-y-8 overflow-hidden p-4 pb-24 md:p-8">
@@ -109,45 +121,51 @@ function BookingPage() {
         </div>
       </section>
 
-      <Tabs value={section} onValueChange={(value) => setSection(value as typeof section)}>
-        <TabsList className="grid h-auto w-full grid-cols-3 gap-0 rounded-none border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
-          <TabsTrigger value="map" className="min-h-14 rounded-none border-r-2 border-foreground px-2 font-mono text-xs font-black uppercase sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Map className="mr-2 h-4 w-4" />{t("booking.map.tabs.map")}</TabsTrigger>
-          <TabsTrigger value="equipment" className="min-h-14 rounded-none border-r-2 border-foreground px-2 font-mono text-xs font-black uppercase sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Wrench className="mr-2 h-4 w-4" />{t("booking.map.tabs.equipment")}</TabsTrigger>
-          <TabsTrigger value="inventory" className="min-h-14 rounded-none px-2 font-mono text-xs font-black uppercase sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Package className="mr-2 h-4 w-4" />{t("booking.map.tabs.inventory")}</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <nav aria-label={t("booking.map.title")} className="grid grid-cols-3 gap-0 rounded-none border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
+        {sectionNav.map(({ id, label, icon: Icon, index }, i) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => scrollToSection(id)}
+            className={`flex min-h-14 items-center justify-center gap-2 px-2 font-mono text-xs font-black uppercase hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 sm:text-sm ${i < sectionNav.length - 1 ? "border-r-2 border-foreground" : ""}`}
+          >
+            <Icon className="hidden h-4 w-4 sm:block" />
+            <span className="hidden md:inline">{label}</span>
+            <span className="md:hidden">{index}</span>
+          </button>
+        ))}
+      </nav>
 
-      {section === "map" && (
-        <section className="space-y-5">
-          <div className="grid gap-4 border-b-2 border-foreground/20 pb-5 sm:grid-cols-[1fr_minmax(260px,0.65fr)] sm:items-end">
-            <div><p className="font-mono text-xs font-black uppercase text-primary">{t("booking.map.eyebrow")} // 01</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.title")}</h2></div>
-            <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:justify-self-end">{t("booking.map.hint")}</p>
+      <section id="booking-map" className="scroll-mt-6 space-y-5">
+        <div className="grid gap-4 border-b-2 border-foreground/20 pb-5 sm:grid-cols-[1fr_minmax(260px,0.65fr)] sm:items-end">
+          <div><p className="font-mono text-xs font-black uppercase text-primary">{t("booking.map.eyebrow")} // 01</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.title")}</h2></div>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:justify-self-end">{t("booking.map.hint")}</p>
+        </div>
+        {zonesLoading ? <div className="h-[420px] animate-pulse border-4 border-foreground bg-muted" /> : <LabMap zones={mapZones} language={i18n.language} onSelect={selectMapZone} />}
+      </section>
+
+      <section id="booking-equipment" className="scroll-mt-6 space-y-5">
+        <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.catalogEyebrow")} // 02</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.catalogTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.catalogText")}</p></div>
+        {equipmentLoading ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{[1,2,3].map((i) => <div key={i} className="h-80 animate-pulse border-4 border-foreground bg-muted" />)}</div> : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {equipment.map((item) => {
+              const name = localized(item as unknown as Record<string, unknown>, "name", i18n.language);
+              const description = localized(item as unknown as Record<string, unknown>, "description", i18n.language);
+               return <Card key={item.id} className="group overflow-hidden rounded-none border-2 border-foreground shadow-[4px_4px_0_var(--foreground)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_var(--primary)] motion-reduce:transform-none">
+                <button type="button" onClick={() => setSelectedEquipment(item)} className="block aspect-[16/10] w-full border-b-2 border-foreground bg-muted text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40">
+                  {item.image_url ? <img src={item.image_url} alt={name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : <span className="flex h-full items-center justify-center"><Box className="h-10 w-10 text-muted-foreground" /></span>}
+                </button>
+                <CardContent className="space-y-4 p-5"><div className="flex items-start justify-between gap-3"><h3 className="text-xl font-black uppercase leading-tight tracking-normal">{name}</h3><span className="shrink-0 border border-foreground bg-accent px-2 py-1 font-mono text-xs font-black uppercase">{item.status === "active" ? t("booking.card.statusActive") : t("booking.card.statusRepair")}</span></div><p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{description || t("booking.card.defaultDesc")}</p><Button type="button" variant="outline" onClick={() => setSelectedEquipment(item)} className="h-11 w-full justify-between rounded-none border-2 font-black uppercase"><span>{t("booking.map.details")}</span><Plus className="h-4 w-4" /></Button></CardContent>
+              </Card>;
+            })}
           </div>
-          {zonesLoading ? <div className="h-[420px] animate-pulse border-4 border-foreground bg-muted" /> : <LabMap zones={mapZones} language={i18n.language} onSelect={selectMapZone} />}
-        </section>
-      )}
+        )}
+      </section>
 
-      {section === "equipment" && (
-        <section className="space-y-5">
-          <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.catalogEyebrow")}</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.catalogTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.catalogText")}</p></div>
-          {equipmentLoading ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{[1,2,3].map((i) => <div key={i} className="h-80 animate-pulse border-4 border-foreground bg-muted" />)}</div> : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {equipment.map((item) => {
-                const name = localized(item as unknown as Record<string, unknown>, "name", i18n.language);
-                const description = localized(item as unknown as Record<string, unknown>, "description", i18n.language);
-                 return <Card key={item.id} className="group overflow-hidden rounded-none border-2 border-foreground shadow-[4px_4px_0_var(--foreground)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_var(--primary)] motion-reduce:transform-none">
-                  <button type="button" onClick={() => setSelectedEquipment(item)} className="block aspect-[16/10] w-full border-b-2 border-foreground bg-muted text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40">
-                    {item.image_url ? <img src={item.image_url} alt={name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : <span className="flex h-full items-center justify-center"><Box className="h-10 w-10 text-muted-foreground" /></span>}
-                  </button>
-                  <CardContent className="space-y-4 p-5"><div className="flex items-start justify-between gap-3"><h3 className="text-xl font-black uppercase leading-tight tracking-normal">{name}</h3><span className="shrink-0 border border-foreground bg-accent px-2 py-1 font-mono text-xs font-black uppercase">{item.status === "active" ? t("booking.card.statusActive") : t("booking.card.statusRepair")}</span></div><p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{description || t("booking.card.defaultDesc")}</p><Button type="button" variant="outline" onClick={() => setSelectedEquipment(item)} className="h-11 w-full justify-between rounded-none border-2 font-black uppercase"><span>{t("booking.map.details")}</span><Plus className="h-4 w-4" /></Button></CardContent>
-                </Card>;
-              })}
-            </div>
-          )}
-        </section>
-      )}
-
-      {section === "inventory" && <InventorySection userId={profile?.id ?? null} active />}
+      <section id="booking-inventory" className="scroll-mt-6 space-y-5">
+        <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.inventoryEyebrow")} // 03</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.inventoryTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.inventoryText")}</p></div>
+        <InventorySection userId={profile?.id ?? null} active />
+      </section>
       <LabZoneDialog zone={selectedZone} userId={profile?.id ?? null} onClose={() => setSelectedZone(null)} />
       <EquipmentInfoDialog open={!!selectedEquipment} equipment={selectedEquipment} onClose={() => setSelectedEquipment(null)} />
     </main>
