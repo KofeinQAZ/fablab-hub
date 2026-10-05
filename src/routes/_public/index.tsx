@@ -41,7 +41,7 @@ function LandingPage() {
           </h1>
         </div>
 
-        <div className="relative z-20 w-full max-w-[1600px] mx-auto px-0 sm:px-6 mt-8 md:mt-[-16vw] flex-1 flex flex-col justify-end">
+        <div className="relative z-20 w-full mt-8 md:mt-[-16vw] flex-1 flex flex-col justify-end">
           <div className="relative w-full h-[60vh] min-h-[500px] md:h-[650px] flex items-end justify-between">
             
             <img 
