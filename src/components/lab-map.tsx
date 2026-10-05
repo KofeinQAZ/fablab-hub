@@ -77,7 +77,14 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
             >
               <span className="flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden">
                 <ZoneIcon zone={zone} />
-                <span className="block max-w-full overflow-hidden text-[11px] leading-[1.2] sm:text-xs lg:text-sm">{localized(zone, "name")}</span>
+                <span
+                  className={cn(
+                    "block max-w-full overflow-hidden text-[11px] leading-[1.2] sm:text-xs lg:text-sm",
+                    zone.slug === "instrumentals" && "text-[9px] sm:text-[10px] lg:text-xs",
+                  )}
+                >
+                  {localized(zone, "name")}
+                </span>
               </span>
             </Button>
           ))}
