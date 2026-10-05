@@ -109,13 +109,36 @@ function BookingPage() {
             <h1 className="max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-tight sm:text-6xl">{t("booking.map.heroTitle")}</h1>
             <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">{t("booking.map.heroText")}</p>
           </div>
-          <div className="blueprint-grid flex border-t-4 border-foreground p-5 md:border-l-4 md:border-t-0 md:p-6">
-            <div className="mt-auto w-full space-y-2">
+          <div className="blueprint-grid flex flex-col border-t-4 border-foreground md:border-l-4 md:border-t-0">
+            <div className="flex items-end justify-between gap-2 border-b-4 border-foreground bg-card p-4">
+              <div>
+                <p className="mb-1 font-mono text-[11px] font-bold uppercase tracking-widest text-primary">{t("booking.map.capPanel.label")}</p>
+                <h2 className="text-xl font-black uppercase leading-none tracking-tight">{t("booking.map.capPanel.title")}</h2>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1.5 border-2 border-foreground bg-accent px-2 py-1 font-mono text-[11px] font-black uppercase">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-foreground" />
+                {t("booking.map.capPanel.online")}
+              </span>
+            </div>
+            <div className="flex flex-1 flex-col">
               {[t("booking.map.capabilities.prototype"), t("booking.map.capabilities.electronics"), t("booking.map.capabilities.education")].map((item, index) => (
-                <div key={item} className="flex items-center justify-between border-b-2 border-foreground/20 py-3 font-mono text-xs font-bold uppercase">
-                  <span>{item}</span><span className="text-primary">0{index + 1}</span>
+                <div key={item} className={`group flex flex-1 flex-col justify-between gap-3 p-4 transition-colors hover:bg-primary/5 ${index < 2 ? "border-b-2 border-foreground/20" : ""}`}>
+                  <div className="flex items-start justify-between">
+                    <span className="flex h-9 w-9 items-center justify-center border-2 border-foreground bg-card font-mono text-sm font-black transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">0{index + 1}</span>
+                    <span className="font-mono text-[11px] font-bold uppercase text-muted-foreground">SYS // MOD_0{index + 1}</span>
+                  </div>
+                  <div>
+                    <h3 className="font-black uppercase leading-none tracking-tight transition-transform duration-200 group-hover:translate-x-1">{item}</h3>
+                    <div className="mt-2 h-1 w-full overflow-hidden bg-muted">
+                      <div className={`h-full bg-primary ${index === 0 ? "w-2/3" : index === 1 ? "w-full" : "w-1/2"}`} />
+                    </div>
+                  </div>
                 </div>
               ))}
+            </div>
+            <div className="flex items-center justify-between bg-foreground p-3 font-mono text-[11px] font-bold uppercase text-background">
+              <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 animate-pulse bg-accent" />{t("booking.map.capPanel.footerStatus")}</span>
+              <span>FABLAB // SYS_01</span>
             </div>
           </div>
         </div>
