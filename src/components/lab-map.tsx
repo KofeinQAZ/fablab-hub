@@ -110,7 +110,7 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
               )}
               aria-label={localized(zone, "name")}
             >
-              <span className={cn("flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden", zone.slug === "electronics" && "pl-[34%]")}>
+              <span className="flex h-full min-w-0 w-full flex-col justify-between gap-2 overflow-hidden">
                 <span className="flex w-full items-start justify-between gap-1 font-mono text-xs font-bold opacity-70">
                   <span>{zoneCode[zone.slug] || "ZONE"}</span>
                   <ZoneIcon zone={zone} />
@@ -118,8 +118,8 @@ export function LabMap({ zones, language, onSelect }: { zones: LabZone[]; langua
                 <span
                   className={cn(
                     "block max-w-full overflow-hidden text-sm leading-tight",
-                    zone.slug === "electronics" && "break-all text-xs leading-snug lg:text-sm",
-                    zone.slug === "instrumentals" && "self-center text-xs [writing-mode:vertical-rl] rotate-180 lg:text-sm",
+                    (zone.slug === "electronics" || zone.slug === "instrumentals") &&
+                      "self-center text-xs [writing-mode:vertical-rl] rotate-180 lg:text-sm",
                     zone.slug === "computer-bars" && placementIndex > 0 && "sr-only",
                   )}
                 >
