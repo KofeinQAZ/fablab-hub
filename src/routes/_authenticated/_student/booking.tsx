@@ -109,34 +109,21 @@ function BookingPage() {
             <h1 className="max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-tight sm:text-6xl">{t("booking.map.heroTitle")}</h1>
             <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">{t("booking.map.heroText")}</p>
           </div>
-          <div className="blueprint-grid flex flex-col border-t-4 border-foreground md:border-l-4 md:border-t-0">
-            <div className="flex items-end justify-between gap-2 border-b-4 border-foreground bg-card p-4">
-              <div>
-                <p className="mb-1 font-mono text-[11px] font-bold uppercase tracking-widest text-primary">{t("booking.map.capPanel.label")}</p>
-                <h2 className="text-xl font-black uppercase leading-none tracking-tight">{t("booking.map.capPanel.title")}</h2>
-              </div>
-              <span className="inline-flex shrink-0 items-center gap-1.5 border-2 border-foreground bg-accent px-2 py-1 font-mono text-[11px] font-black uppercase">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-foreground" />
-                {t("booking.map.capPanel.online")}
-              </span>
-            </div>
-            <div className="flex flex-1 flex-col">
+          <div className="blueprint-grid hidden flex-col border-l-4 border-foreground md:flex">
+            <p className="px-5 pt-5 font-mono text-[11px] font-bold uppercase tracking-widest text-primary">{t("booking.map.capPanel.label")}</p>
+            <div className="flex flex-1 flex-col pb-5 pt-2">
               {[
                 { icon: Boxes, label: t("booking.map.capabilities.prototype") },
                 { icon: Cpu, label: t("booking.map.capabilities.electronics") },
                 { icon: GraduationCap, label: t("booking.map.capabilities.education") },
               ].map(({ icon: Icon, label }, index) => (
-                <div key={label} className={`flex flex-1 items-center gap-4 px-5 py-4 transition-colors hover:bg-primary/5 ${index < 2 ? "border-b-2 border-foreground/20" : ""}`}>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-foreground bg-card transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground">
-                    <Icon className="h-5 w-5" />
+                <div key={label} className={`flex flex-1 items-center gap-3 px-5 py-3 ${index < 2 ? "border-b-2 border-foreground/15" : ""}`}>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-foreground bg-card text-primary">
+                    <Icon className="h-4 w-4" />
                   </span>
-                  <span className="text-base font-black uppercase leading-tight tracking-tight sm:text-lg">{label}</span>
+                  <span className="text-sm font-black uppercase leading-tight tracking-tight">{label}</span>
                 </div>
               ))}
-            </div>
-            <div className="flex items-center justify-between bg-foreground p-3 font-mono text-[11px] font-bold uppercase text-background">
-              <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 animate-pulse bg-accent" />{t("booking.map.capPanel.footerStatus")}</span>
-              <span>FABLAB // SYS_01</span>
             </div>
           </div>
         </div>
