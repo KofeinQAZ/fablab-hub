@@ -936,6 +936,7 @@ export type Database = {
           own_plastic_label: string | null
           status: string
           stl_path: string
+          tg_notified: boolean
           title: string
           updated_at: string
           user_id: string
@@ -959,6 +960,7 @@ export type Database = {
           own_plastic_label?: string | null
           status?: string
           stl_path: string
+          tg_notified?: boolean
           title: string
           updated_at?: string
           user_id: string
@@ -982,6 +984,7 @@ export type Database = {
           own_plastic_label?: string | null
           status?: string
           stl_path?: string
+          tg_notified?: boolean
           title?: string
           updated_at?: string
           user_id?: string
@@ -1496,6 +1499,10 @@ export type Database = {
       is_project_owner: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
+      }
+      notify_print_request_created: {
+        Args: { p_request_id: string }
+        Returns: undefined
       }
       notify_telegram:
         | { Args: { p_message: string }; Returns: undefined }

@@ -165,6 +165,7 @@ function Print3DPage() {
         );
         if (fErr) throw fErr;
       }
+      await db.rpc("notify_print_request_created", { p_request_id: req.id }).then(() => {}, () => {});
     },
     onSuccess: () => {
       toast.success(t.success);
