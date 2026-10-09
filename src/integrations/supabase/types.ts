@@ -876,6 +876,47 @@ export type Database = {
         }
         Relationships: []
       }
+      print_request_files: {
+        Row: {
+          created_at: string
+          est_grams: number | null
+          est_minutes: number | null
+          file_name: string
+          id: string
+          request_id: string
+          stl_path: string
+          volume_cm3: number | null
+        }
+        Insert: {
+          created_at?: string
+          est_grams?: number | null
+          est_minutes?: number | null
+          file_name: string
+          id?: string
+          request_id: string
+          stl_path: string
+          volume_cm3?: number | null
+        }
+        Update: {
+          created_at?: string
+          est_grams?: number | null
+          est_minutes?: number | null
+          file_name?: string
+          id?: string
+          request_id?: string
+          stl_path?: string
+          volume_cm3?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_request_files_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "print_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       print_requests: {
         Row: {
           admin_comment: string | null

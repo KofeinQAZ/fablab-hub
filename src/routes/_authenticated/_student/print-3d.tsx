@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, FileBox, Loader2, Mail, Phone, Send, UploadCloud, Zap, Clock, Users } from "lucide-react";
+import { ArrowLeft, FileBox, Loader2, Mail, Phone, Send, Trash2, UploadCloud, Zap, Clock, Users } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { analyzeStl, StlViewer, type StlStats } from "@/components/stl-viewer";
 import type { BufferGeometry } from "three";
 
+type ModelItem = { id: string; file: File; geometry: BufferGeometry; stats: StlStats };
+
 export const Route = createFileRoute("/_authenticated/_student/print-3d")({
   component: Print3DPage,
 });
@@ -22,7 +24,8 @@ const MAX_STL = 50 * 1024 * 1024;
 
 const T = {
   ru: {
-    infill: "Заполнение", calc: "Автоподсчёт", volume: "Объём", weight: "Вес", time: "Время печати", size: "Габариты", approx: "Расчёт примерный — итог админ уточнит после нарезки.", h: "ч", m: "мин", badStl: "Не удалось прочитать STL", 
+    infill: "Заполнение", calc: "Автоподсчёт", volume: "Объём", weight: "Вес", time: "Время печати", size: "Габариты", approx: "Расчёт примерный — итог админ уточнит после нарезки.", h: "ч", m: "мин", badStl: "Не удалось прочитать STL",
+    models: "Модели", addModel: "Добавить ещё STL", modelsCount: "моделей", remove: "Убрать",
     back: "К карте", zone: "Зона 3D-печати", title: "3D-печать в FabLab", mentors: "Менторы и сотрудники",
     queueTitle: "Бесплатно по очереди", queueText: "Принтер FabLab. Заявки печатаются по порядку.",
     prioTitle: "Без очереди", prioText: "Частные принтеры, фиксированная цена за заявку.", perRequest: "за заявку",
@@ -38,7 +41,8 @@ const T = {
     queueOff: "Очередь временно закрыта", free: "Бесплатно",
   },
   kz: {
-    infill: "Толтыру", calc: "Автоесеп", volume: "Көлем", weight: "Салмақ", time: "Басып шығару уақыты", size: "Өлшемдер", approx: "Есеп шамамен — соңғы бағаны админ нақтылайды.", h: "сағ", m: "мин", badStl: "STL оқылмады", 
+    infill: "Толтыру", calc: "Автоесеп", volume: "Көлем", weight: "Салмақ", time: "Басып шығару уақыты", size: "Өлшемдер", approx: "Есеп шамамен — соңғы бағаны админ нақтылайды.", h: "сағ", m: "мин", badStl: "STL оқылмады",
+    models: "Модельдер", addModel: "Тағы STL қосу", modelsCount: "модель", remove: "Алу",
     back: "Картаға", zone: "3D басып шығару аймағы", title: "FabLab-та 3D басып шығару", mentors: "Менторлар мен қызметкерлер",
     queueTitle: "Кезекпен тегін", queueText: "FabLab принтері. Өтінімдер ретімен басылады.",
     prioTitle: "Кезексіз", prioText: "Жеке принтерлер, өтінімге тұрақты баға.", perRequest: "өтінімге",
@@ -54,7 +58,8 @@ const T = {
     queueOff: "Кезек уақытша жабық", free: "Тегін",
   },
   en: {
-    infill: "Infill", calc: "Auto estimate", volume: "Volume", weight: "Weight", time: "Print time", size: "Size", approx: "Approximate — admin confirms the final price after slicing.", h: "h", m: "min", badStl: "Could not read STL", 
+    infill: "Infill", calc: "Auto estimate", volume: "Volume", weight: "Weight", time: "Print time", size: "Size", approx: "Approximate — admin confirms the final price after slicing.", h: "h", m: "min", badStl: "Could not read STL",
+    models: "Models", addModel: "Add another STL", modelsCount: "models", remove: "Remove",
     back: "Back to map", zone: "3D printing zone", title: "3D printing at FabLab", mentors: "Mentors & staff",
     queueTitle: "Free, in queue", queueText: "FabLab printer. Requests are printed in order.",
     prioTitle: "Skip the queue", prioText: "Private printers, fixed price per request.", perRequest: "per request",
@@ -82,13 +87,12 @@ function Print3DPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [models, setModels] = useState<ModelItem[]>([]);
   const [mode, setMode] = useState<"queue" | "priority">("queue");
   const [source, setSource] = useState<"own" | "catalog">("own");
   const [ownLabel, setOwnLabel] = useState("");
   const [filamentId, setFilamentId] = useState("");
   const [infill, setInfill] = useState(20);
-  const [model, setModel] = useState<{ geometry: BufferGeometry; stats: StlStats } | null>(null);
   const [comment, setComment] = useState("");
 
   const { data: settings } = useQuery({ queryKey: ["print-settings"], queryFn: async () => (await db.from("print_zone_settings").select("*").eq("id", 1).maybeSingle()).data });
@@ -99,7 +103,7 @@ function Print3DPage() {
     queryKey: ["my-print-requests", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const rows = (await db.from("print_requests").select("*, filaments(material, color)").eq("user_id", user!.id).order("created_at", { ascending: false })).data ?? [];
+      const rows = (await db.from("print_requests").select("*, filaments(material, color), print_request_files(*)").eq("user_id", user!.id).order("created_at", { ascending: false })).data ?? [];
       return Promise.all(rows.map(async (r: any) => ({ ...r, position: r.mode === "queue" ? (await db.rpc("print_queue_position", { _request_id: r.id })).data : null })));
     },
   });
@@ -109,42 +113,62 @@ function Print3DPage() {
   const priorityEnabled = settings?.priority_enabled ?? true;
   const filament = filaments.find((f) => f.id === filamentId);
   const est = useMemo(() => {
-    if (!model) return null;
+    if (models.length === 0) return null;
     const density = source === "catalog" && filament ? Number(filament.density) : Number(settings?.default_density ?? 1.24);
     const shell = Number(settings?.shell_ratio ?? 0.25);
-    const grams = model.stats.volumeCm3 * density * (shell + (1 - shell) * infill / 100) * Number(settings?.weight_factor ?? 1);
+    const factor = density * (shell + (1 - shell) * infill / 100) * Number(settings?.weight_factor ?? 1);
+    const grams = models.reduce((sum, m) => sum + m.stats.volumeCm3 * factor, 0);
     const minutes = Math.round(grams / Number(settings?.print_speed_gph || 12) * 60);
-    return { grams: Math.max(1, Math.round(grams)), minutes };
-  }, [model, source, filament, settings, infill]);
+    const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3, 0);
+    return { grams: Math.max(1, Math.round(grams)), minutes, volume };
+  }, [models, source, filament, settings, infill]);
   const total = useMemo(() => Math.round((mode === "priority" ? priorityPrice : 0) + (source === "catalog" && filament && est ? Number(filament.price_per_gram) * est.grams : 0)), [mode, priorityPrice, source, filament, est]);
-  const onFile = async (f: File | null) => {
-    setFile(f); setModel(null);
-    if (!f) return;
-    try { setModel(analyzeStl(await f.arrayBuffer())); } catch { toast.error(t.badStl); }
+  const onFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    for (const f of Array.from(files)) {
+      if (!f.name.toLowerCase().endsWith(".stl") || f.size > MAX_STL) { toast.error(t.errFile); continue; }
+      try {
+        const parsed = analyzeStl(await f.arrayBuffer());
+        setModels((prev) => [...prev, { id: crypto.randomUUID(), file: f, ...parsed }]);
+      } catch { toast.error(t.badStl); }
+    }
   };
+  const removeModel = (id: string) => setModels((prev) => prev.filter((m) => m.id !== id));
 
   const submit = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Unauthorized");
-      if (!file || !file.name.toLowerCase().endsWith(".stl") || file.size > MAX_STL) throw new Error(t.errFile);
+      if (models.length === 0) throw new Error(t.errFile);
       const parsed = z.object({ title: z.string().trim().min(2, t.errName).max(120), comment: z.string().trim().max(1000) }).safeParse({ title, comment });
       if (!parsed.success) throw new Error(parsed.error.issues[0].message);
       if (source === "own" && ownLabel.trim().length < 1) throw new Error(t.errOwn);
       if (source === "catalog" && !filament) throw new Error(t.errFil);
       if (mode === "queue" && !queueEnabled) throw new Error(t.queueOff);
-      const path = `${user.id}/${crypto.randomUUID()}.stl`;
-      const up = await supabase.storage.from("stl-files").upload(path, file, { contentType: "model/stl", upsert: false });
-      if (up.error) throw up.error;
-      const { error } = await db.from("print_requests").insert({
-        user_id: user.id, title: parsed.data.title, comment: parsed.data.comment || null, stl_path: path, file_name: file.name.slice(0, 200),
+      const uploaded: { path: string; m: ModelItem }[] = [];
+      for (const m of models) {
+        const path = `${user.id}/${crypto.randomUUID()}.stl`;
+        const up = await supabase.storage.from("stl-files").upload(path, m.file, { contentType: "model/stl", upsert: false });
+        if (up.error) throw up.error;
+        uploaded.push({ path, m });
+      }
+      const first = uploaded[0];
+      const { data: req, error } = await db.from("print_requests").insert({
+        user_id: user.id, title: parsed.data.title, comment: parsed.data.comment || null, stl_path: first.path, file_name: first.m.file.name.slice(0, 200),
         mode, material_source: source, own_plastic_label: source === "own" ? ownLabel.trim().slice(0, 80) : null,
-        filament_id: source === "catalog" ? filamentId : null, grams: est?.grams ?? null, estimated_price: total, infill, volume_cm3: model ? Number(model.stats.volumeCm3.toFixed(2)) : null, est_grams: est?.grams ?? null, est_minutes: est?.minutes ?? null,
-      });
+        filament_id: source === "catalog" ? filamentId : null, grams: est?.grams ?? null, estimated_price: total, infill,
+        volume_cm3: est ? Number(est.volume.toFixed(2)) : null, est_grams: est?.grams ?? null, est_minutes: est?.minutes ?? null,
+      }).select("id").single();
       if (error) throw error;
+      if (uploaded.length > 1) {
+        const { error: fErr } = await db.from("print_request_files").insert(
+          uploaded.map(({ path, m }) => ({ request_id: req.id, stl_path: path, file_name: m.file.name.slice(0, 200), volume_cm3: Number(m.stats.volumeCm3.toFixed(2)), est_grams: null, est_minutes: null }))
+        );
+        if (fErr) throw fErr;
+      }
     },
     onSuccess: () => {
       toast.success(t.success);
-      setTitle(""); setFile(null); setModel(null); setComment(""); setOwnLabel("");
+      setTitle(""); setModels([]); setComment(""); setOwnLabel("");
       qc.invalidateQueries({ queryKey: ["my-print-requests"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -177,21 +201,35 @@ function Print3DPage() {
             <div className="space-y-2"><Label htmlFor="p-title">{t.name}</Label><Input id="p-title" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} className="h-12 rounded-none border-2" /></div>
             <div className="space-y-2">
               <Label>{t.file}</Label>
-              <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
+              <input ref={fileRef} type="file" accept=".stl" multiple className="hidden" onChange={(e) => { onFiles(e.target.files); e.target.value = ""; }} />
               <button type="button" onClick={() => fileRef.current?.click()} className="flex w-full items-center gap-3 border-2 border-dashed border-foreground p-5 text-left hover:bg-muted">
-                {file ? <FileBox className="h-6 w-6 text-primary" /> : <UploadCloud className="h-6 w-6" />}
-                <span className="truncate font-bold">{file ? `${file.name} · ${(file.size / 1048576).toFixed(1)} МБ` : t.chooseFile}</span>
+                <UploadCloud className="h-6 w-6" />
+                <span className="truncate font-bold">{models.length > 0 ? t.addModel : t.chooseFile}</span>
               </button>
             </div>
-            {model && <StlViewer geometry={model.geometry} />}
+            {models.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t.models}: {models.length}</p>
+                {models.map((m) => (
+                  <div key={m.id} className="border-2 border-foreground">
+                    <div className="flex items-center gap-2 border-b-2 border-foreground bg-muted px-3 py-2">
+                      <FileBox className="h-4 w-4 shrink-0 text-primary" />
+                      <span className="flex-1 truncate text-sm font-bold">{m.file.name} · {(m.file.size / 1048576).toFixed(1)} МБ · {m.stats.volumeCm3.toFixed(1)} см³</span>
+                      <button type="button" onClick={() => removeModel(m.id)} aria-label={t.remove} className="shrink-0 p-1 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                    <StlViewer geometry={m.geometry} />
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="space-y-2"><Label>{t.infill}</Label><div className="grid grid-cols-4 gap-2">
               {[10, 20, 50, 100].map((v) => <button key={v} type="button" onClick={() => setInfill(v)} className={`border-2 py-3 font-black ${infill === v ? "border-foreground bg-foreground text-background" : "border-foreground/30 hover:border-foreground"}`}>{v}%</button>)}
             </div></div>
-            {model && est && (
+            {models.length > 0 && est && (
               <div className="border-2 border-foreground">
-                <p className="border-b-2 border-foreground bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-primary-foreground">{t.calc}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4">
-                  {[[t.volume, `${model.stats.volumeCm3.toFixed(1)} см³`], [t.weight, `≈ ${est.grams} г`], [t.time, `≈ ${Math.floor(est.minutes / 60)} ${t.h} ${est.minutes % 60} ${t.m}`], [t.size, model.stats.size.map((n) => Math.round(n)).join("×") + " мм"]].map(([k, v]) => (
+                <p className="border-b-2 border-foreground bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-primary-foreground">{t.calc}{models.length > 1 ? ` · ${models.length} ${t.modelsCount}` : ""}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3">
+                  {[[t.volume, `${est.volume.toFixed(1)} см³`], [t.weight, `≈ ${est.grams} г`], [t.time, `≈ ${Math.floor(est.minutes / 60)} ${t.h} ${est.minutes % 60} ${t.m}`]].map(([k, v]) => (
                     <div key={k} className="border-foreground/20 p-3 [&:not(:last-child)]:border-r-2"><p className="text-xs font-bold uppercase text-muted-foreground">{k}</p><p className="text-lg font-black">{v}</p></div>
                   ))}
                 </div>
@@ -230,7 +268,7 @@ function Print3DPage() {
               {myRequests.map((r: any) => (
                 <li key={r.id} className="border-2 border-foreground p-3">
                   <div className="flex items-start justify-between gap-2"><p className="font-black">{r.title}</p><span className="shrink-0 bg-primary px-2 py-0.5 text-xs font-black uppercase text-primary-foreground">{(t.status as any)[r.status]}</span></div>
-                  <p className="text-sm text-muted-foreground">{r.mode === "queue" ? t.queueTitle : t.prioTitle} · {Number(r.estimated_price).toLocaleString()} ₸</p>
+                  <p className="text-sm text-muted-foreground">{r.mode === "queue" ? t.queueTitle : t.prioTitle} · {Number(r.estimated_price).toLocaleString()} ₸{r.print_request_files?.length > 1 ? ` · ${r.print_request_files.length} ${t.modelsCount}` : ""}</p>
                   {r.position && <p className="mt-1 text-sm font-black text-primary">{t.position}: #{r.position}</p>}
                   {r.admin_comment && <p className="mt-1 text-sm italic">{r.admin_comment}</p>}
                 </li>
