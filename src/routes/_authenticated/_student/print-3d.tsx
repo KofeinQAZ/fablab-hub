@@ -103,7 +103,7 @@ function Print3DPage() {
     queryKey: ["my-print-requests", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const rows = (await db.from("print_requests").select("*, filaments(material, color)").eq("user_id", user!.id).order("created_at", { ascending: false })).data ?? [];
+      const rows = (await db.from("print_requests").select("*, filaments(material, color), print_request_files(*)").eq("user_id", user!.id).order("created_at", { ascending: false })).data ?? [];
       return Promise.all(rows.map(async (r: any) => ({ ...r, position: r.mode === "queue" ? (await db.rpc("print_queue_position", { _request_id: r.id })).data : null })));
     },
   });
@@ -113,42 +113,62 @@ function Print3DPage() {
   const priorityEnabled = settings?.priority_enabled ?? true;
   const filament = filaments.find((f) => f.id === filamentId);
   const est = useMemo(() => {
-    if (!model) return null;
+    if (models.length === 0) return null;
     const density = source === "catalog" && filament ? Number(filament.density) : Number(settings?.default_density ?? 1.24);
     const shell = Number(settings?.shell_ratio ?? 0.25);
-    const grams = model.stats.volumeCm3 * density * (shell + (1 - shell) * infill / 100) * Number(settings?.weight_factor ?? 1);
+    const factor = density * (shell + (1 - shell) * infill / 100) * Number(settings?.weight_factor ?? 1);
+    const grams = models.reduce((sum, m) => sum + m.stats.volumeCm3 * factor, 0);
     const minutes = Math.round(grams / Number(settings?.print_speed_gph || 12) * 60);
-    return { grams: Math.max(1, Math.round(grams)), minutes };
-  }, [model, source, filament, settings, infill]);
+    const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3, 0);
+    return { grams: Math.max(1, Math.round(grams)), minutes, volume };
+  }, [models, source, filament, settings, infill]);
   const total = useMemo(() => Math.round((mode === "priority" ? priorityPrice : 0) + (source === "catalog" && filament && est ? Number(filament.price_per_gram) * est.grams : 0)), [mode, priorityPrice, source, filament, est]);
-  const onFile = async (f: File | null) => {
-    setFile(f); setModel(null);
-    if (!f) return;
-    try { setModel(analyzeStl(await f.arrayBuffer())); } catch { toast.error(t.badStl); }
+  const onFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    for (const f of Array.from(files)) {
+      if (!f.name.toLowerCase().endsWith(".stl") || f.size > MAX_STL) { toast.error(t.errFile); continue; }
+      try {
+        const parsed = analyzeStl(await f.arrayBuffer());
+        setModels((prev) => [...prev, { id: crypto.randomUUID(), file: f, ...parsed }]);
+      } catch { toast.error(t.badStl); }
+    }
   };
+  const removeModel = (id: string) => setModels((prev) => prev.filter((m) => m.id !== id));
 
   const submit = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Unauthorized");
-      if (!file || !file.name.toLowerCase().endsWith(".stl") || file.size > MAX_STL) throw new Error(t.errFile);
+      if (models.length === 0) throw new Error(t.errFile);
       const parsed = z.object({ title: z.string().trim().min(2, t.errName).max(120), comment: z.string().trim().max(1000) }).safeParse({ title, comment });
       if (!parsed.success) throw new Error(parsed.error.issues[0].message);
       if (source === "own" && ownLabel.trim().length < 1) throw new Error(t.errOwn);
       if (source === "catalog" && !filament) throw new Error(t.errFil);
       if (mode === "queue" && !queueEnabled) throw new Error(t.queueOff);
-      const path = `${user.id}/${crypto.randomUUID()}.stl`;
-      const up = await supabase.storage.from("stl-files").upload(path, file, { contentType: "model/stl", upsert: false });
-      if (up.error) throw up.error;
-      const { error } = await db.from("print_requests").insert({
-        user_id: user.id, title: parsed.data.title, comment: parsed.data.comment || null, stl_path: path, file_name: file.name.slice(0, 200),
+      const uploaded: { path: string; m: ModelItem }[] = [];
+      for (const m of models) {
+        const path = `${user.id}/${crypto.randomUUID()}.stl`;
+        const up = await supabase.storage.from("stl-files").upload(path, m.file, { contentType: "model/stl", upsert: false });
+        if (up.error) throw up.error;
+        uploaded.push({ path, m });
+      }
+      const first = uploaded[0];
+      const { data: req, error } = await db.from("print_requests").insert({
+        user_id: user.id, title: parsed.data.title, comment: parsed.data.comment || null, stl_path: first.path, file_name: first.m.file.name.slice(0, 200),
         mode, material_source: source, own_plastic_label: source === "own" ? ownLabel.trim().slice(0, 80) : null,
-        filament_id: source === "catalog" ? filamentId : null, grams: est?.grams ?? null, estimated_price: total, infill, volume_cm3: model ? Number(model.stats.volumeCm3.toFixed(2)) : null, est_grams: est?.grams ?? null, est_minutes: est?.minutes ?? null,
-      });
+        filament_id: source === "catalog" ? filamentId : null, grams: est?.grams ?? null, estimated_price: total, infill,
+        volume_cm3: est ? Number(est.volume.toFixed(2)) : null, est_grams: est?.grams ?? null, est_minutes: est?.minutes ?? null,
+      }).select("id").single();
       if (error) throw error;
+      if (uploaded.length > 1) {
+        const { error: fErr } = await db.from("print_request_files").insert(
+          uploaded.map(({ path, m }) => ({ request_id: req.id, stl_path: path, file_name: m.file.name.slice(0, 200), volume_cm3: Number(m.stats.volumeCm3.toFixed(2)), est_grams: null, est_minutes: null }))
+        );
+        if (fErr) throw fErr;
+      }
     },
     onSuccess: () => {
       toast.success(t.success);
-      setTitle(""); setFile(null); setModel(null); setComment(""); setOwnLabel("");
+      setTitle(""); setModels([]); setComment(""); setOwnLabel("");
       qc.invalidateQueries({ queryKey: ["my-print-requests"] });
     },
     onError: (e: Error) => toast.error(e.message),
