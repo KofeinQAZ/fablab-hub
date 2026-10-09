@@ -26,9 +26,11 @@ Deno.serve(async (req) => {
   }
 
   let message = '';
+  let chat = 'admin';
   let buttons: { text: string; url: string }[] = [];
   try {
     const body = await req.json();
+    if (body?.chat === 'print') chat = 'print';
     message = typeof body?.message === 'string' ? body.message.trim() : '';
     if (Array.isArray(body?.buttons)) {
       buttons = body.buttons
@@ -51,7 +53,9 @@ Deno.serve(async (req) => {
   }
 
   const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN');
-  const TELEGRAM_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID');
+  const TELEGRAM_CHAT_ID = chat === 'print'
+    ? (Deno.env.get('TELEGRAM_PRINT_CHAT_ID') || Deno.env.get('TELEGRAM_CHAT_ID'))
+    : Deno.env.get('TELEGRAM_CHAT_ID');
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     console.warn('notify-telegram: TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured, skipping');
     return new Response(JSON.stringify({ ok: false, reason: 'not_configured' }), { headers: jsonHeaders });
