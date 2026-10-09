@@ -31,6 +31,22 @@
     }
   },
   "booking": {
+    "book": {
+      "nav": "Booking",
+      "eyebrow": "Requests",
+      "title": "What you can book",
+      "hint": "Two paths: a workshop request for the workshop zone and 3D printing on the lab printer.",
+      "workshopBadge": "Workshop requests",
+      "workshopBtn": "Submit a request",
+      "workshopFallback": "A zone with tables for your classes, courses and team projects. Tell us about the event — the administrator will confirm the time.",
+      "printBadge": "Print queue",
+      "printTitle": "3D printing",
+      "printDesc": "Free queue on the lab printer, printing with your own plastic or filament by the gram. Upload an STL model — the system estimates weight, time and cost.",
+      "printBtn": "Go to 3D printing",
+      "printFeature1": "Free queue",
+      "printFeature2": "Own plastic or filament",
+      "printFeature3": "STL model upload"
+    },
     "access": {
       "authRequired": "Authorization required",
       "tbRequired": "SAFETY BRIEFING REQUIRED",
