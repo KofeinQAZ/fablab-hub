@@ -1481,6 +1481,13 @@ export type Database = {
           photo_url: string
         }[]
       }
+      get_zone_busy_slots: {
+        Args: { p_day: string; p_zone_id: string }
+        Returns: {
+          end_time: string
+          start_time: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
