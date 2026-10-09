@@ -87,13 +87,12 @@ function Print3DPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [models, setModels] = useState<ModelItem[]>([]);
   const [mode, setMode] = useState<"queue" | "priority">("queue");
   const [source, setSource] = useState<"own" | "catalog">("own");
   const [ownLabel, setOwnLabel] = useState("");
   const [filamentId, setFilamentId] = useState("");
   const [infill, setInfill] = useState(20);
-  const [model, setModel] = useState<{ geometry: BufferGeometry; stats: StlStats } | null>(null);
   const [comment, setComment] = useState("");
 
   const { data: settings } = useQuery({ queryKey: ["print-settings"], queryFn: async () => (await db.from("print_zone_settings").select("*").eq("id", 1).maybeSingle()).data });
