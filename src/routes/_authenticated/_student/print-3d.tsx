@@ -201,21 +201,35 @@ function Print3DPage() {
             <div className="space-y-2"><Label htmlFor="p-title">{t.name}</Label><Input id="p-title" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} className="h-12 rounded-none border-2" /></div>
             <div className="space-y-2">
               <Label>{t.file}</Label>
-              <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
+              <input ref={fileRef} type="file" accept=".stl" multiple className="hidden" onChange={(e) => { onFiles(e.target.files); e.target.value = ""; }} />
               <button type="button" onClick={() => fileRef.current?.click()} className="flex w-full items-center gap-3 border-2 border-dashed border-foreground p-5 text-left hover:bg-muted">
-                {file ? <FileBox className="h-6 w-6 text-primary" /> : <UploadCloud className="h-6 w-6" />}
-                <span className="truncate font-bold">{file ? `${file.name} · ${(file.size / 1048576).toFixed(1)} МБ` : t.chooseFile}</span>
+                <UploadCloud className="h-6 w-6" />
+                <span className="truncate font-bold">{models.length > 0 ? t.addModel : t.chooseFile}</span>
               </button>
             </div>
-            {model && <StlViewer geometry={model.geometry} />}
+            {models.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t.models}: {models.length}</p>
+                {models.map((m) => (
+                  <div key={m.id} className="border-2 border-foreground">
+                    <div className="flex items-center gap-2 border-b-2 border-foreground bg-muted px-3 py-2">
+                      <FileBox className="h-4 w-4 shrink-0 text-primary" />
+                      <span className="flex-1 truncate text-sm font-bold">{m.file.name} · {(m.file.size / 1048576).toFixed(1)} МБ · {m.stats.volumeCm3.toFixed(1)} см³</span>
+                      <button type="button" onClick={() => removeModel(m.id)} aria-label={t.remove} className="shrink-0 p-1 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                    <StlViewer geometry={m.geometry} />
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="space-y-2"><Label>{t.infill}</Label><div className="grid grid-cols-4 gap-2">
               {[10, 20, 50, 100].map((v) => <button key={v} type="button" onClick={() => setInfill(v)} className={`border-2 py-3 font-black ${infill === v ? "border-foreground bg-foreground text-background" : "border-foreground/30 hover:border-foreground"}`}>{v}%</button>)}
             </div></div>
-            {model && est && (
+            {models.length > 0 && est && (
               <div className="border-2 border-foreground">
-                <p className="border-b-2 border-foreground bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-primary-foreground">{t.calc}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4">
-                  {[[t.volume, `${model.stats.volumeCm3.toFixed(1)} см³`], [t.weight, `≈ ${est.grams} г`], [t.time, `≈ ${Math.floor(est.minutes / 60)} ${t.h} ${est.minutes % 60} ${t.m}`], [t.size, model.stats.size.map((n) => Math.round(n)).join("×") + " мм"]].map(([k, v]) => (
+                <p className="border-b-2 border-foreground bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-primary-foreground">{t.calc}{models.length > 1 ? ` · ${models.length} ${t.modelsCount}` : ""}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3">
+                  {[[t.volume, `${est.volume.toFixed(1)} см³`], [t.weight, `≈ ${est.grams} г`], [t.time, `≈ ${Math.floor(est.minutes / 60)} ${t.h} ${est.minutes % 60} ${t.m}`]].map(([k, v]) => (
                     <div key={k} className="border-foreground/20 p-3 [&:not(:last-child)]:border-r-2"><p className="text-xs font-bold uppercase text-muted-foreground">{k}</p><p className="text-lg font-black">{v}</p></div>
                   ))}
                 </div>
