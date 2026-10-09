@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, FileBox, Loader2, Mail, Phone, Send, UploadCloud, Zap, Clock, Users } from "lucide-react";
+import { ArrowLeft, FileBox, Loader2, Mail, Phone, Send, Trash2, UploadCloud, Zap, Clock, Users } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { analyzeStl, StlViewer, type StlStats } from "@/components/stl-viewer";
 import type { BufferGeometry } from "three";
+
+type ModelItem = { id: string; file: File; geometry: BufferGeometry; stats: StlStats };
 
 export const Route = createFileRoute("/_authenticated/_student/print-3d")({
   component: Print3DPage,
