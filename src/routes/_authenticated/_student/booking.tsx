@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Boxes, Box, Cpu, GraduationCap, Map, Package, Plus, ScanLine, Wrench } from "lucide-react";
+import { Boxes, CalendarCheck, Cpu, GraduationCap, Map, Package, Plus, Presentation, ScanLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ function localized(obj: Record<string, unknown>, field: string, language: string
   return String(obj[key] || obj[field] || "");
 }
 
-const SECTION_IDS = ["map", "equipment", "inventory"] as const;
+const SECTION_IDS = ["map", "book", "equipment", "inventory"] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 
 function scrollToSection(id: SectionId) {
@@ -74,6 +74,10 @@ function BookingPage() {
     if (zone.slug === "3d-print") { window.location.assign("/print-3d"); return; }
     setSelectedZone(zone);
   };
+  const workshopZone = zones.find((zone) => zone.slug === "workshops") ?? null;
+  const printZone = zones.find((zone) => zone.slug === "3d-print") ?? null;
+  const workshopName = workshopZone ? localized(workshopZone as unknown as Record<string, unknown>, "name", i18n.language) : "";
+  const workshopDescription = workshopZone ? localized(workshopZone as unknown as Record<string, unknown>, "description", i18n.language) : "";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -92,8 +96,9 @@ function BookingPage() {
 
   const sectionNav: { id: SectionId; label: string; icon: typeof Map; index: string }[] = [
     { id: "map", label: t("booking.map.tabs.map"), icon: Map, index: "01" },
-    { id: "equipment", label: t("booking.map.tabs.equipment"), icon: Wrench, index: "02" },
-    { id: "inventory", label: t("booking.map.tabs.inventory"), icon: Package, index: "03" },
+    { id: "book", label: t("booking.book.nav"), icon: CalendarCheck, index: "02" },
+    { id: "equipment", label: t("booking.map.tabs.equipment"), icon: Wrench, index: "03" },
+    { id: "inventory", label: t("booking.map.tabs.inventory"), icon: Package, index: "04" },
   ];
 
   return (
@@ -130,7 +135,7 @@ function BookingPage() {
         </div>
       </section>
 
-      <nav aria-label={t("booking.map.title")} className="grid grid-cols-3 gap-0 rounded-none border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
+      <nav aria-label={t("booking.map.title")} className="grid grid-cols-4 gap-0 rounded-none border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
         {sectionNav.map(({ id, label, icon: Icon, index }, i) => (
           <button
             key={id}
