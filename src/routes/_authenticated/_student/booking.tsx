@@ -158,6 +158,60 @@ function BookingPage() {
         {zonesLoading ? <div className="h-[420px] animate-pulse border-4 border-foreground bg-muted" /> : <LabMap zones={mapZones} language={i18n.language} onSelect={selectMapZone} />}
       </section>
 
+      <section id="booking-book" className="scroll-mt-6 space-y-5">
+        <div className="grid gap-4 border-b-2 border-foreground/20 pb-5 sm:grid-cols-[1fr_minmax(260px,0.65fr)] sm:items-end">
+          <div><p className="font-mono text-xs font-black uppercase text-primary">{t("booking.book.eyebrow")} // 02</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.book.title")}</h2></div>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:justify-self-end">{t("booking.book.hint")}</p>
+        </div>
+        {zonesLoading ? (
+          <div className="grid gap-6 lg:grid-cols-2">{[1, 2].map((i) => <div key={i} className="h-96 animate-pulse border-4 border-foreground bg-muted" />)}</div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <article className="group flex flex-col overflow-hidden border-4 border-foreground bg-card shadow-[6px_6px_0_var(--primary)]">
+              <div className="relative aspect-[16/9] w-full border-b-4 border-foreground bg-muted">
+                {workshopZone?.image_url ? (
+                  <img src={workshopZone.image_url} alt={workshopName} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transform-none" />
+                ) : (
+                  <span className="flex h-full items-center justify-center"><Presentation className="h-12 w-12 text-muted-foreground" /></span>
+                )}
+                <span className="absolute left-3 top-3 border-2 border-foreground bg-primary px-2 py-1 font-mono text-xs font-black uppercase text-primary-foreground shadow-[2px_2px_0_var(--foreground)]">WS–01</span>
+                <span className="absolute right-3 top-3 border-2 border-foreground bg-accent px-2 py-1 font-mono text-xs font-black uppercase text-accent-foreground shadow-[2px_2px_0_var(--foreground)]">{t("booking.book.workshopBadge")}</span>
+              </div>
+              <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+                <h3 className="text-2xl font-black uppercase leading-tight tracking-normal">{workshopName || t("booking.book.title")}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{workshopDescription || t("booking.book.workshopFallback")}</p>
+                <Button type="button" onClick={() => workshopZone && setSelectedZone(workshopZone)} disabled={!workshopZone} className="mt-auto h-12 w-full justify-between rounded-none border-2 border-foreground font-black uppercase shadow-[3px_3px_0_var(--foreground)] transition-[transform,box-shadow] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_var(--foreground)] motion-reduce:transform-none">
+                  <span>{t("booking.book.workshopBtn")}</span><Presentation className="h-4 w-4" />
+                </Button>
+              </div>
+            </article>
+            <article className="group flex flex-col overflow-hidden border-4 border-foreground bg-card shadow-[6px_6px_0_var(--primary)]">
+              <div className="relative aspect-[16/9] w-full border-b-4 border-foreground bg-muted">
+                {printZone?.image_url ? (
+                  <img src={printZone.image_url} alt={t("booking.book.printTitle")} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transform-none" />
+                ) : (
+                  <span className="flex h-full items-center justify-center"><Boxes className="h-12 w-12 text-muted-foreground" /></span>
+                )}
+                <span className="absolute left-3 top-3 border-2 border-foreground bg-primary px-2 py-1 font-mono text-xs font-black uppercase text-primary-foreground shadow-[2px_2px_0_var(--foreground)]">ZN–03</span>
+                <span className="absolute right-3 top-3 border-2 border-foreground bg-accent px-2 py-1 font-mono text-xs font-black uppercase text-accent-foreground shadow-[2px_2px_0_var(--foreground)]">{t("booking.book.printBadge")}</span>
+              </div>
+              <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+                <h3 className="text-2xl font-black uppercase leading-tight tracking-normal">{t("booking.book.printTitle")}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{t("booking.book.printDesc")}</p>
+                <ul className="flex flex-wrap gap-2">
+                  {[t("booking.book.printFeature1"), t("booking.book.printFeature2"), t("booking.book.printFeature3")].map((feature) => (
+                    <li key={feature} className="border-2 border-foreground bg-muted px-2 py-1 font-mono text-xs font-bold uppercase">{feature}</li>
+                  ))}
+                </ul>
+                <Button type="button" onClick={() => window.location.assign("/print-3d")} className="mt-auto h-12 w-full justify-between rounded-none border-2 border-foreground font-black uppercase shadow-[3px_3px_0_var(--foreground)] transition-[transform,box-shadow] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_var(--foreground)] motion-reduce:transform-none">
+                  <span>{t("booking.book.printBtn")}</span><Boxes className="h-4 w-4" />
+                </Button>
+              </div>
+            </article>
+          </div>
+        )}
+      </section>
+
       <section id="booking-equipment" className="scroll-mt-6 space-y-5">
         <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.catalogEyebrow")} // 02</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.catalogTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.catalogText")}</p></div>
         {equipmentLoading ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{[1,2,3].map((i) => <div key={i} className="h-80 animate-pulse border-4 border-foreground bg-muted" />)}</div> : (
