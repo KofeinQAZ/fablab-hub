@@ -547,6 +547,7 @@ export type Database = {
           color: string
           color_hex: string | null
           created_at: string
+          density: number
           id: string
           in_stock: boolean
           material: string
@@ -557,6 +558,7 @@ export type Database = {
           color: string
           color_hex?: string | null
           created_at?: string
+          density?: number
           id?: string
           in_stock?: boolean
           material: string
@@ -567,6 +569,7 @@ export type Database = {
           color?: string
           color_hex?: string | null
           created_at?: string
+          density?: number
           id?: string
           in_stock?: boolean
           material?: string
@@ -878,11 +881,14 @@ export type Database = {
           admin_comment: string | null
           comment: string | null
           created_at: string
+          est_grams: number | null
+          est_minutes: number | null
           estimated_price: number
           filament_id: string | null
           file_name: string
           grams: number | null
           id: string
+          infill: number | null
           is_paid: boolean
           material_source: string
           mode: string
@@ -892,16 +898,20 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          volume_cm3: number | null
         }
         Insert: {
           admin_comment?: string | null
           comment?: string | null
           created_at?: string
+          est_grams?: number | null
+          est_minutes?: number | null
           estimated_price?: number
           filament_id?: string | null
           file_name: string
           grams?: number | null
           id?: string
+          infill?: number | null
           is_paid?: boolean
           material_source?: string
           mode?: string
@@ -911,16 +921,20 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          volume_cm3?: number | null
         }
         Update: {
           admin_comment?: string | null
           comment?: string | null
           created_at?: string
+          est_grams?: number | null
+          est_minutes?: number | null
           estimated_price?: number
           filament_id?: string | null
           file_name?: string
           grams?: number | null
           id?: string
+          infill?: number | null
           is_paid?: boolean
           material_source?: string
           mode?: string
@@ -930,6 +944,7 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          volume_cm3?: number | null
         }
         Relationships: [
           {
@@ -964,14 +979,18 @@ export type Database = {
           contact_text_en: string | null
           contact_text_kz: string | null
           cover_url: string | null
+          default_density: number
           description: string | null
           description_en: string | null
           description_kz: string | null
           id: number
+          print_speed_gph: number
           priority_enabled: boolean
           priority_price: number
           queue_enabled: boolean
+          shell_ratio: number
           updated_at: string
+          weight_factor: number
         }
         Insert: {
           contact_email?: string | null
@@ -981,14 +1000,18 @@ export type Database = {
           contact_text_en?: string | null
           contact_text_kz?: string | null
           cover_url?: string | null
+          default_density?: number
           description?: string | null
           description_en?: string | null
           description_kz?: string | null
           id?: number
+          print_speed_gph?: number
           priority_enabled?: boolean
           priority_price?: number
           queue_enabled?: boolean
+          shell_ratio?: number
           updated_at?: string
+          weight_factor?: number
         }
         Update: {
           contact_email?: string | null
@@ -998,14 +1021,18 @@ export type Database = {
           contact_text_en?: string | null
           contact_text_kz?: string | null
           cover_url?: string | null
+          default_density?: number
           description?: string | null
           description_en?: string | null
           description_kz?: string | null
           id?: number
+          print_speed_gph?: number
           priority_enabled?: boolean
           priority_price?: number
           queue_enabled?: boolean
+          shell_ratio?: number
           updated_at?: string
+          weight_factor?: number
         }
         Relationships: []
       }
