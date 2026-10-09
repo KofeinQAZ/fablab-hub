@@ -107,6 +107,11 @@
         "submit": "Send request",
         "success": "Request sent to an administrator",
         "required": "Enter a date, time and topic",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "busyTitle": "Busy hours",
+        "busyFree": "The whole day is free",
+        "slotsLabel": "Start time",
         "disabled": "Requests for this zone are temporarily paused"
       },
       "capPanel": {
