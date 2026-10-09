@@ -116,7 +116,6 @@ function Print3DPage() {
     const minutes = Math.round(grams / Number(settings?.print_speed_gph || 12) * 60);
     return { grams: Math.max(1, Math.round(grams)), minutes };
   }, [model, source, filament, settings, infill]);
-  const grams = String(est?.grams ?? 0);
   const total = useMemo(() => Math.round((mode === "priority" ? priorityPrice : 0) + (source === "catalog" && filament && est ? Number(filament.price_per_gram) * est.grams : 0)), [mode, priorityPrice, source, filament, est]);
   const onFile = async (f: File | null) => {
     setFile(f); setModel(null);

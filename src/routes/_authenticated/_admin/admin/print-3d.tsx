@@ -83,6 +83,7 @@ function RequestCard({ r, pos, onDownload, onSave }: { r: any; pos?: number; onD
       </div>
       <div className="mt-3 grid gap-1 text-sm">
         <p><b>Пластик:</b> {r.material_source === "own" ? `свой, подпись «${r.own_plastic_label}»` : `${r.filaments?.material ?? ""} ${r.filaments?.color ?? ""}, ${r.grams} г`}</p>
+        {r.est_grams && <p><b>Автоподсчёт:</b> {r.volume_cm3} см³ · заполнение {r.infill}% · ≈ {r.est_grams} г · ≈ {Math.floor((r.est_minutes ?? 0) / 60)} ч {(r.est_minutes ?? 0) % 60} мин</p>}
         <p><b>К оплате на месте:</b> {Number(r.estimated_price).toLocaleString()} ₸ {r.is_paid ? "· оплачено" : ""}</p>
         {r.comment && <p><b>Комментарий:</b> {r.comment}</p>}
       </div>
@@ -105,7 +106,7 @@ function Settings() {
   const [f, setF] = useState<any>(null);
   useEffect(() => { if (data) setF(data); }, [data]);
   const save = useMutation({
-    mutationFn: async () => { const { id: _id, updated_at: _u, ...rest } = f; const { error } = await db.from("print_zone_settings").upsert({ id: 1, ...rest, priority_price: Number(rest.priority_price) || 0 }); if (error) throw error; },
+    mutationFn: async () => { const { id: _id, updated_at: _u, ...rest } = f; const { error } = await db.from("print_zone_settings").upsert({ id: 1, ...rest, priority_price: Number(rest.priority_price) || 0, print_speed_gph: Number(rest.print_speed_gph) || 12, weight_factor: Number(rest.weight_factor) || 1, shell_ratio: Math.min(1, Math.max(0, Number(rest.shell_ratio) || 0)), default_density: Number(rest.default_density) || 1.24 }); if (error) throw error; },
     onSuccess: () => { toast.success("Сохранено"); qc.invalidateQueries({ queryKey: ["print-settings"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -121,6 +122,13 @@ function Settings() {
         <div className="space-y-1"><Label>Цена без очереди, ₸</Label><Input type="number" min="0" value={f.priority_price} onChange={(e) => setF({ ...f, priority_price: e.target.value })} className="rounded-none border-2" /></div>
         <label className="flex items-center gap-2 pt-6 font-bold"><input type="checkbox" checked={f.queue_enabled} onChange={(e) => setF({ ...f, queue_enabled: e.target.checked })} />Бесплатная очередь открыта</label>
         <label className="flex items-center gap-2 pt-6 font-bold"><input type="checkbox" checked={f.priority_enabled} onChange={(e) => setF({ ...f, priority_enabled: e.target.checked })} />Печать без очереди доступна</label>
+      </div>
+      <h3 className="pt-2 text-lg font-black uppercase">Автоподсчёт</h3>
+      <p className="text-sm text-muted-foreground">Вес = объём × плотность × (стенки + (1 − стенки) × заполнение) × коэффициент. Время = вес ÷ скорость. Сверь пару моделей со слайсером и подкрути.</p>
+      <div className="grid gap-4 sm:grid-cols-4">
+        {([["print_speed_gph", "Скорость принтера, г/час"], ["weight_factor", "Коэффициент веса"], ["shell_ratio", "Доля стенок (0–1)"], ["default_density", "Плотность своего пластика, г/см³"]] as const).map(([k, l]) => (
+          <div key={k} className="space-y-1"><Label>{l}</Label><Input type="number" step="0.01" min="0" value={f[k] ?? ""} onChange={(e) => setF({ ...f, [k]: e.target.value })} className="rounded-none border-2" /></div>
+        ))}
       </div>
       <h3 className="pt-2 text-lg font-black uppercase">Полная проектировка — контакты</h3>
       {field("contact_text", "Текст (RU)", true)}{field("contact_text_kz", "Текст (KZ)", true)}{field("contact_text_en", "Текст (EN)", true)}
@@ -173,14 +181,15 @@ function Filaments() {
 
 function FilamentRow({ x, onDone }: { x: any; onDone: () => void }) {
   const [f, setF] = useState(x);
-  const save = async () => { const { error } = await db.from("filaments").update({ material: f.material, color: f.color, color_hex: f.color_hex, price_per_gram: Number(f.price_per_gram) || 0, in_stock: f.in_stock }).eq("id", x.id); error ? toast.error(error.message) : toast.success("Сохранено"); onDone(); };
+  const save = async () => { const { error } = await db.from("filaments").update({ material: f.material, color: f.color, color_hex: f.color_hex, price_per_gram: Number(f.price_per_gram) || 0, density: Number(f.density) || 1.24, in_stock: f.in_stock }).eq("id", x.id); error ? toast.error(error.message) : toast.success("Сохранено"); onDone(); };
   const remove = async () => { if (!confirm("Удалить?")) return; await db.from("filaments").delete().eq("id", x.id); onDone(); };
   return (
-    <div className={`${box} grid items-end gap-3 sm:grid-cols-[1fr_1fr_70px_120px_auto_auto]`}>
+    <div className={`${box} grid items-end gap-3 sm:grid-cols-[1fr_1fr_70px_110px_110px_auto_auto]`}>
       <div className="space-y-1"><Label>Материал</Label><Input value={f.material} onChange={(e) => setF({ ...f, material: e.target.value })} className="rounded-none border-2" /></div>
       <div className="space-y-1"><Label>Цвет</Label><Input value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className="rounded-none border-2" /></div>
       <div className="space-y-1"><Label>Образец</Label><input type="color" value={f.color_hex ?? "#ffffff"} onChange={(e) => setF({ ...f, color_hex: e.target.value })} className="h-10 w-full border-2 border-foreground" /></div>
       <div className="space-y-1"><Label>₸ за грамм</Label><Input type="number" min="0" step="0.1" value={f.price_per_gram} onChange={(e) => setF({ ...f, price_per_gram: e.target.value })} className="rounded-none border-2" /></div>
+      <div className="space-y-1"><Label>г/см³</Label><Input type="number" min="0" step="0.01" value={f.density} onChange={(e) => setF({ ...f, density: e.target.value })} className="rounded-none border-2" /></div>
       <label className="flex h-10 items-center gap-2 font-bold"><input type="checkbox" checked={f.in_stock} onChange={(e) => setF({ ...f, in_stock: e.target.checked })} />В наличии</label>
       <div className="flex gap-2"><Button onClick={save} className="rounded-none"><Save className="h-4 w-4" /></Button><Button variant="destructive" onClick={remove} className="rounded-none"><Trash2 className="h-4 w-4" /></Button></div>
     </div>
