@@ -40,7 +40,7 @@ function Requests() {
   const [filter, setFilter] = useState("active");
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-print-requests"],
-    queryFn: async () => (await db.from("print_requests").select("*, profiles(name, contact_phone, contact_telegram), filaments(material, color)").order("created_at")).data ?? [],
+    queryFn: async () => (await db.from("print_requests").select("*, profiles(name, contact_phone, contact_telegram), filaments(material, color), print_request_files(*)").order("created_at")).data ?? [],
   });
   const update = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => { const { error } = await db.from("print_requests").update(patch).eq("id", id); if (error) throw error; },
@@ -88,7 +88,9 @@ function RequestCard({ r, pos, onDownload, onSave }: { r: any; pos?: number; onD
         {r.comment && <p><b>Комментарий:</b> {r.comment}</p>}
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => onDownload(r.stl_path)} className="rounded-none border-2"><Download className="mr-1 h-4 w-4" />{r.file_name}</Button>
+        {(r.print_request_files?.length ? r.print_request_files : [{ stl_path: r.stl_path, file_name: r.file_name }]).map((f: any, i: number) => (
+          <Button key={i} variant="outline" size="sm" onClick={() => onDownload(f.stl_path)} className="rounded-none border-2"><Download className="mr-1 h-4 w-4" />{f.file_name}</Button>
+        ))}
         <select value={r.status} onChange={(e) => onSave({ status: e.target.value })} className="h-9 rounded-none border-2 border-foreground bg-background px-2 text-sm font-bold">
           {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
