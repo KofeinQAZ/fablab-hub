@@ -213,7 +213,7 @@ function BookingPage() {
       </section>
 
       <section id="booking-equipment" className="scroll-mt-6 space-y-5">
-        <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.catalogEyebrow")} // 02</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.catalogTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.catalogText")}</p></div>
+        <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.catalogEyebrow")} // 03</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.catalogTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.catalogText")}</p></div>
         {equipmentLoading ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{[1,2,3].map((i) => <div key={i} className="h-80 animate-pulse border-4 border-foreground bg-muted" />)}</div> : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {equipment.map((item) => {
@@ -231,7 +231,7 @@ function BookingPage() {
       </section>
 
       <section id="booking-inventory" className="scroll-mt-6 space-y-5">
-        <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.inventoryEyebrow")} // 03</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.inventoryTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.inventoryText")}</p></div>
+        <div className="border-b-4 border-foreground pb-5"><p className="text-xs font-black uppercase tracking-widest text-primary">{t("booking.map.inventoryEyebrow")} // 04</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.inventoryTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.inventoryText")}</p></div>
         <InventorySection userId={profile?.id ?? null} active />
       </section>
       <LabZoneDialog zone={selectedZone} userId={profile?.id ?? null} onClose={() => setSelectedZone(null)} />
