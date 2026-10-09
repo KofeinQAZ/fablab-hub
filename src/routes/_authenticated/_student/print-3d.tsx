@@ -268,7 +268,7 @@ function Print3DPage() {
               {myRequests.map((r: any) => (
                 <li key={r.id} className="border-2 border-foreground p-3">
                   <div className="flex items-start justify-between gap-2"><p className="font-black">{r.title}</p><span className="shrink-0 bg-primary px-2 py-0.5 text-xs font-black uppercase text-primary-foreground">{(t.status as any)[r.status]}</span></div>
-                  <p className="text-sm text-muted-foreground">{r.mode === "queue" ? t.queueTitle : t.prioTitle} · {Number(r.estimated_price).toLocaleString()} ₸</p>
+                  <p className="text-sm text-muted-foreground">{r.mode === "queue" ? t.queueTitle : t.prioTitle} · {Number(r.estimated_price).toLocaleString()} ₸{r.print_request_files?.length > 1 ? ` · ${r.print_request_files.length} ${t.modelsCount}` : ""}</p>
                   {r.position && <p className="mt-1 text-sm font-black text-primary">{t.position}: #{r.position}</p>}
                   {r.admin_comment && <p className="mt-1 text-sm italic">{r.admin_comment}</p>}
                 </li>
