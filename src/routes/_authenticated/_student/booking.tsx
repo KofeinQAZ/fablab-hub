@@ -71,6 +71,7 @@ function BookingPage() {
       const item = equipment.find((entry) => (entry as EquipmentDetails & { map_slot?: number | null }).map_slot === Number(slot));
       if (item) { setSelectedEquipment(item); return; }
     }
+    if (zone.slug === "3d-print") { window.location.assign("/print-3d"); return; }
     setSelectedZone(zone);
   };
 

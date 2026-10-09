@@ -24,6 +24,7 @@ import { Route as PublicTeamRouteImport } from './routes/_public/team'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as AuthenticatedStudentBookingRouteImport } from './routes/_authenticated/_student/booking'
 import { Route as AuthenticatedStudentPortableRouteImport } from './routes/_authenticated/_student/portable'
+import { Route as AuthenticatedStudentPrint3dRouteImport } from './routes/_authenticated/_student/print-3d'
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/_student/profile'
 import { Route as AuthenticatedStudentStationaryRouteImport } from './routes/_authenticated/_student/stationary'
 import { Route as AuthenticatedClubsClubIdRouteImport } from './routes/_authenticated/clubs_.$clubId'
@@ -111,6 +112,12 @@ const AuthenticatedStudentPortableRoute =
   AuthenticatedStudentPortableRouteImport.update({
     id: '/portable',
     path: '/portable',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentPrint3dRoute =
+  AuthenticatedStudentPrint3dRouteImport.update({
+    id: '/print-3d',
+    path: '/print-3d',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentProfileRoute =
@@ -216,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
+  '/print-3d': typeof AuthenticatedStudentPrint3dRoute
   '/profile': typeof AuthenticatedStudentProfileRoute
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/clubs/$clubId': typeof AuthenticatedClubsClubIdRoute
@@ -243,6 +251,7 @@ export interface FileRoutesByTo {
   '/team': typeof PublicTeamRoute
   '/booking': typeof AuthenticatedStudentBookingRoute
   '/portable': typeof AuthenticatedStudentPortableRoute
+  '/print-3d': typeof AuthenticatedStudentPrint3dRoute
   '/profile': typeof AuthenticatedStudentProfileRoute
   '/stationary': typeof AuthenticatedStudentStationaryRoute
   '/clubs/$clubId': typeof AuthenticatedClubsClubIdRoute
@@ -276,6 +285,7 @@ export interface FileRoutesById {
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRouteWithChildren
   '/_authenticated/_student/booking': typeof AuthenticatedStudentBookingRoute
   '/_authenticated/_student/portable': typeof AuthenticatedStudentPortableRoute
+  '/_authenticated/_student/print-3d': typeof AuthenticatedStudentPrint3dRoute
   '/_authenticated/_student/profile': typeof AuthenticatedStudentProfileRoute
   '/_authenticated/_student/stationary': typeof AuthenticatedStudentStationaryRoute
   '/_authenticated/clubs_/$clubId': typeof AuthenticatedClubsClubIdRoute
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/booking'
     | '/portable'
+    | '/print-3d'
     | '/profile'
     | '/stationary'
     | '/clubs/$clubId'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/booking'
     | '/portable'
+    | '/print-3d'
     | '/profile'
     | '/stationary'
     | '/clubs/$clubId'
@@ -365,6 +377,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin/admin'
     | '/_authenticated/_student/booking'
     | '/_authenticated/_student/portable'
+    | '/_authenticated/_student/print-3d'
     | '/_authenticated/_student/profile'
     | '/_authenticated/_student/stationary'
     | '/_authenticated/clubs_/$clubId'
@@ -494,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/portable'
       fullPath: '/portable'
       preLoaderRoute: typeof AuthenticatedStudentPortableRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/_student/print-3d': {
+      id: '/_authenticated/_student/print-3d'
+      path: '/print-3d'
+      fullPath: '/print-3d'
+      preLoaderRoute: typeof AuthenticatedStudentPrint3dRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/_student/profile': {
@@ -657,6 +677,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentBookingRoute: typeof AuthenticatedStudentBookingRoute
   AuthenticatedStudentPortableRoute: typeof AuthenticatedStudentPortableRoute
+  AuthenticatedStudentPrint3dRoute: typeof AuthenticatedStudentPrint3dRoute
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
   AuthenticatedStudentStationaryRoute: typeof AuthenticatedStudentStationaryRoute
 }
@@ -664,6 +685,7 @@ interface AuthenticatedStudentRouteChildren {
 const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentBookingRoute: AuthenticatedStudentBookingRoute,
   AuthenticatedStudentPortableRoute: AuthenticatedStudentPortableRoute,
+  AuthenticatedStudentPrint3dRoute: AuthenticatedStudentPrint3dRoute,
   AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
   AuthenticatedStudentStationaryRoute: AuthenticatedStudentStationaryRoute,
 }
