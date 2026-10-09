@@ -35,6 +35,7 @@ import { Route as AuthenticatedAdminAdminEquipmentRouteImport } from './routes/_
 import { Route as AuthenticatedAdminAdminInventoryRouteImport } from './routes/_authenticated/_admin/admin/inventory'
 import { Route as AuthenticatedAdminAdminLabMapRouteImport } from './routes/_authenticated/_admin/admin/lab-map'
 import { Route as AuthenticatedAdminAdminNewsRouteImport } from './routes/_authenticated/_admin/admin/news'
+import { Route as AuthenticatedAdminAdminPrint3dRouteImport } from './routes/_authenticated/_admin/admin/print-3d'
 import { Route as AuthenticatedAdminAdminProjectsRouteImport } from './routes/_authenticated/_admin/admin/projects'
 import { Route as AuthenticatedAdminAdminRequestsRouteImport } from './routes/_authenticated/_admin/admin/requests'
 import { Route as AuthenticatedAdminAdminScheduleRouteImport } from './routes/_authenticated/_admin/admin/schedule'
@@ -180,6 +181,12 @@ const AuthenticatedAdminAdminNewsRoute =
     path: '/news',
     getParentRoute: () => AuthenticatedAdminAdminRoute,
   } as any)
+const AuthenticatedAdminAdminPrint3dRoute =
+  AuthenticatedAdminAdminPrint3dRouteImport.update({
+    id: '/print-3d',
+    path: '/print-3d',
+    getParentRoute: () => AuthenticatedAdminAdminRoute,
+  } as any)
 const AuthenticatedAdminAdminProjectsRoute =
   AuthenticatedAdminAdminProjectsRouteImport.update({
     id: '/projects',
@@ -233,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/admin/lab-map': typeof AuthenticatedAdminAdminLabMapRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
+  '/admin/print-3d': typeof AuthenticatedAdminAdminPrint3dRoute
   '/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
   '/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
@@ -261,6 +269,7 @@ export interface FileRoutesByTo {
   '/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/admin/lab-map': typeof AuthenticatedAdminAdminLabMapRoute
   '/admin/news': typeof AuthenticatedAdminAdminNewsRoute
+  '/admin/print-3d': typeof AuthenticatedAdminAdminPrint3dRoute
   '/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
   '/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
@@ -295,6 +304,7 @@ export interface FileRoutesById {
   '/_authenticated/_admin/admin/inventory': typeof AuthenticatedAdminAdminInventoryRoute
   '/_authenticated/_admin/admin/lab-map': typeof AuthenticatedAdminAdminLabMapRoute
   '/_authenticated/_admin/admin/news': typeof AuthenticatedAdminAdminNewsRoute
+  '/_authenticated/_admin/admin/print-3d': typeof AuthenticatedAdminAdminPrint3dRoute
   '/_authenticated/_admin/admin/projects': typeof AuthenticatedAdminAdminProjectsRoute
   '/_authenticated/_admin/admin/requests': typeof AuthenticatedAdminAdminRequestsRoute
   '/_authenticated/_admin/admin/schedule': typeof AuthenticatedAdminAdminScheduleRoute
@@ -326,6 +336,7 @@ export interface FileRouteTypes {
     | '/admin/inventory'
     | '/admin/lab-map'
     | '/admin/news'
+    | '/admin/print-3d'
     | '/admin/projects'
     | '/admin/requests'
     | '/admin/schedule'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/admin/inventory'
     | '/admin/lab-map'
     | '/admin/news'
+    | '/admin/print-3d'
     | '/admin/projects'
     | '/admin/requests'
     | '/admin/schedule'
@@ -387,6 +399,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin/admin/inventory'
     | '/_authenticated/_admin/admin/lab-map'
     | '/_authenticated/_admin/admin/news'
+    | '/_authenticated/_admin/admin/print-3d'
     | '/_authenticated/_admin/admin/projects'
     | '/_authenticated/_admin/admin/requests'
     | '/_authenticated/_admin/admin/schedule'
@@ -586,6 +599,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminNewsRouteImport
       parentRoute: typeof AuthenticatedAdminAdminRoute
     }
+    '/_authenticated/_admin/admin/print-3d': {
+      id: '/_authenticated/_admin/admin/print-3d'
+      path: '/print-3d'
+      fullPath: '/admin/print-3d'
+      preLoaderRoute: typeof AuthenticatedAdminAdminPrint3dRouteImport
+      parentRoute: typeof AuthenticatedAdminAdminRoute
+    }
     '/_authenticated/_admin/admin/projects': {
       id: '/_authenticated/_admin/admin/projects'
       path: '/projects'
@@ -631,6 +651,7 @@ interface AuthenticatedAdminAdminRouteChildren {
   AuthenticatedAdminAdminInventoryRoute: typeof AuthenticatedAdminAdminInventoryRoute
   AuthenticatedAdminAdminLabMapRoute: typeof AuthenticatedAdminAdminLabMapRoute
   AuthenticatedAdminAdminNewsRoute: typeof AuthenticatedAdminAdminNewsRoute
+  AuthenticatedAdminAdminPrint3dRoute: typeof AuthenticatedAdminAdminPrint3dRoute
   AuthenticatedAdminAdminProjectsRoute: typeof AuthenticatedAdminAdminProjectsRoute
   AuthenticatedAdminAdminRequestsRoute: typeof AuthenticatedAdminAdminRequestsRoute
   AuthenticatedAdminAdminScheduleRoute: typeof AuthenticatedAdminAdminScheduleRoute
@@ -649,6 +670,7 @@ const AuthenticatedAdminAdminRouteChildren: AuthenticatedAdminAdminRouteChildren
       AuthenticatedAdminAdminInventoryRoute,
     AuthenticatedAdminAdminLabMapRoute: AuthenticatedAdminAdminLabMapRoute,
     AuthenticatedAdminAdminNewsRoute: AuthenticatedAdminAdminNewsRoute,
+    AuthenticatedAdminAdminPrint3dRoute: AuthenticatedAdminAdminPrint3dRoute,
     AuthenticatedAdminAdminProjectsRoute: AuthenticatedAdminAdminProjectsRoute,
     AuthenticatedAdminAdminRequestsRoute: AuthenticatedAdminAdminRequestsRoute,
     AuthenticatedAdminAdminScheduleRoute: AuthenticatedAdminAdminScheduleRoute,
