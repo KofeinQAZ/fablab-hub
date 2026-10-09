@@ -542,6 +542,39 @@ export type Database = {
           },
         ]
       }
+      filaments: {
+        Row: {
+          color: string
+          color_hex: string | null
+          created_at: string
+          id: string
+          in_stock: boolean
+          material: string
+          price_per_gram: number
+          sort_order: number
+        }
+        Insert: {
+          color: string
+          color_hex?: string | null
+          created_at?: string
+          id?: string
+          in_stock?: boolean
+          material: string
+          price_per_gram?: number
+          sort_order?: number
+        }
+        Update: {
+          color?: string
+          color_hex?: string | null
+          created_at?: string
+          id?: string
+          in_stock?: boolean
+          material?: string
+          price_per_gram?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
       inventory_checkouts: {
         Row: {
           checked_out_at: string
@@ -803,6 +836,178 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      print_mentors: {
+        Row: {
+          contact: string | null
+          created_at: string
+          id: string
+          name: string
+          photo_url: string | null
+          role_title: string | null
+          role_title_en: string | null
+          role_title_kz: string | null
+          sort_order: number
+        }
+        Insert: {
+          contact?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          photo_url?: string | null
+          role_title?: string | null
+          role_title_en?: string | null
+          role_title_kz?: string | null
+          sort_order?: number
+        }
+        Update: {
+          contact?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          photo_url?: string | null
+          role_title?: string | null
+          role_title_en?: string | null
+          role_title_kz?: string | null
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      print_requests: {
+        Row: {
+          admin_comment: string | null
+          comment: string | null
+          created_at: string
+          estimated_price: number
+          filament_id: string | null
+          file_name: string
+          grams: number | null
+          id: string
+          is_paid: boolean
+          material_source: string
+          mode: string
+          own_plastic_label: string | null
+          status: string
+          stl_path: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_comment?: string | null
+          comment?: string | null
+          created_at?: string
+          estimated_price?: number
+          filament_id?: string | null
+          file_name: string
+          grams?: number | null
+          id?: string
+          is_paid?: boolean
+          material_source?: string
+          mode?: string
+          own_plastic_label?: string | null
+          status?: string
+          stl_path: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_comment?: string | null
+          comment?: string | null
+          created_at?: string
+          estimated_price?: number
+          filament_id?: string | null
+          file_name?: string
+          grams?: number | null
+          id?: string
+          is_paid?: boolean
+          material_source?: string
+          mode?: string
+          own_plastic_label?: string | null
+          status?: string
+          stl_path?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_requests_filament_id_fkey"
+            columns: ["filament_id"]
+            isOneToOne: false
+            referencedRelation: "filaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_zone_settings: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          contact_telegram: string | null
+          contact_text: string | null
+          contact_text_en: string | null
+          contact_text_kz: string | null
+          cover_url: string | null
+          description: string | null
+          description_en: string | null
+          description_kz: string | null
+          id: number
+          priority_enabled: boolean
+          priority_price: number
+          queue_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_telegram?: string | null
+          contact_text?: string | null
+          contact_text_en?: string | null
+          contact_text_kz?: string | null
+          cover_url?: string | null
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          id?: number
+          priority_enabled?: boolean
+          priority_price?: number
+          queue_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_telegram?: string | null
+          contact_text?: string | null
+          contact_text_en?: string | null
+          contact_text_kz?: string | null
+          cover_url?: string | null
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          id?: number
+          priority_enabled?: boolean
+          priority_price?: number
+          queue_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1227,6 +1432,7 @@ export type Database = {
       notify_telegram:
         | { Args: { p_message: string }; Returns: undefined }
         | { Args: { p_buttons?: Json; p_message: string }; Returns: undefined }
+      print_queue_position: { Args: { _request_id: string }; Returns: number }
       return_inventory_item: {
         Args: { _item_id: string }
         Returns: {
