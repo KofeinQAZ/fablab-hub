@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Boxes, CalendarCheck, Cpu, GraduationCap, Map, Package, Plus, Presentation, ScanLine, Wrench } from "lucide-react";
+import { Boxes, Box, CalendarCheck, Cpu, GraduationCap, Map, Package, Plus, Presentation, ScanLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
