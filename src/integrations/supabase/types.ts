@@ -883,6 +883,7 @@ export type Database = {
           est_minutes: number | null
           file_name: string
           id: string
+          quantity: number
           request_id: string
           stl_path: string
           volume_cm3: number | null
@@ -893,6 +894,7 @@ export type Database = {
           est_minutes?: number | null
           file_name: string
           id?: string
+          quantity?: number
           request_id: string
           stl_path: string
           volume_cm3?: number | null
@@ -903,6 +905,7 @@ export type Database = {
           est_minutes?: number | null
           file_name?: string
           id?: string
+          quantity?: number
           request_id?: string
           stl_path?: string
           volume_cm3?: number | null
@@ -1518,6 +1521,13 @@ export type Database = {
         | { Args: { p_message: string }; Returns: undefined }
         | { Args: { p_buttons?: Json; p_message: string }; Returns: undefined }
       print_queue_position: { Args: { _request_id: string }; Returns: number }
+      print_queue_stats: {
+        Args: never
+        Returns: {
+          printing: number
+          waiting: number
+        }[]
+      }
       return_inventory_item: {
         Args: { _item_id: string }
         Returns: {

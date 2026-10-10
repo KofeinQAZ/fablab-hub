@@ -89,7 +89,7 @@ function RequestCard({ r, pos, onDownload, onSave }: { r: any; pos?: number; onD
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {(r.print_request_files?.length ? r.print_request_files : [{ stl_path: r.stl_path, file_name: r.file_name }]).map((f: any, i: number) => (
-          <Button key={i} variant="outline" size="sm" onClick={() => onDownload(f.stl_path)} className="rounded-none border-2"><Download className="mr-1 h-4 w-4" />{f.file_name}</Button>
+          <Button key={i} variant="outline" size="sm" onClick={() => onDownload(f.stl_path)} className="rounded-none border-2"><Download className="mr-1 h-4 w-4" />{f.file_name}{f.quantity > 1 ? ` × ${f.quantity}` : ""}</Button>
         ))}
         <select value={r.status} onChange={(e) => onSave({ status: e.target.value })} className="h-9 rounded-none border-2 border-foreground bg-background px-2 text-sm font-bold">
           {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}

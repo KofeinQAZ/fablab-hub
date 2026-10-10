@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, FileBox, Loader2, Mail, Phone, Send, Trash2, UploadCloud, Zap, Clock, Users } from "lucide-react";
+import { ArrowLeft, FileBox, Loader2, Mail, Phone, Send, Trash2, UploadCloud, Zap, Clock, Users, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { analyzeStl, StlViewer, type StlStats } from "@/components/stl-viewer";
 import type { BufferGeometry } from "three";
 
-type ModelItem = { id: string; file: File; geometry: BufferGeometry; stats: StlStats };
+type ModelItem = { id: string; file: File; geometry: BufferGeometry; stats: StlStats; qty: number };
 
 export const Route = createFileRoute("/_authenticated/_student/print-3d")({
   component: Print3DPage,
@@ -25,7 +25,7 @@ const MAX_STL = 50 * 1024 * 1024;
 const T = {
   ru: {
     infill: "Заполнение", calc: "Автоподсчёт", volume: "Объём", weight: "Вес", time: "Время печати", size: "Габариты", approx: "Расчёт примерный — итог админ уточнит после нарезки.", h: "ч", m: "мин", timeCost: "Работа принтера", badStl: "Не удалось прочитать STL",
-    models: "Модели", addModel: "Добавить ещё STL", modelsCount: "моделей", remove: "Убрать",
+    models: "Модели", addModel: "Добавить ещё STL", modelsCount: "моделей", qty: "Кол-во", pcs: "шт", queueStatus: "Статус очереди", waiting: "Ждут печати", printingNow: "Печатается", ahead: "Перед вами", yourPlace: "Ваше место", notInQueue: "У вас нет заявок в бесплатной очереди", remove: "Убрать",
     back: "К карте", zone: "Зона 3D-печати", title: "3D-печать в FabLab", mentors: "Менторы и сотрудники",
     queueTitle: "Бесплатно по очереди", queueText: "Принтер FabLab. Заявки печатаются по порядку.",
     prioTitle: "Без очереди", prioText: "Частные принтеры, фиксированная цена за заявку.", perRequest: "за заявку",
@@ -42,7 +42,7 @@ const T = {
   },
   kz: {
     infill: "Толтыру", calc: "Автоесеп", volume: "Көлем", weight: "Салмақ", time: "Басып шығару уақыты", size: "Өлшемдер", approx: "Есеп шамамен — соңғы бағаны админ нақтылайды.", h: "сағ", m: "мин", timeCost: "Принтер жұмысы", badStl: "STL оқылмады",
-    models: "Модельдер", addModel: "Тағы STL қосу", modelsCount: "модель", remove: "Алу",
+    models: "Модельдер", addModel: "Тағы STL қосу", modelsCount: "модель", qty: "Саны", pcs: "дана", queueStatus: "Кезек күйі", waiting: "Күтуде", printingNow: "Басылуда", ahead: "Сізден бұрын", yourPlace: "Сіздің орын", notInQueue: "Тегін кезекте өтінімдеріңіз жоқ", remove: "Алу",
     back: "Картаға", zone: "3D басып шығару аймағы", title: "FabLab-та 3D басып шығару", mentors: "Менторлар мен қызметкерлер",
     queueTitle: "Кезекпен тегін", queueText: "FabLab принтері. Өтінімдер ретімен басылады.",
     prioTitle: "Кезексіз", prioText: "Жеке принтерлер, өтінімге тұрақты баға.", perRequest: "өтінімге",
@@ -59,7 +59,7 @@ const T = {
   },
   en: {
     infill: "Infill", calc: "Auto estimate", volume: "Volume", weight: "Weight", time: "Print time", size: "Size", approx: "Approximate — admin confirms the final price after slicing.", h: "h", m: "min", timeCost: "Machine time", badStl: "Could not read STL",
-    models: "Models", addModel: "Add another STL", modelsCount: "models", remove: "Remove",
+    models: "Models", addModel: "Add another STL", modelsCount: "models", qty: "Qty", pcs: "pcs", queueStatus: "Queue status", waiting: "Waiting", printingNow: "Printing", ahead: "Ahead of you", yourPlace: "Your place", notInQueue: "You have no requests in the free queue", remove: "Remove",
     back: "Back to map", zone: "3D printing zone", title: "3D printing at FabLab", mentors: "Mentors & staff",
     queueTitle: "Free, in queue", queueText: "FabLab printer. Requests are printed in order.",
     prioTitle: "Skip the queue", prioText: "Private printers, fixed price per request.", perRequest: "per request",
@@ -107,6 +107,9 @@ function Print3DPage() {
       return Promise.all(rows.map(async (r: any) => ({ ...r, position: r.mode === "queue" ? (await db.rpc("print_queue_position", { _request_id: r.id })).data : null })));
     },
   });
+  const { data: qstats } = useQuery({ queryKey: ["print-queue-stats"], enabled: !!user, refetchInterval: 60000, queryFn: async () => { const d = (await db.rpc("print_queue_stats")).data; return (Array.isArray(d) ? d[0] : d) as { waiting: number; printing: number } | null; } });
+  const myPos = myRequests.map((r: any) => r.position).filter(Boolean).sort((a: number, b: number) => a - b)[0] as number | undefined;
+  const setQty = (id: string, q: number) => setModels((prev) => prev.map((m) => (m.id === id ? { ...m, qty: Math.max(1, Math.min(100, q || 1)) } : m)));
 
   const priorityPrice = Number(settings?.priority_price ?? 0);
   const queueEnabled = settings?.queue_enabled ?? true;
@@ -117,9 +120,9 @@ function Print3DPage() {
     const density = source === "catalog" && filament ? Number(filament.density) : Number(settings?.default_density ?? 1.24);
     const shell = Number(settings?.shell_ratio ?? 0.25);
     const factor = density * (shell + (1 - shell) * infill / 100) * Number(settings?.weight_factor ?? 1);
-    const grams = models.reduce((sum, m) => sum + m.stats.volumeCm3 * factor, 0);
+    const grams = models.reduce((sum, m) => sum + m.stats.volumeCm3 * m.qty * factor, 0);
     const minutes = Math.round(grams / Number(settings?.print_speed_gph || 12) * 60);
-    const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3, 0);
+    const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3 * m.qty, 0);
     return { grams: Math.max(1, Math.round(grams)), minutes, volume };
   }, [models, source, filament, settings, infill]);
   const pricePerHour = Number(settings?.price_per_hour ?? 0);
@@ -131,7 +134,7 @@ function Print3DPage() {
       if (!f.name.toLowerCase().endsWith(".stl") || f.size > MAX_STL) { toast.error(t.errFile); continue; }
       try {
         const parsed = analyzeStl(await f.arrayBuffer());
-        setModels((prev) => [...prev, { id: crypto.randomUUID(), file: f, ...parsed }]);
+        setModels((prev) => [...prev, { id: crypto.randomUUID(), file: f, ...parsed, qty: 1 }]);
       } catch { toast.error(t.badStl); }
     }
   };
@@ -161,9 +164,9 @@ function Print3DPage() {
         volume_cm3: est ? Number(est.volume.toFixed(2)) : null, est_grams: est?.grams ?? null, est_minutes: est?.minutes ?? null,
       }).select("id").single();
       if (error) throw error;
-      if (uploaded.length > 1) {
+      if (uploaded.length > 1 || uploaded.some(({ m }) => m.qty > 1)) {
         const { error: fErr } = await db.from("print_request_files").insert(
-          uploaded.map(({ path, m }) => ({ request_id: req.id, stl_path: path, file_name: m.file.name.slice(0, 200), volume_cm3: Number(m.stats.volumeCm3.toFixed(2)), est_grams: null, est_minutes: null }))
+          uploaded.map(({ path, m }) => ({ request_id: req.id, stl_path: path, file_name: m.file.name.slice(0, 200), quantity: m.qty, volume_cm3: Number(m.stats.volumeCm3.toFixed(2)), est_grams: null, est_minutes: null }))
         );
         if (fErr) throw fErr;
       }
@@ -172,7 +175,7 @@ function Print3DPage() {
     onSuccess: () => {
       toast.success(t.success);
       setTitle(""); setModels([]); setComment(""); setOwnLabel("");
-      qc.invalidateQueries({ queryKey: ["my-print-requests"] });
+      qc.invalidateQueries({ queryKey: ["my-print-requests"] }); qc.invalidateQueries({ queryKey: ["print-queue-stats"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -221,6 +224,15 @@ function Print3DPage() {
                       <button type="button" onClick={() => removeModel(m.id)} aria-label={t.remove} className="shrink-0 p-1 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
                     </div>
                     <StlViewer geometry={m.geometry} />
+                    <div className="flex items-center justify-between gap-3 border-t-2 border-foreground px-3 py-2">
+                      <span className="text-sm font-black uppercase">{t.qty}</span>
+                      <div className="flex items-center">
+                        <button type="button" aria-label="-" onClick={() => setQty(m.id, m.qty - 1)} className="flex h-10 w-10 items-center justify-center border-2 border-foreground hover:bg-muted"><Minus className="h-4 w-4" /></button>
+                        <input type="number" min={1} max={100} value={m.qty} onChange={(e) => setQty(m.id, parseInt(e.target.value))} className="h-10 w-14 border-y-2 border-foreground bg-background text-center font-black [appearance:textfield]" />
+                        <button type="button" aria-label="+" onClick={() => setQty(m.id, m.qty + 1)} className="flex h-10 w-10 items-center justify-center border-2 border-foreground hover:bg-muted"><Plus className="h-4 w-4" /></button>
+                        <span className="ml-2 text-sm text-muted-foreground">{t.pcs}</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -266,6 +278,19 @@ function Print3DPage() {
         </section>
 
         <div className="space-y-8">
+          <section className={`${box} shadow-[6px_6px_0_var(--primary)]`}>
+            <h2 className="border-b-4 border-foreground bg-foreground px-5 py-3 text-lg font-black uppercase text-background">{t.queueStatus}</h2>
+            <div className="grid grid-cols-2">
+              <div className="border-b-2 border-r-2 border-foreground p-4"><p className="text-xs font-bold uppercase text-muted-foreground">{t.waiting}</p><p className="text-3xl font-black">{qstats?.waiting ?? "—"}</p></div>
+              <div className="border-b-2 border-foreground p-4"><p className="text-xs font-bold uppercase text-muted-foreground">{t.printingNow}</p><p className="text-3xl font-black">{qstats?.printing ?? "—"}</p></div>
+            </div>
+            {myPos ? (
+              <div className="flex items-center justify-between bg-primary p-4 text-primary-foreground">
+                <div><p className="text-xs font-bold uppercase opacity-80">{t.yourPlace}</p><p className="text-4xl font-black">#{myPos}</p></div>
+                <div className="text-right"><p className="text-xs font-bold uppercase opacity-80">{t.ahead}</p><p className="text-2xl font-black">{Math.max(0, myPos - 1)}</p></div>
+              </div>
+            ) : <p className="p-4 text-sm text-muted-foreground">{t.notInQueue}</p>}
+          </section>
           <section className={`${box} p-5`}>
             <h2 className="mb-4 text-xl font-black uppercase">{t.my}</h2>
             {myRequests.length === 0 ? <p className="text-muted-foreground">{t.empty}</p> : <ul className="space-y-3">
