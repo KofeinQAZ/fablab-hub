@@ -236,6 +236,7 @@ function Print3DPage() {
                     <div key={k} className="border-foreground/20 p-3 [&:not(:last-child)]:border-r-2"><p className="text-xs font-bold uppercase text-muted-foreground">{k}</p><p className="text-lg font-black">{v}</p></div>
                   ))}
                 </div>
+                {pricePerHour > 0 && <p className="border-t-2 border-foreground/20 px-4 py-2 text-sm font-bold">{t.timeCost}: {timeCost.toLocaleString()} ₸ <span className="font-normal text-muted-foreground">({pricePerHour.toLocaleString()} ₸/{t.h})</span></p>}
                 <p className="border-t-2 border-foreground/20 px-4 py-2 text-xs text-muted-foreground">{t.approx}</p>
               </div>
             )}
