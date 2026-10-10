@@ -108,7 +108,7 @@ function Settings() {
   const [f, setF] = useState<any>(null);
   useEffect(() => { if (data) setF(data); }, [data]);
   const save = useMutation({
-    mutationFn: async () => { const { id: _id, updated_at: _u, ...rest } = f; const { error } = await db.from("print_zone_settings").upsert({ id: 1, ...rest, priority_price: Number(rest.priority_price) || 0, print_speed_gph: Number(rest.print_speed_gph) || 12, weight_factor: Number(rest.weight_factor) || 1, shell_ratio: Math.min(1, Math.max(0, Number(rest.shell_ratio) || 0)), default_density: Number(rest.default_density) || 1.24 }); if (error) throw error; },
+    mutationFn: async () => { const { id: _id, updated_at: _u, ...rest } = f; const { error } = await db.from("print_zone_settings").upsert({ id: 1, ...rest, priority_price: Number(rest.priority_price) || 0, price_per_hour: Number(rest.price_per_hour) || 0, print_speed_gph: Number(rest.print_speed_gph) || 12, weight_factor: Number(rest.weight_factor) || 1, shell_ratio: Math.min(1, Math.max(0, Number(rest.shell_ratio) || 0)), default_density: Number(rest.default_density) || 1.24 }); if (error) throw error; },
     onSuccess: () => { toast.success("Сохранено"); qc.invalidateQueries({ queryKey: ["print-settings"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -122,6 +122,7 @@ function Settings() {
       {field("description", "Описание (RU)", true)}{field("description_kz", "Описание (KZ)", true)}{field("description_en", "Описание (EN)", true)}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-1"><Label>Цена без очереди, ₸</Label><Input type="number" min="0" value={f.priority_price} onChange={(e) => setF({ ...f, priority_price: e.target.value })} className="rounded-none border-2" /></div>
+        <div className="space-y-1"><Label>Час работы принтера, ₸</Label><Input type="number" min="0" value={f.price_per_hour ?? 0} onChange={(e) => setF({ ...f, price_per_hour: e.target.value })} className="rounded-none border-2" /></div>
         <label className="flex items-center gap-2 pt-6 font-bold"><input type="checkbox" checked={f.queue_enabled} onChange={(e) => setF({ ...f, queue_enabled: e.target.checked })} />Бесплатная очередь открыта</label>
         <label className="flex items-center gap-2 pt-6 font-bold"><input type="checkbox" checked={f.priority_enabled} onChange={(e) => setF({ ...f, priority_enabled: e.target.checked })} />Печать без очереди доступна</label>
       </div>

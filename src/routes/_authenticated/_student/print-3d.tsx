@@ -24,7 +24,7 @@ const MAX_STL = 50 * 1024 * 1024;
 
 const T = {
   ru: {
-    infill: "Заполнение", calc: "Автоподсчёт", volume: "Объём", weight: "Вес", time: "Время печати", size: "Габариты", approx: "Расчёт примерный — итог админ уточнит после нарезки.", h: "ч", m: "мин", badStl: "Не удалось прочитать STL",
+    infill: "Заполнение", calc: "Автоподсчёт", volume: "Объём", weight: "Вес", time: "Время печати", size: "Габариты", approx: "Расчёт примерный — итог админ уточнит после нарезки.", h: "ч", m: "мин", timeCost: "Работа принтера", badStl: "Не удалось прочитать STL",
     models: "Модели", addModel: "Добавить ещё STL", modelsCount: "моделей", remove: "Убрать",
     back: "К карте", zone: "Зона 3D-печати", title: "3D-печать в FabLab", mentors: "Менторы и сотрудники",
     queueTitle: "Бесплатно по очереди", queueText: "Принтер FabLab. Заявки печатаются по порядку.",
@@ -41,7 +41,7 @@ const T = {
     queueOff: "Очередь временно закрыта", free: "Бесплатно",
   },
   kz: {
-    infill: "Толтыру", calc: "Автоесеп", volume: "Көлем", weight: "Салмақ", time: "Басып шығару уақыты", size: "Өлшемдер", approx: "Есеп шамамен — соңғы бағаны админ нақтылайды.", h: "сағ", m: "мин", badStl: "STL оқылмады",
+    infill: "Толтыру", calc: "Автоесеп", volume: "Көлем", weight: "Салмақ", time: "Басып шығару уақыты", size: "Өлшемдер", approx: "Есеп шамамен — соңғы бағаны админ нақтылайды.", h: "сағ", m: "мин", timeCost: "Принтер жұмысы", badStl: "STL оқылмады",
     models: "Модельдер", addModel: "Тағы STL қосу", modelsCount: "модель", remove: "Алу",
     back: "Картаға", zone: "3D басып шығару аймағы", title: "FabLab-та 3D басып шығару", mentors: "Менторлар мен қызметкерлер",
     queueTitle: "Кезекпен тегін", queueText: "FabLab принтері. Өтінімдер ретімен басылады.",
@@ -58,7 +58,7 @@ const T = {
     queueOff: "Кезек уақытша жабық", free: "Тегін",
   },
   en: {
-    infill: "Infill", calc: "Auto estimate", volume: "Volume", weight: "Weight", time: "Print time", size: "Size", approx: "Approximate — admin confirms the final price after slicing.", h: "h", m: "min", badStl: "Could not read STL",
+    infill: "Infill", calc: "Auto estimate", volume: "Volume", weight: "Weight", time: "Print time", size: "Size", approx: "Approximate — admin confirms the final price after slicing.", h: "h", m: "min", timeCost: "Machine time", badStl: "Could not read STL",
     models: "Models", addModel: "Add another STL", modelsCount: "models", remove: "Remove",
     back: "Back to map", zone: "3D printing zone", title: "3D printing at FabLab", mentors: "Mentors & staff",
     queueTitle: "Free, in queue", queueText: "FabLab printer. Requests are printed in order.",
@@ -122,7 +122,9 @@ function Print3DPage() {
     const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3, 0);
     return { grams: Math.max(1, Math.round(grams)), minutes, volume };
   }, [models, source, filament, settings, infill]);
-  const total = useMemo(() => Math.round((mode === "priority" ? priorityPrice : 0) + (source === "catalog" && filament && est ? Number(filament.price_per_gram) * est.grams : 0)), [mode, priorityPrice, source, filament, est]);
+  const pricePerHour = Number(settings?.price_per_hour ?? 0);
+  const timeCost = est ? Math.round((est.minutes / 60) * pricePerHour) : 0;
+  const total = useMemo(() => Math.round((mode === "priority" ? priorityPrice : 0) + timeCost + (source === "catalog" && filament && est ? Number(filament.price_per_gram) * est.grams : 0)), [mode, priorityPrice, timeCost, source, filament, est]);
   const onFiles = async (files: FileList | null) => {
     if (!files?.length) return;
     for (const f of Array.from(files)) {
@@ -234,6 +236,7 @@ function Print3DPage() {
                     <div key={k} className="border-foreground/20 p-3 [&:not(:last-child)]:border-r-2"><p className="text-xs font-bold uppercase text-muted-foreground">{k}</p><p className="text-lg font-black">{v}</p></div>
                   ))}
                 </div>
+                {pricePerHour > 0 && <p className="border-t-2 border-foreground/20 px-4 py-2 text-sm font-bold">{t.timeCost}: {timeCost.toLocaleString()} ₸ <span className="font-normal text-muted-foreground">({pricePerHour.toLocaleString()} ₸/{t.h})</span></p>}
                 <p className="border-t-2 border-foreground/20 px-4 py-2 text-xs text-muted-foreground">{t.approx}</p>
               </div>
             )}

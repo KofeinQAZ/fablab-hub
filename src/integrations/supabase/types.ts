@@ -1028,6 +1028,7 @@ export type Database = {
           description_en: string | null
           description_kz: string | null
           id: number
+          price_per_hour: number
           print_speed_gph: number
           priority_enabled: boolean
           priority_price: number
@@ -1049,6 +1050,7 @@ export type Database = {
           description_en?: string | null
           description_kz?: string | null
           id?: number
+          price_per_hour?: number
           print_speed_gph?: number
           priority_enabled?: boolean
           priority_price?: number
@@ -1070,6 +1072,7 @@ export type Database = {
           description_en?: string | null
           description_kz?: string | null
           id?: number
+          price_per_hour?: number
           print_speed_gph?: number
           priority_enabled?: boolean
           priority_price?: number
