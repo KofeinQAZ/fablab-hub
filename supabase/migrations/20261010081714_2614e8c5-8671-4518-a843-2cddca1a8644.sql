@@ -1,0 +1,1 @@
+ALTER TABLE public.print_zone_settings ADD COLUMN IF NOT EXISTS price_per_hour numeric NOT NULL DEFAULT 0;
