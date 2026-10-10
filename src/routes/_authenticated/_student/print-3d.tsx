@@ -122,7 +122,9 @@ function Print3DPage() {
     const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3, 0);
     return { grams: Math.max(1, Math.round(grams)), minutes, volume };
   }, [models, source, filament, settings, infill]);
-  const total = useMemo(() => Math.round((mode === "priority" ? priorityPrice : 0) + (source === "catalog" && filament && est ? Number(filament.price_per_gram) * est.grams : 0)), [mode, priorityPrice, source, filament, est]);
+  const pricePerHour = Number(settings?.price_per_hour ?? 0);
+  const timeCost = est ? Math.round((est.minutes / 60) * pricePerHour) : 0;
+  const total = useMemo(() => Math.round((mode === "priority" ? priorityPrice : 0) + timeCost + (source === "catalog" && filament && est ? Number(filament.price_per_gram) * est.grams : 0)), [mode, priorityPrice, timeCost, source, filament, est]);
   const onFiles = async (files: FileList | null) => {
     if (!files?.length) return;
     for (const f of Array.from(files)) {
