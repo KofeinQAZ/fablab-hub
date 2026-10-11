@@ -3,21 +3,22 @@ import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-export type StlStats = { volumeCm3: number; size: [number, number, number] };
+export type StlStats = { volumeCm3: number; areaCm2: number; size: [number, number, number] };
 
 /** Parse STL (binary or ASCII) and compute closed-mesh volume in cm³ (model units = mm). */
 export function analyzeStl(buffer: ArrayBuffer): { geometry: THREE.BufferGeometry; stats: StlStats } {
   const geometry = new STLLoader().parse(buffer);
   const pos = geometry.getAttribute("position");
-  let vol = 0;
+  let vol = 0, area = 0;
   const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
   for (let i = 0; i < pos.count; i += 3) {
     a.fromBufferAttribute(pos, i); b.fromBufferAttribute(pos, i + 1); c.fromBufferAttribute(pos, i + 2);
     vol += a.dot(b.clone().cross(c)) / 6;
+    area += b.clone().sub(a).cross(c.clone().sub(a)).length() / 2;
   }
   geometry.computeBoundingBox();
   const s = new THREE.Vector3(); geometry.boundingBox!.getSize(s);
-  return { geometry, stats: { volumeCm3: Math.abs(vol) / 1000, size: [s.x, s.y, s.z] } };
+  return { geometry, stats: { volumeCm3: Math.abs(vol) / 1000, areaCm2: area / 100, size: [s.x, s.y, s.z] } };
 }
 
 export function StlViewer({ geometry }: { geometry: THREE.BufferGeometry }) {

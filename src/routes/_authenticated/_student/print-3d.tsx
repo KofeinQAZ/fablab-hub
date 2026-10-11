@@ -92,7 +92,7 @@ function Print3DPage() {
   const [source, setSource] = useState<"own" | "catalog">("own");
   const [ownLabel, setOwnLabel] = useState("");
   const [filamentId, setFilamentId] = useState("");
-  const [infill, setInfill] = useState(20);
+  const infill = 15; // базовое заполнение для оценки; реальное решают менторы
   const [comment, setComment] = useState("");
 
   const { data: settings } = useQuery({ queryKey: ["print-settings"], queryFn: async () => (await db.from("print_zone_settings").select("*").eq("id", 1).maybeSingle()).data });
@@ -118,9 +118,13 @@ function Print3DPage() {
   const est = useMemo(() => {
     if (models.length === 0) return null;
     const density = source === "catalog" && filament ? Number(filament.density) : Number(settings?.default_density ?? 1.24);
-    const shell = Number(settings?.shell_ratio ?? 0.25);
-    const factor = density * (shell + (1 - shell) * infill / 100) * Number(settings?.weight_factor ?? 1);
-    const grams = models.reduce((sum, m) => sum + m.stats.volumeCm3 * m.qty * factor, 0);
+    // Стенки/верх/низ ≈ площадь поверхности × 1.2 мм сплошного пластика, внутри — базовое заполнение
+    const wf = Number(settings?.weight_factor ?? 1);
+    const grams = models.reduce((sum, m) => {
+      const v = m.stats.volumeCm3;
+      const shellVol = Math.min(v, m.stats.areaCm2 * 0.12);
+      return sum + (shellVol + (v - shellVol) * infill / 100) * density * wf * m.qty;
+    }, 0);
     const minutes = Math.round(grams / Number(settings?.print_speed_gph || 12) * 60);
     const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3 * m.qty, 0);
     return { grams: Math.max(1, Math.round(grams)), minutes, volume };
@@ -237,9 +241,6 @@ function Print3DPage() {
                 ))}
               </div>
             )}
-            <div className="space-y-2"><Label>{t.infill}</Label><div className="grid grid-cols-4 gap-2">
-              {[10, 20, 50, 100].map((v) => <button key={v} type="button" onClick={() => setInfill(v)} className={`border-2 py-3 font-black ${infill === v ? "border-foreground bg-foreground text-background" : "border-foreground/30 hover:border-foreground"}`}>{v}%</button>)}
-            </div></div>
             {models.length > 0 && est && (
               <div className="border-2 border-foreground">
                 <p className="border-b-2 border-foreground bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-primary-foreground">{t.calc}{models.length > 1 ? ` · ${models.length} ${t.modelsCount}` : ""}</p>
