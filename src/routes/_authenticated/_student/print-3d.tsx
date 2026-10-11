@@ -92,7 +92,7 @@ function Print3DPage() {
   const [source, setSource] = useState<"own" | "catalog">("own");
   const [ownLabel, setOwnLabel] = useState("");
   const [filamentId, setFilamentId] = useState("");
-  const infill = 15; // базовое заполнение для оценки; реальное решают менторы
+  const infill = 10; // базовое (как в профиле слайсера) заполнение для оценки; реальное решают менторы
   const [comment, setComment] = useState("");
 
   const { data: settings } = useQuery({ queryKey: ["print-settings"], queryFn: async () => (await db.from("print_zone_settings").select("*").eq("id", 1).maybeSingle()).data });
@@ -118,11 +118,11 @@ function Print3DPage() {
   const est = useMemo(() => {
     if (models.length === 0) return null;
     const density = source === "catalog" && filament ? Number(filament.density) : Number(settings?.default_density ?? 1.24);
-    // Стенки/верх/низ ≈ площадь поверхности × 1.2 мм сплошного пластика, внутри — базовое заполнение
+    // Стенки/верх/низ ≈ площадь поверхности × 0.8 мм (2 периметра 0.42) сплошного пластика, внутри — базовое заполнение
     const wf = Number(settings?.weight_factor ?? 1);
     const grams = models.reduce((sum, m) => {
       const v = m.stats.volumeCm3;
-      const shellVol = Math.min(v, m.stats.areaCm2 * 0.12);
+      const shellVol = Math.min(v, m.stats.areaCm2 * 0.08);
       return sum + (shellVol + (v - shellVol) * infill / 100) * density * wf * m.qty;
     }, 0);
     const minutes = Math.round(grams / Number(settings?.print_speed_gph || 12) * 60);

@@ -127,7 +127,7 @@ function Settings() {
         <label className="flex items-center gap-2 pt-6 font-bold"><input type="checkbox" checked={f.priority_enabled} onChange={(e) => setF({ ...f, priority_enabled: e.target.checked })} />Печать без очереди доступна</label>
       </div>
       <h3 className="pt-2 text-lg font-black uppercase">Автоподсчёт</h3>
-      <p className="text-sm text-muted-foreground">Вес = (стенки 1.2 мм по поверхности + внутренность × 15%) × плотность × коэффициент. Время = вес ÷ скорость (для FDM обычно 40–50 г/час). Сверь пару моделей со слайсером и подкрути.</p>
+      <p className="text-sm text-muted-foreground">Вес = (стенки 0.8 мм по поверхности + внутренность × 10%) × плотность × коэффициент. Время = вес ÷ скорость (для FDM обычно 40–50 г/час). Сверь пару моделей со слайсером и подкрути.</p>
       <div className="grid gap-4 sm:grid-cols-4">
         {([["print_speed_gph", "Скорость принтера, г/час"], ["weight_factor", "Коэффициент веса"], ["default_density", "Плотность своего пластика, г/см³"]] as const).map(([k, l]) => (
           <div key={k} className="space-y-1"><Label>{l}</Label><Input type="number" step="0.01" min="0" value={f[k] ?? ""} onChange={(e) => setF({ ...f, [k]: e.target.value })} className="rounded-none border-2" /></div>
