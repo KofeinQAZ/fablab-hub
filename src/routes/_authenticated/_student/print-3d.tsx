@@ -123,9 +123,13 @@ function Print3DPage() {
     const grams = models.reduce((sum, m) => {
       const v = m.stats.volumeCm3;
       const shellVol = Math.min(v, m.stats.areaCm2 * 0.08);
-      return sum + (shellVol + (v - shellVol) * infill / 100) * density * wf * m.qty;
+      // Поддержки: объём под нависаниями × ~12% (древовидные/редкие)
+      const supportVol = m.stats.supportCm3 * 0.12;
+      return sum + (shellVol + (v - shellVol) * infill / 100 + supportVol) * density * wf * m.qty;
     }, 0);
-    const minutes = Math.round(grams / Number(settings?.print_speed_gph || 12) * 60);
+    // Время = экструзия (г ÷ скорость) + накладные на каждый слой 0.2 мм (смена слоя, периметры, перемещения ≈ 8 с)
+    const layers = Math.max(...models.map((m) => m.stats.heightMm)) / 0.2;
+    const minutes = Math.round(grams / Number(settings?.print_speed_gph || 52) * 60 + layers * 0.13);
     const volume = models.reduce((sum, m) => sum + m.stats.volumeCm3 * m.qty, 0);
     return { grams: Math.max(1, Math.round(grams)), minutes, volume };
   }, [models, source, filament, settings, infill]);
