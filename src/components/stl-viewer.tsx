@@ -3,22 +3,31 @@ import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-export type StlStats = { volumeCm3: number; areaCm2: number; size: [number, number, number] };
+export type StlStats = { volumeCm3: number; areaCm2: number; supportCm3: number; heightMm: number; size: [number, number, number] };
 
 /** Parse STL (binary or ASCII) and compute closed-mesh volume in cm³ (model units = mm). */
 export function analyzeStl(buffer: ArrayBuffer): { geometry: THREE.BufferGeometry; stats: StlStats } {
   const geometry = new STLLoader().parse(buffer);
   const pos = geometry.getAttribute("position");
-  let vol = 0, area = 0;
-  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  geometry.computeBoundingBox();
+  const minZ = geometry.boundingBox!.min.z;
+  let vol = 0, area = 0, support = 0;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3();
   for (let i = 0; i < pos.count; i += 3) {
     a.fromBufferAttribute(pos, i); b.fromBufferAttribute(pos, i + 1); c.fromBufferAttribute(pos, i + 2);
     vol += a.dot(b.clone().cross(c)) / 6;
-    area += b.clone().sub(a).cross(c.clone().sub(a)).length() / 2;
+    n.copy(b).sub(a).cross(c.clone().sub(a));
+    const triArea = n.length() / 2;
+    area += triArea;
+    // Нависания круче 45° (нормаль смотрит вниз), не лежащие на столе → нужны поддержки
+    if (triArea > 0) {
+      const nz = n.z / (2 * triArea);
+      const zc = (a.z + b.z + c.z) / 3 - minZ;
+      if (nz < -0.7 && zc > 0.5) support += triArea * -nz * zc;
+    }
   }
-  geometry.computeBoundingBox();
   const s = new THREE.Vector3(); geometry.boundingBox!.getSize(s);
-  return { geometry, stats: { volumeCm3: Math.abs(vol) / 1000, areaCm2: area / 100, size: [s.x, s.y, s.z] } };
+  return { geometry, stats: { volumeCm3: Math.abs(vol) / 1000, areaCm2: area / 100, supportCm3: support / 1000, heightMm: s.z, size: [s.x, s.y, s.z] } };
 }
 
 export function StlViewer({ geometry }: { geometry: THREE.BufferGeometry }) {
