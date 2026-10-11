@@ -63,6 +63,8 @@
   --color-zone-violet: var(--zone-violet);
   --color-zone-green: var(--zone-green);
   --color-zone-yellow: var(--zone-yellow);
+  --color-landing-action: var(--landing-action);
+  --color-landing-action-foreground: var(--landing-action-foreground);
 }
 
 :root {
@@ -104,6 +106,8 @@
   --zone-violet: oklch(0.52 0.24 300);
   --zone-green: oklch(0.65 0.2 145);
   --zone-yellow: oklch(0.78 0.17 78);
+  --landing-action: oklch(0.55 0.25 263);
+  --landing-action-foreground: oklch(1 0 0);
 }
 
 .dark {
@@ -143,6 +147,88 @@
   --zone-violet: oklch(0.66 0.2 300);
   --zone-green: oklch(0.72 0.16 145);
   --zone-yellow: oklch(0.82 0.15 78);
+  --landing-action: oklch(0.55 0.25 263);
+  --landing-action-foreground: oklch(1 0 0);
+}
+
+/* Keep the real facade unobscured on narrow screens; the action becomes a band. */
+.landing-hero {
+  background: var(--background);
+  color: var(--foreground);
+}
+.landing-hero-title {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 auto;
+  max-width: 1600px;
+  padding: 32px 20px;
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+.landing-hero-title span:last-child {
+  align-self: flex-end;
+  font-size: 52px;
+}
+.landing-hero-scene { position: relative; }
+.landing-hero-photo {
+  display: block;
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  object-position: 35% center;
+}
+.landing-hero-action {
+  background: var(--landing-action);
+  color: var(--landing-action-foreground);
+  padding: 24px;
+}
+.landing-hero-link {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  height: auto;
+  padding: 8px 0;
+  border-radius: 0;
+  border-bottom: 2px solid currentColor;
+  color: inherit;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: normal;
+  text-align: left;
+}
+.landing-hero-link:hover {
+  background: transparent;
+  color: inherit;
+  opacity: 0.85;
+}
+@media (min-width: 640px) {
+  .landing-hero-title { padding: 36px 32px; font-size: 100px; }
+  .landing-hero-title span:last-child { font-size: 88px; }
+  .landing-hero-photo { height: 320px; object-position: left center; }
+  .landing-hero-action { padding: 28px 32px; }
+}
+@media (min-width: 1024px) {
+  .landing-hero-title { padding: 36px 48px; font-size: 160px; gap: 16px; }
+  .landing-hero-title span:last-child { font-size: 128px; }
+  .landing-hero-photo { height: 340px; }
+  .landing-hero-action {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 380px;
+    padding: 32px;
+    border-top-left-radius: 40px;
+  }
+}
+@media (min-width: 1440px) {
+  .landing-hero-title { font-size: 184px; }
+  .landing-hero-title span:last-child { font-size: 152px; }
+  .landing-hero-photo { height: 390px; }
+  .landing-hero-action { width: 440px; padding: 36px; }
 }
 
 @layer base {

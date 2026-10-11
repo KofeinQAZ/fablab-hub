@@ -7,6 +7,8 @@ import {
   Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
 } from "lucide-react";
 import mitLogo from "/fablab-mit-logo.png";
+import buildingPhoto from "@/assets/fablab-building.png.asset.json";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_public/")({
   component: LandingPage,
@@ -29,49 +31,40 @@ function LandingPage() {
     <div className="relative min-h-screen bg-[#FAFAFA] font-sans overflow-hidden selection:bg-blue-600 selection:text-white">
       
       {/* --- 1. АРХИТЕКТУРНАЯ HERO СЕКЦИЯ --- */}
-      <section className="relative pt-12 md:pt-16 pb-0 bg-[#FAFAFA] min-h-[calc(100vh-80px)] flex flex-col justify-between">
-        <div className="relative z-10 px-4 md:px-12 text-right select-none flex flex-col items-end justify-start w-full mt-4 md:mt-8">
-
-
-          <h1 className="text-[18vw] md:text-[14vw] font-black leading-[0.75] tracking-tighter text-slate-900 uppercase">
-            FABLAB
-          </h1>
-          <h1 className="text-[15vw] md:text-[11vw] font-black leading-[0.8] tracking-tighter text-slate-900 uppercase opacity-90 mt-2">
-            SATBAYEV
-          </h1>
-        </div>
-
-        <div className="relative z-20 w-full mt-8 md:mt-[-16vw] flex-1 flex flex-col justify-end">
-          <div className="relative w-full h-[60vh] min-h-[500px] md:h-[650px] flex items-end justify-between">
-            
-            <img 
-              src="/hero-bg.png" 
-              alt="FabLab Satbayev Building" 
-              className="absolute bottom-0 left-0 md:left-[-5%] w-full md:w-[95%] h-full object-cover object-center md:object-contain md:object-left-bottom pointer-events-none drop-shadow-2xl"
+      <section className="landing-hero">
+        <h1 className="landing-hero-title">
+          <span>FABLAB</span>
+          <span>SATBAYEV</span>
+        </h1>
+        <div className="landing-hero-scene">
+            <img
+              src={buildingPhoto.url}
+              alt="FabLab Satbayev"
+              width={1920}
+              height={439}
+              fetchPriority="high"
+              className="landing-hero-photo"
             />
-            
-            <div className="absolute bottom-0 left-0 md:left-[-5%] w-full md:w-[95%] h-[50%] md:h-[30%] bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/90 to-transparent pointer-events-none" />
-
-            <div className="relative z-30 bg-blue-600 text-white p-6 md:p-10 lg:p-12 w-full md:w-[550px] rounded-t-[2rem] md:rounded-t-none md:rounded-tl-[3rem] flex flex-col justify-end shadow-[0_20px_50px_rgba(37,99,235,0.3)] border-t-4 border-[#FAFAFA] md:border-none md:border-t-8 md:border-l-8 md:border-[#FAFAFA] ml-auto">
-              <p className="font-bold text-sm md:text-base uppercase tracking-widest mb-4 opacity-90">
+            <div className="landing-hero-action">
+              <p className="font-bold text-sm uppercase leading-relaxed mb-4">
                 {t('landing.hero.ctaDesc', '3D-ПЕЧАТЬ, ЧПУ СТАНКИ, СЛЕСАРНАЯ ЗОНА')}
               </p>
-              <h2 className="text-2xl md:text-3xl font-extrabold mb-8 leading-tight">
+              <h2 className="text-2xl font-extrabold mb-5 leading-tight uppercase">
                 {t('landing.hero.ctaTitle', 'БРОНИРУЙТЕ ОБОРУДОВАНИЕ ОНЛАЙН')}
               </h2>
-              <button 
+              <Button
+                variant="ghost"
                 onClick={() => navigate({ to: "/booking" })}
-                className="group flex items-center font-bold uppercase tracking-widest text-sm border-b-2 border-white pb-2 w-max hover:text-blue-200 hover:border-blue-200 transition-colors"
+                className="landing-hero-link group"
               >
-                {t('landing.hero.ctaBtn', 'ПЕРЕЙТИ К БРОНИРОВАНИЮ')} <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+                <span>{t('landing.hero.ctaBtn', 'ПЕРЕЙТИ К БРОНИРОВАНИЮ')}</span><ChevronRight className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none" />
+              </Button>
             </div>
-          </div>
         </div>
       </section>
 
       {/* --- 2. ТЕХНОЛОГИИ (Брутальная сетка) --- */}
-      <section className="max-w-7xl mx-auto px-6 pt-12 pb-24 z-10 relative mt-12">
+      <section className="max-w-7xl mx-auto px-6 pt-8 md:pt-12 pb-24 z-10 relative">
         <div className="border-t-4 border-slate-900 pt-12 flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
             {t('landing.tech.title', 'НАШИ ВОЗМОЖНОСТИ')}
