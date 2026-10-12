@@ -7,7 +7,7 @@ import {
   Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
 } from "lucide-react";
 import mitLogo from "/fablab-mit-logo.png";
-import buildingPhoto from "@/assets/fablab-building.png.asset.json";
+import buildingPhoto from "@/assets/fablab-building.webp";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_public/")({
@@ -38,7 +38,7 @@ function LandingPage() {
         </h1>
         <div className="landing-hero-scene">
             <img
-              src={buildingPhoto.url}
+              src={buildingPhoto}
               alt="FabLab Satbayev"
               width={1920}
               height={439}
