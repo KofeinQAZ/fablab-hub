@@ -239,27 +239,9 @@ function ClubsPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="h-14 px-6 bg-blue-600 hover:bg-blue-700 text-white border-4 border-slate-900 rounded-none font-black uppercase tracking-widest text-xs shadow-[4px_4px_0_#0f172a]">
-                  <Plus className="h-4 w-4 mr-2" /> {t("clubs.createBtn", "Создать")}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="border-4 border-slate-900 rounded-none p-0 shadow-[6px_6px_0_#0f172a]">
-                <DropdownMenuItem
-                  onClick={() => setCreatingClub(true)}
-                  className="rounded-none font-black uppercase tracking-widest text-[11px] px-4 py-3 cursor-pointer"
-                >
-                  <Users className="h-4 w-4 mr-2" /> {t("clubs.createClub", "Создать клуб")}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => navigate({ to: "/profile" })}
-                  className="rounded-none font-black uppercase tracking-widest text-[11px] px-4 py-3 cursor-pointer"
-                >
-                  <Rocket className="h-4 w-4 mr-2" /> {t("clubs.createProject", "Создать проект")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button onClick={() => setCreatingClub(true)} className="h-14 px-6 bg-blue-600 hover:bg-blue-700 text-white border-4 border-slate-900 rounded-none font-black uppercase tracking-widest text-xs shadow-[4px_4px_0_#0f172a]">
+              <Plus className="h-4 w-4 mr-2" /> {t("clubs.createClub", "Создать клуб")}
+            </Button>
           </div>
         </div>
 

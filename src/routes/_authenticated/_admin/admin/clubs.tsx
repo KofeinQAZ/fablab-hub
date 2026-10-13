@@ -6,6 +6,10 @@ import { UserAvatar } from "@/components/user-avatar";
 import { toast } from "sonner";
 import { Users, Check, X, Trophy, ShieldCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { ClubFormDialog } from "@/components/club-form-dialog";
+import { useCurrentProfile } from "@/lib/auth";
+import { Plus, Rocket } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/clubs")({
   component: AdminClubs,
@@ -72,16 +76,50 @@ function AdminClubs() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const { data: projects = [] } = useQuery({
+    queryKey: ["admin-all-projects"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("projects").select("*, clubs(title), profiles:author_id (name)").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+  const moderateProject = useMutation({
+    mutationFn: async ({ project, approve }: { project: any; approve: boolean }) => {
+      const { error } = await supabase.from("projects").update({ is_approved: approve, is_rejected: !approve }).eq("id", project.id);
+      if (error) throw error;
+      await supabase.from("notifications").insert({
+        user_id: project.author_id,
+        title: approve ? "🚀 Проект опубликован!" : "📦 Проект отклонён",
+        message: approve ? `Ваш проект "${project.title}" прошёл модерацию.` : `Ваш проект "${project.title}" был отклонён администратором.`,
+        type: "project",
+      });
+    },
+    onSuccess: () => { toast.success("Готово"); qc.invalidateQueries({ queryKey: ["admin-all-projects"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const { data: auth } = useCurrentProfile();
+  const adminId: string | undefined = auth?.userId;
+  const [creating, setCreating] = useState(false);
+  const pendingProjects = projects.filter((p) => !p.is_approved && !p.is_rejected);
+
   const pending = clubs.filter((c) => !c.is_approved && !c.is_rejected);
   const block = "bg-white border-4 border-slate-900 p-6 shadow-[6px_6px_0_#0f172a]";
 
   return (
     <div className="space-y-8">
-      <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Клубы</h1>
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b-4 border-slate-900 pb-6">
+        <div>
+          <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Клубы и проекты</h1>
+          <p className="mt-2 text-xs font-bold uppercase tracking-widest text-slate-500">Заявки на открытие клубов, проекты внутри клубов и участники</p>
+        </div>
+        <Button onClick={() => setCreating(true)} disabled={!adminId} className="h-12 rounded-none border-2 border-slate-900 bg-blue-600 font-black uppercase tracking-widest text-white shadow-[4px_4px_0_#0f172a] hover:bg-blue-700"><Plus className="mr-2 h-4 w-4" />Создать клуб</Button>
+      </div>
+      {adminId && <ClubFormDialog open={creating} onOpenChange={setCreating} userId={adminId} autoApprove />}
 
       <div className={block}>
         <h2 className="text-xl font-black uppercase tracking-tight mb-6 flex items-center gap-3">
-          <Trophy className="h-5 w-5 text-amber-500" /> Модерация новых клубов ({pending.length})
+          <Trophy className="h-5 w-5 text-amber-500" /> Заявки на открытие клуба ({pending.length})
         </h2>
         {pending.length === 0 ? (
           <p className="font-black uppercase tracking-widest text-xs text-slate-400">Нет клубов на модерации</p>
@@ -110,7 +148,33 @@ function AdminClubs() {
 
       <div className={block}>
         <h2 className="text-xl font-black uppercase tracking-tight mb-6 flex items-center gap-3">
-          <ShieldCheck className="h-5 w-5 text-blue-600" /> Управление составом
+          <Rocket className="h-5 w-5 text-blue-600" /> Проекты на модерации ({pendingProjects.length})
+        </h2>
+        {pendingProjects.length === 0 ? (
+          <p className="font-black uppercase tracking-widest text-xs text-slate-400">Нет проектов на модерации</p>
+        ) : (
+          <div className="space-y-4">
+            {pendingProjects.map((p) => (
+              <div key={p.id} className="border-2 border-slate-900 p-4 bg-slate-50 flex flex-col md:flex-row md:items-center gap-4">
+                {p.image_url && <img src={p.image_url} alt="" className="h-16 w-16 shrink-0 border-2 border-slate-900 object-cover" />}
+                <div className="flex-1 min-w-0">
+                  <div className="font-black uppercase tracking-tight text-lg">{p.title}</div>
+                  <p className="text-sm text-slate-600 font-medium line-clamp-2">{p.description}</p>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Клуб: {p.clubs?.title ?? "без клуба"} · Автор: {p.profiles?.name}</div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => moderateProject.mutate({ project: p, approve: true })} className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 rounded-none font-black uppercase tracking-widest text-[10px]"><Check className="h-4 w-4 mr-1" /> Одобрить</Button>
+                  <Button onClick={() => moderateProject.mutate({ project: p, approve: false })} className="bg-white hover:bg-red-500 hover:text-white text-slate-900 border-2 border-slate-900 rounded-none font-black uppercase tracking-widest text-[10px]"><X className="h-4 w-4 mr-1" /> Отклонить</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className={block}>
+        <h2 className="text-xl font-black uppercase tracking-tight mb-6 flex items-center gap-3">
+          <ShieldCheck className="h-5 w-5 text-blue-600" /> Клубы и состав
         </h2>
         <div className="space-y-6">
           {clubs.filter((c) => c.is_approved).map((c) => (
@@ -120,7 +184,7 @@ function AdminClubs() {
                   {c.title}
                 </Link>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  {c.club_members?.length ?? 0} участников
+                  {c.club_members?.length ?? 0} участников · {projects.filter((p) => p.club_id === c.id && p.is_approved).length} проектов
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

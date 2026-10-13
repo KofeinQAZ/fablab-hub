@@ -32,7 +32,9 @@ export function ClubFormDialog({
   onOpenChange,
   club,
   userId,
+  autoApprove = false,
 }: {
+  autoApprove?: boolean;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   club?: ClubRow;
@@ -77,12 +79,17 @@ export function ClubFormDialog({
         const { error } = await supabase.from("clubs").update(payload).eq("id", club.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("clubs").insert({ ...payload, author_id: userId });
+        const { data, error } = await supabase.from("clubs").insert({ ...payload, author_id: userId }).select("id").single();
         if (error) throw error;
+        if (autoApprove && data) {
+          const { error: aErr } = await supabase.from("clubs").update({ is_approved: true, is_rejected: false }).eq("id", data.id);
+          if (aErr) throw aErr;
+        }
       }
     },
     onSuccess: () => {
-      toast.success(club?.id ? t("clubs.form.updated", "Клуб обновлён") : t("clubs.form.sent", "Клуб отправлен на модерацию"));
+      toast.success(club?.id ? t("clubs.form.updated", "Клуб обновлён") : (autoApprove ? "Клуб создан и опубликован" : t("clubs.form.sent", "Клуб отправлен на модерацию")));
+      qc.invalidateQueries({ queryKey: ["admin-clubs"] });
       qc.invalidateQueries({ queryKey: ["clubs"] });
       qc.invalidateQueries({ queryKey: ["club"] });
       onOpenChange(false);

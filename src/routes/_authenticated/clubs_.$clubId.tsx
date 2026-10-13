@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { UserAvatar } from "@/components/user-avatar";
 import { ImageUploadMultiple } from "@/components/image-upload";
 import { ClubFormDialog } from "@/components/club-form-dialog";
+import { ClubProjectDialog } from "@/components/club-project-dialog";
 import { getLocalized } from "@/components/projects-section";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -104,6 +105,8 @@ function ClubPage() {
       return data as any[];
     },
   });
+
+  const [creatingProject, setCreatingProject] = useState(false);
 
   const applyMutation = useMutation({
     mutationFn: async () => {
@@ -384,9 +387,13 @@ function ClubPage() {
         </div>
 
         {/* Проекты клуба */}
-        {club.projects?.length > 0 && (
+        {(club.projects?.length > 0 || isModerator) && (
           <div className={block}>
-            <h2 className={heading}><span className="w-4 h-4 bg-blue-600 border-2 border-slate-900" /> {t("clubs.projects", "Проекты клуба")}</h2>
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <h2 className={`${heading} !mb-0`}><span className="w-4 h-4 bg-blue-600 border-2 border-slate-900" /> {t("clubs.projects", "Проекты клуба")}</h2>
+              {isModerator && profile && <Button onClick={() => setCreatingProject(true)} className="rounded-none border-2 border-slate-900 bg-blue-600 font-black uppercase text-white hover:bg-blue-700">+ {t("clubs.addProject", "Добавить проект")}</Button>}
+            </div>
+            {!club.projects?.length && <p className="text-sm font-bold text-slate-500">{t("clubs.noProjects", "Проектов пока нет")}</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {club.projects.map((p: any) => (
                 <Link key={p.id} to="/clubs" className="border-2 border-slate-900 bg-white shadow-[4px_4px_0_#0f172a] overflow-hidden hover:-translate-y-1 transition-transform">
@@ -575,6 +582,7 @@ function ClubPage() {
       </Dialog>
 
       {profile && <ClubFormDialog open={editOpen} onOpenChange={setEditOpen} club={club} userId={profile.id} />}
-    </div>
+    {profile && <ClubProjectDialog open={creatingProject} onOpenChange={setCreatingProject} clubId={clubId} userId={profile.id} isAdmin={profile.role === "admin"} />}
+      </div>
   );
 }
