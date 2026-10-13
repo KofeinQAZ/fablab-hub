@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { LabZone } from "@/components/lab-map";
+import type { UserProfile } from "@/lib/auth";
 
 const START_HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 const DURATIONS = [1, 2, 3, 4, 6, 8];
@@ -23,7 +24,7 @@ const toIsoDate = (d: Date) => {
 };
 const fmtHour = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 
-export function LabZoneDialog({ zone, userId, onClose }: { zone: LabZone | null; userId: string | null; onClose: () => void }) {
+export function LabZoneDialog({ zone, userId, profile, onClose }: { zone: LabZone | null; userId: string | null; profile?: UserProfile | null; onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [photo, setPhoto] = useState(0);
@@ -151,7 +152,13 @@ export function LabZoneDialog({ zone, userId, onClose }: { zone: LabZone | null;
                 <h3 className="text-xl font-black uppercase tracking-normal">{t("booking.map.form.title")}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{t("booking.map.form.subtitle")}</p>
               </div>
-              {!zone.booking_enabled ? (
+              {!userId ? (
+                <Button asChild className="h-auto min-h-12 w-full whitespace-normal rounded-none border-2 border-foreground font-bold">
+                  <a href={`/login?returnTo=${encodeURIComponent(`/?zoneId=${zone.id}#booking-book`)}`}>{t("booking.access.authRequired")} · {t("auth.login")}</a>
+                </Button>
+              ) : profile && (profile.is_banned || (profile.approval_status && profile.approval_status !== "approved")) ? (
+                <div role="status" className="border-2 border-foreground bg-muted p-4 text-base leading-relaxed">{profile.is_banned ? t("inventory.errors.banned", "Ваш аккаунт заблокирован") : t(profile.approval_status === "rejected" ? "approval.rejectedDesc" : "approval.pendingDesc")}</div>
+              ) : !zone.booking_enabled ? (
                 <div className="border-2 border-destructive bg-destructive/10 p-4 font-bold">{t("booking.map.form.disabled")}</div>
               ) : (
                 <div className="space-y-5">
