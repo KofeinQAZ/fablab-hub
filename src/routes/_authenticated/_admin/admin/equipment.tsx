@@ -204,6 +204,10 @@ function AdminEquipmentPage() {
 
   const deleteEquipment = useMutation({
     mutationFn: async (id: string) => {
+      // У оборудования могут быть связанные бронирования — сначала убираем их,
+      // иначе база не даст удалить запись.
+      const { error: bookingsError } = await supabase.from("bookings").delete().eq("equipment_id", id);
+      if (bookingsError) throw bookingsError;
       const { data, error } = await supabase.from("equipment").delete().eq("id", id).select();
       if (error) throw error;
       if (!data || data.length === 0) throw new Error("Ошибка удаления: у вас нет прав для этого действия");
