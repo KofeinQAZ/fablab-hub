@@ -34,24 +34,25 @@ function LandingPage() {
     <div className="relative min-h-screen bg-background font-sans overflow-hidden selection:bg-primary selection:text-primary-foreground">
       
       <section className="landing-hero">
-        <div className="landing-hero-glow" aria-hidden="true" />
         <div className="landing-hero-container">
-          <div className="landing-hero-text">
-            <span className="landing-hero-eyebrow hero-in" style={{ animationDelay: "0ms" }}>{t("landing.hero.eyebrow", "Открытая лаборатория · Satbayev University")}</span>
-            <h1 className="landing-hero-title hero-in" style={{ animationDelay: "80ms" }}><span>FABLAB</span><span>SATBAYEV</span></h1>
-            <p className="landing-hero-intro hero-in" style={{ animationDelay: "160ms" }}>{t("landing.hero.about", "FabLab — это открытая мастерская Satbayev University, где идея превращается в реальную вещь. Приходи с проектом или просто с любопытством: напечатаешь деталь, вырежешь заготовку, спаяешь плату и соберёшь прототип. Оборудование, наставники и практические воркшопы уже здесь, начинать можно с нуля.")}</p>
-            <div className="landing-hero-buttons hero-in" style={{ animationDelay: "240ms" }}>
-              <Button onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })} className="landing-hero-button landing-hero-button-primary">
-                {t("landing.hero.more", "Подробнее")}<ArrowDown className="h-4 w-4 shrink-0" />
+          <div className="landing-hero-head">
+            <h1 className="landing-hero-title hero-in" style={{ animationDelay: "0ms" }}><span>FABLAB</span><span>SATBAYEV</span></h1>
+            <p className="landing-hero-intro hero-in" style={{ animationDelay: "100ms" }}>{t("landing.hero.about", "FabLab — это открытая мастерская Satbayev University, где идея превращается в реальную вещь. Приходи с проектом или просто с любопытством: напечатаешь деталь, вырежешь заготовку, спаяешь плату и соберёшь прототип. Оборудование, наставники и практические воркшопы уже здесь, начинать можно с нуля.")}</p>
+          </div>
+          <div className="landing-hero-media hero-in" style={{ animationDelay: "180ms" }}>
+            <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
+          </div>
+          <div className="landing-hero-foot hero-in" style={{ animationDelay: "260ms" }}>
+            <p className="landing-hero-caption">{t("landing.hero.caption", "3D-печать, ЧПУ станки, слесарная зона, пайка и электроника")}</p>
+            <div className="landing-hero-buttons">
+              <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: "smooth" })} className="landing-hero-button landing-hero-button-primary">
+                {t("landing.hero.apply", "Подать заявку")}<ChevronRight className="h-4 w-4 shrink-0" />
               </Button>
-              <Button variant="outline" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="landing-hero-button landing-hero-button-secondary">
-                <LayoutGrid className="h-4 w-4 shrink-0" />{t("landing.hero.features", "Функционал")}
+              <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="landing-hero-button landing-hero-button-secondary">
+                <Printer className="h-4 w-4 shrink-0" />{t("landing.hero.print3d", "3D-печать")}
               </Button>
             </div>
           </div>
-        </div>
-        <div className="landing-hero-media">
-          <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
         </div>
       </section>
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
