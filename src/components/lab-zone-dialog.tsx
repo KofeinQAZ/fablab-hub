@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock, ExternalLink, Loader2, Minus, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { LabZone } from "@/components/lab-map";
 import type { UserProfile } from "@/lib/auth";
+import { DAY_SHORT, WEEK_DAYS, clock5, eventsOn, hoursFor, parseHours, toMinutes, type ZoneEvent } from "@/lib/zone-schedule";
 
-const START_HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 const DURATIONS = [1, 2, 3, 4, 6, 8];
 const MINUTE = 60_000;
 
@@ -76,8 +76,27 @@ export function LabZoneDialog({ zone, userId, profile, onClose }: { zone: LabZon
   const tomorrowIso = toIsoDate(new Date(now.getTime() + 24 * 60 * MINUTE));
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
+  const { data: zoneEvents = [] } = useQuery({
+    queryKey: ["zone-events", zone?.id],
+    enabled: !!zone,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("zone_events").select("*").eq("zone_id", zone!.id);
+      if (error) throw error;
+      return data as ZoneEvent[];
+    },
+  });
+  const weekly = parseHours(zone?.weekly_hours);
+  const lang = i18n.language.split("-")[0];
+  const dayNames = DAY_SHORT[lang] ?? DAY_SHORT.ru;
+  const dayOpen = date ? hoursFor(weekly, date) : null;
+  const openMin = dayOpen ? toMinutes(dayOpen.start) : 0;
+  const closeMin = dayOpen ? toMinutes(dayOpen.end) : 0;
+  const startHours = dayOpen ? Array.from({ length: Math.max(0, Math.floor((closeMin - 60 - openMin) / 60) + 1) }, (_, i) => Math.ceil(openMin / 60) + i).filter((h) => h * 60 + 60 <= closeMin) : [];
+  const dayEvents = date ? eventsOn(zoneEvents, date) : [];
+  const allBusy = [...busy, ...dayEvents.map((e) => ({ start: toMinutes(e.start_clock), end: toMinutes(e.end_clock) }))];
+
   const hasConflict = (startMin: number, endMin: number) =>
-    busy.some((b) => startMin < b.end && endMin > b.start);
+    endMin > closeMin || allBusy.some((b) => startMin < b.end && endMin > b.start);
 
   const slotDisabled = (h: number) => {
     if (date === todayIso && h * 60 <= nowMinutes) return true;
@@ -96,7 +115,7 @@ export function LabZoneDialog({ zone, userId, profile, onClose }: { zone: LabZon
     if (date === todayIso && start <= nowMinutes) { setTime(""); return; }
     if (hasConflict(start, start + duration * 60) || start + duration * 60 > 24 * 60) setTime("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [duration, busy, date]);
+  }, [duration, busy, date, zoneEvents]);
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -152,6 +171,17 @@ export function LabZoneDialog({ zone, userId, profile, onClose }: { zone: LabZon
                 <h3 className="text-xl font-black uppercase tracking-normal">{t("booking.map.form.title")}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{t("booking.map.form.subtitle")}</p>
               </div>
+              <div className="grid grid-cols-7 border-2 border-foreground text-center text-xs sm:text-sm">
+                {WEEK_DAYS.map((d) => {
+                  const h = weekly.find((x) => x.day === d);
+                  return (
+                    <div key={d} className={`border-r-2 border-foreground/15 p-1.5 last:border-r-0 ${h ? "" : "bg-muted text-muted-foreground"}`}>
+                      <div className="font-black uppercase">{dayNames[d]}</div>
+                      <div className="mt-0.5 font-bold leading-tight">{h ? <>{h.start}<br />{h.end}</> : "—"}</div>
+                    </div>
+                  );
+                })}
+              </div>
               {!userId ? (
                 <Button asChild className="h-auto min-h-12 w-full whitespace-normal rounded-none border-2 border-foreground font-bold">
                   <a href={`/login?returnTo=${encodeURIComponent(`/?zoneId=${zone.id}#booking-book`)}`}>{t("booking.access.authRequired")} · {t("auth.login")}</a>
@@ -183,10 +213,17 @@ export function LabZoneDialog({ zone, userId, profile, onClose }: { zone: LabZon
                       </div>
                       {busyLoading ? (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />…</div>
-                      ) : busy.length === 0 ? (
+                      ) : !dayOpen ? (
+                        <p className="text-sm font-bold text-destructive">{t("booking.map.form.closed", "В этот день зона закрыта")}</p>
+                      ) : allBusy.length === 0 ? (
                         <p className="text-sm font-bold text-primary">{t("booking.map.form.busyFree")}</p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
+                          {dayEvents.map((e) => (
+                            <span key={e.id} className="rounded-none border-2 border-foreground bg-secondary px-2.5 py-1 text-sm font-bold">
+                              {clock5(e.start_clock)} – {clock5(e.end_clock)} · {e.title}
+                            </span>
+                          ))}
                           {busy.map((iv, i) => (
                             <span key={i} className="rounded-none border-2 border-destructive bg-destructive/10 px-2.5 py-1 text-sm font-bold text-destructive line-through">
                               {fmtHour(iv.start)} – {fmtHour(iv.end)}
@@ -202,7 +239,7 @@ export function LabZoneDialog({ zone, userId, profile, onClose }: { zone: LabZon
                     <div className="space-y-2">
                       <Label className="text-sm font-black uppercase tracking-wide">{t("booking.map.form.slotsLabel")}</Label>
                       <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-                        {START_HOURS.map((h) => {
+                        {startHours.map((h) => {
                           const disabled = slotDisabled(h);
                           const value = String(h).padStart(2, "0");
                           return (
