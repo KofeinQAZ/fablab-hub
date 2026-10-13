@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { exportProjectPdf } from "@/lib/project-pdf";
 import {
   Users, CheckCircle2, UserPlus, X, Image as ImageIcon, Calendar, History,
   Megaphone, Lightbulb, Settings, Mail, Phone, Trophy,
@@ -293,7 +294,12 @@ export function ProjectsSection({
                     {t("clubs.card.partOf", "Клуб")}: {getLocalized(selectedProject.clubs, "title", i18n.language)}
                   </Link>
                 )}
-              </div>
+                              {selectedProject && (
+                  <button type="button" onClick={() => exportProjectPdf(selectedProject.id, i18n.language).catch((e) => toast.error(e.message))} className="ml-auto bg-blue-600 px-3 py-1 border-2 border-slate-900 text-white hover:bg-blue-700">
+                    Экспорт в PDF
+                  </button>
+                )}
+</div>
 
               <div className="bg-white border-4 border-slate-900 p-6 md:p-8 shadow-[6px_6px_0_#0f172a]">
                 <h3 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-6 flex items-center gap-3">
