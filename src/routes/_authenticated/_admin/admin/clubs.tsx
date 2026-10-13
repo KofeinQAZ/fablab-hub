@@ -8,7 +8,7 @@ import { Users, Check, X, Trophy, ShieldCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ClubFormDialog } from "@/components/club-form-dialog";
-import { useAuth } from "@/lib/auth";
+import { useCurrentProfile } from "@/lib/auth";
 import { Plus, Rocket } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/clubs")({
@@ -98,8 +98,8 @@ function AdminClubs() {
     onSuccess: () => { toast.success("Готово"); qc.invalidateQueries({ queryKey: ["admin-all-projects"] }); },
     onError: (e: any) => toast.error(e.message),
   });
-  const { data: auth } = useAuth() as any;
-  const adminId: string | undefined = auth?.userId ?? auth?.profile?.id;
+  const { data: auth } = useCurrentProfile();
+  const adminId: string | undefined = auth?.userId;
   const [creating, setCreating] = useState(false);
   const pendingProjects = projects.filter((p) => !p.is_approved && !p.is_rejected);
 
