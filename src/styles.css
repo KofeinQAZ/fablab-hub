@@ -179,6 +179,9 @@
   .landing-hero-photo { height: clamp(220px, calc(100svh - 340px), 480px); min-height: 0; object-fit: cover; object-position: 35% center; }
   .homepage-actions { position: absolute; bottom: 0; right: 0; width: 440px; max-width: 55%; }
 }
+@media (min-width: 1280px) {
+  .landing-hero-photo { height: clamp(360px, calc(100svh - 320px), 660px); }
+}
 @media (min-width: 768px) and (max-width: 1023px) {
   .landing-hero-title { font-size: 72px; }
   .landing-hero-heading { padding-top: 24px; padding-bottom: 24px; }
