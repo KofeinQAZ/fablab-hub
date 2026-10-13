@@ -11,6 +11,7 @@ import buildingPhoto from "@/assets/fablab-building.webp";
 import { Button } from "@/components/ui/button";
 import { LabExperience } from "@/components/lab-experience";
 import { AtmosphereCarousel } from "@/components/atmosphere-carousel";
+import { HomepageActions, HomepageIntroduction } from "@/components/homepage-introduction";
 
 export const Route = createFileRoute("/_public/")({
   component: LandingPage,
@@ -42,20 +43,9 @@ function LandingPage() {
         <div className="landing-hero-scene">
           <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
         </div>
-        <div className="landing-hero-action">
-          <p className="text-base leading-relaxed text-muted-foreground">{t("landing.hero.ctaDesc")}</p>
-          <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:w-auto">
-            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-primary bg-primary px-5 text-sm font-black uppercase text-primary-foreground hover:bg-primary/90">
-              {t("booking.book.workshopBtn")}<ChevronRight className="h-4 w-4 shrink-0" />
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-foreground bg-background px-5 text-sm font-black uppercase text-foreground hover:bg-muted">
-              <Printer className="h-4 w-4 shrink-0" />{t("booking.book.printTitle")}
-            </Button>
-          </div>
-        </div>
       </section>
-      <LabExperience />
-      <AtmosphereCarousel />
+      <HomepageActions />
+      <HomepageIntroduction />
 
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
       <section className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative">
@@ -87,8 +77,8 @@ function LandingPage() {
         </div>
 
         <div className="relative w-full flex overflow-hidden border-y-4 border-foreground bg-background">
-          <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
           <div className="flex w-max animate-scroll">
             {[...partners, ...partners].map((partner, i) => (
@@ -110,6 +100,9 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
+      <LabExperience />
+      <AtmosphereCarousel />
 
       {/* --- 6. ПРЕИМУЩЕСТВА --- */}
       <section className="bg-card border-y-4 border-foreground py-12 md:py-16">

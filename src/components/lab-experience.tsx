@@ -95,7 +95,7 @@ export function LabExperience() {
   ];
 
   return (
-    <div id="lab" className="mx-auto w-full max-w-7xl space-y-12 px-4 py-8 sm:px-6 md:space-y-16 md:px-8">
+    <div id="lab" className="mx-auto w-full max-w-7xl scroll-mt-24 space-y-12 px-4 py-8 sm:px-6 md:space-y-16 md:px-8">
       <nav aria-label={t("booking.map.title")} className="grid grid-cols-1 gap-0 rounded-none sm:grid-cols-3 border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
         {sectionNav.map(({ id, label, icon: Icon }, i) => (
           <Button

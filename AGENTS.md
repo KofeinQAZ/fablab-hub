@@ -5,3 +5,4 @@
 - Keep the homepage facade image in normal document flow and move its booking action below the photo on narrow screens, so the real lab stays visible without overlapping text.
 - Keep lab discovery and request/catalog views in the shared homepage experience; redirect legacy `/booking` links with their query parameters intact to preserve QR and login-return flows.
 - Public discovery must not expose request or checkout controls to signed-out, unapproved or banned accounts; retain backend authorization and show login or approval states at the action point.
+- Keep the homepage introduction and its localized scrolling actions in a presentation-only module; target existing section IDs so introductory navigation does not alter request logic.
