@@ -88,29 +88,8 @@ export function LabExperience() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [equipment, zones]);
 
-  const sectionNav: { id: SectionId; label: string; icon: typeof Map; index: string }[] = [
-    { id: "map", label: t("booking.map.tabs.map"), icon: Map, index: "01" },
-    { id: "book", label: t("booking.book.nav"), icon: CalendarCheck, index: "02" },
-    { id: "equipment", label: t("booking.map.tabs.equipment"), icon: Wrench, index: "03" },
-  ];
-
   return (
     <div id="lab" className="mx-auto w-full max-w-7xl scroll-mt-24 space-y-12 px-4 py-8 sm:px-6 md:space-y-16 md:px-8">
-      <nav aria-label={t("booking.map.title")} className="grid grid-cols-1 gap-0 rounded-none sm:grid-cols-3 border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
-        {sectionNav.map(({ id, label, icon: Icon }, i) => (
-          <Button
-            variant="ghost"
-            key={id}
-            type="button"
-            onClick={() => scrollToSection(id)}
-            className={`flex h-auto min-h-14 items-center justify-center gap-2 whitespace-normal rounded-none px-3 text-sm font-bold uppercase hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 sm:text-sm ${i < sectionNav.length - 1 ? "border-b-2 border-foreground sm:border-b-0 sm:border-r-2" : ""}`}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            <span>{label}</span>
-          </Button>
-        ))}
-      </nav>
-
       <section id="booking-map" className="scroll-mt-24 space-y-5">
         <div className="grid gap-4 border-b-2 border-foreground/20 pb-5 sm:grid-cols-[1fr_minmax(260px,0.65fr)] sm:items-end">
           <div><p className="font-mono text-sm font-black uppercase text-primary">{t("booking.map.eyebrow")} // 01</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.title")}</h2></div>

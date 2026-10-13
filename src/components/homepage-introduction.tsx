@@ -64,7 +64,7 @@ export function HomepageActions() {
   const text = useIntroCopy();
   return (
     <section aria-label="FabLab Satbayev" className="bg-landing-action text-landing-action-foreground">
-      <div className="mx-auto grid max-w-7xl items-center gap-7 px-4 py-8 sm:px-6 md:px-8 md:py-10 lg:grid-cols-[1fr_auto] lg:gap-12">
+      <div className="homepage-actions-inner mx-auto grid max-w-7xl items-center gap-7 px-4 py-8 sm:px-6 md:px-8 md:py-10 lg:grid-cols-[1fr_auto] lg:gap-12">
         <div className="max-w-2xl">
           <h2 className="text-2xl font-black leading-tight sm:text-3xl">{text.lead}</h2>
           <p className="mt-3 text-base leading-relaxed">{text.summary}</p>
