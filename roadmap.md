@@ -1,6 +1,6 @@
 # Unified homepage
 
-- [ ] Keep the hero unchanged; refresh the below-hero introduction and two scrolling actions, move MIT and partners before the tools, and verify layout/navigation.
+- [x] Keep the hero unchanged; refresh the below-hero introduction and two scrolling actions, move MIT and partners before the tools, and verify layout/navigation.
 
 - [x] Remove the inventory section and its homepage anchor temporarily, without deleting inventory data or admin tools.
 
