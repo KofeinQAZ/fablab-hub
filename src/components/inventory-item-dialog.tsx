@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { UserProfile } from "@/lib/auth";
+import { ApprovalGate } from "@/components/approval-gate";
 
 export type InventoryItem = {
   id: string;
@@ -44,11 +46,13 @@ export function InventoryItemDialog({
   open,
   item,
   userId,
+  profile,
   onClose,
 }: {
   open: boolean;
   item: InventoryItem | null;
   userId: string | null;
+  profile?: UserProfile | null;
   onClose: () => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -136,7 +140,11 @@ export function InventoryItemDialog({
           )}
 
           <div className="pt-2">
-            {isMine ? (
+            {!userId ? (
+              <Button asChild className="h-auto min-h-12 w-full whitespace-normal rounded-none border-2 border-foreground font-bold"><a href={`/login?returnTo=${encodeURIComponent(`/?inventoryId=${item.id}#booking-inventory`)}`}>{t("booking.access.authRequired")} · {t("auth.login")}</a></Button>
+            ) : profile && (profile.is_banned || (profile.approval_status && profile.approval_status !== "approved")) ? (
+              profile.is_banned ? <p className="text-destructive">{t("inventory.errors.banned", "Ваш аккаунт заблокирован")}</p> : <ApprovalGate profile={profile}><span /></ApprovalGate>
+            ) : isMine ? (
               <Button
                 onClick={() => action.mutate("return")}
                 disabled={action.isPending}

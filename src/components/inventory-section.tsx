@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Package, QrCode } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { InventoryItemDialog, type InventoryItem } from "@/components/inventory-item-dialog";
+import type { UserProfile } from "@/lib/auth";
 
 const getLocalized = (obj: any, field: string, lang: string) => {
   if (!obj) return "";
@@ -13,7 +14,7 @@ const getLocalized = (obj: any, field: string, lang: string) => {
   return obj[`${field}_${lang}`] || obj[field] || "";
 };
 
-export function InventorySection({ userId, active }: { userId: string | null; active: boolean }) {
+export function InventorySection({ userId, profile, active }: { userId: string | null; profile?: UserProfile | null; active: boolean }) {
   const { t, i18n } = useTranslation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -43,7 +44,7 @@ export function InventorySection({ userId, active }: { userId: string | null; ac
 
   if (!active) {
     return (
-      <InventoryItemDialog open={!!selected} item={selected} userId={userId} onClose={() => setSelectedId(null)} />
+      <InventoryItemDialog open={!!selected} item={selected} userId={userId} profile={profile} onClose={() => setSelectedId(null)} />
     );
   }
 
@@ -121,7 +122,7 @@ export function InventorySection({ userId, active }: { userId: string | null; ac
         </div>
       )}
 
-      <InventoryItemDialog open={!!selected} item={selected} userId={userId} onClose={() => setSelectedId(null)} />
+      <InventoryItemDialog open={!!selected} item={selected} userId={userId} profile={profile} onClose={() => setSelectedId(null)} />
     </>
   );
 }
