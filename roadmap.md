@@ -1,6 +1,6 @@
 # Unified homepage
 
-- [ ] Remove the inventory section and its homepage anchor temporarily, without deleting inventory data or admin tools.
+- [x] Remove the inventory section and its homepage anchor temporarily, without deleting inventory data or admin tools.
 
 - [x] Merge lab map, workshop/3D requests, equipment and inventory into the homepage; preserve old links and access checks.
 - [x] Refresh facade hero, remove the startup banner, replace Atmosphere grid with photo carousel and align section styles.
