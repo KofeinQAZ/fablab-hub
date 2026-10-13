@@ -10,6 +10,7 @@ import { useState } from "react";
 import { ClubFormDialog } from "@/components/club-form-dialog";
 import { useCurrentProfile } from "@/lib/auth";
 import { Plus, Rocket } from "lucide-react";
+import { AdminProjectsOverview } from "@/components/admin-projects-overview";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/clubs")({
   component: AdminClubs,
@@ -116,6 +117,8 @@ function AdminClubs() {
         <Button onClick={() => setCreating(true)} disabled={!adminId} className="h-12 rounded-none border-2 border-slate-900 bg-blue-600 font-black uppercase tracking-widest text-white shadow-[4px_4px_0_#0f172a] hover:bg-blue-700"><Plus className="mr-2 h-4 w-4" />Создать клуб</Button>
       </div>
       {adminId && <ClubFormDialog open={creating} onOpenChange={setCreating} userId={adminId} autoApprove />}
+
+      <AdminProjectsOverview clubs={clubs} />
 
       <div className={block}>
         <h2 className="text-xl font-black uppercase tracking-tight mb-6 flex items-center gap-3">
