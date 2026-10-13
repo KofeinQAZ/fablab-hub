@@ -151,15 +151,15 @@
   --landing-action-foreground: oklch(1 0 0);
 }
 
-/* Real facade stays in document flow; primary actions sit in a full-width band. */
+/* Real facade stays in document flow; actions sit on the page surface below it. */
 .landing-hero { background: var(--background); color: var(--foreground); }
 .landing-hero-heading { max-width: 1280px; margin: auto; padding: 28px 16px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; }
 .landing-hero-title { display: flex; flex-direction: column; gap: 4px; font-size: 48px; font-weight: 900; line-height: 1; letter-spacing: 0; }
 .landing-hero-title span:last-child { color: var(--landing-action); }
 .landing-hero-intro { max-width: 440px; font-size: 16px; line-height: 1.6; color: var(--muted-foreground); }
-.landing-hero-scene { border-top: 2px solid var(--foreground); }
+.landing-hero-scene { border: 0; }
 .landing-hero-photo { display: block; width: 100%; height: auto; min-height: 160px; object-fit: cover; object-position: 35% center; }
-.landing-hero-action { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 16px; background: var(--landing-action); color: var(--landing-action-foreground); border-block: 2px solid var(--foreground); }
+.landing-hero-action { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 16px; background: var(--background); color: var(--foreground); }
 .landing-hero-action > p { max-width: 480px; }
 @media (min-width: 640px) {
   .landing-hero-heading { padding: 32px 24px; }

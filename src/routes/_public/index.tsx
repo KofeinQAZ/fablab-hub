@@ -35,7 +35,6 @@ function LandingPage() {
       <section className="landing-hero">
         <div className="landing-hero-heading">
           <div>
-            <p className="mb-3 font-mono text-sm font-bold uppercase text-primary">SATBAYEV UNIVERSITY // FABLAB</p>
             <h1 className="landing-hero-title"><span>FABLAB</span><span>SATBAYEV</span></h1>
           </div>
           <p className="landing-hero-intro">{t("booking.map.heroText")}</p>
@@ -44,12 +43,12 @@ function LandingPage() {
           <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
         </div>
         <div className="landing-hero-action">
-          <p className="text-base font-bold leading-relaxed">{t("landing.hero.ctaDesc")}</p>
-          <div className="flex flex-wrap gap-3">
-            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-current bg-card px-5 text-sm font-black uppercase text-foreground hover:bg-muted">
+          <p className="text-base leading-relaxed text-muted-foreground">{t("landing.hero.ctaDesc")}</p>
+          <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:w-auto">
+            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-primary bg-primary px-5 text-sm font-black uppercase text-primary-foreground hover:bg-primary/90">
               {t("booking.book.workshopBtn")}<ChevronRight className="h-4 w-4 shrink-0" />
             </Button>
-            <Button variant="ghost" onClick={() => navigate({ to: "/print-3d" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-current px-5 text-sm font-black uppercase text-landing-action-foreground hover:bg-landing-action-foreground/10 hover:text-landing-action-foreground">
+            <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-foreground bg-background px-5 text-sm font-black uppercase text-foreground hover:bg-muted">
               <Printer className="h-4 w-4 shrink-0" />{t("booking.book.printTitle")}
             </Button>
           </div>
