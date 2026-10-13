@@ -42,12 +42,6 @@ function AdminLayout() {
           Бронирования
         </span>
       </Link>
-      <Link to="/admin/schedule" onClick={onClick} className={itemClass} activeProps={{ className: activeClass }}>
-        <span className="inline-flex items-center gap-3">
-          <Calendar className="h-5 w-5 md:h-4 md:w-4" />
-          Расписание
-        </span>
-      </Link>
       <Link to="/admin/requests" onClick={onClick} className={itemClass} activeProps={{ className: activeClass }}>
         <span className="inline-flex items-center gap-3">
           <ClipboardList className="h-5 w-5 md:h-4 md:w-4" />
