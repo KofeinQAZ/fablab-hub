@@ -108,7 +108,7 @@ function LandingPage() {
         </div>
       </section>
 
-      <LabExperience />
+      <div id="features" className="scroll-mt-24"><LabExperience /></div>
       <AtmosphereCarousel />
 
       {/* --- 6. ПРЕИМУЩЕСТВА --- */}
