@@ -396,7 +396,8 @@ function ClubPage() {
             {!club.projects?.length && <p className="text-sm font-bold text-slate-500">{t("clubs.noProjects", "Проектов пока нет")}</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {club.projects.map((p: any) => (
-                <Link key={p.id} to="/clubs" className="border-2 border-slate-900 bg-white shadow-[4px_4px_0_#0f172a] overflow-hidden hover:-translate-y-1 transition-transform">
+                <div key={p.id} className="flex flex-col border-2 border-slate-900 bg-white shadow-[4px_4px_0_#0f172a] overflow-hidden">
+                  <Link to="/clubs" className="block flex-1 hover:bg-slate-50">
                   <div className="h-32 bg-slate-100">
                     {p.image_url ? <img src={p.image_url} alt="" className="h-full w-full object-cover" /> : <div className="h-full flex items-center justify-center"><ImageIcon className="h-8 w-8 opacity-30" /></div>}
                   </div>
@@ -404,7 +405,11 @@ function ClubPage() {
                     <div className="font-black uppercase tracking-tight text-sm line-clamp-2">{getLocalized(p, "title", i18n.language)}</div>
                     <p className="text-xs text-slate-600 font-medium line-clamp-2 mt-1">{getLocalized(p, "description", i18n.language)}</p>
                   </div>
-                </Link>
+                  </Link>
+                  <button type="button" onClick={() => exportProjectPdf(p.id, i18n.language).catch((e) => toast.error(e.message))} className="border-t-2 border-slate-900 bg-blue-600 py-2 text-xs font-black uppercase tracking-widest text-white hover:bg-blue-700">
+                    Экспорт в PDF
+                  </button>
+                </div>
               ))}
             </div>
           </div>
