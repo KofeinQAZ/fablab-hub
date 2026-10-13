@@ -169,7 +169,10 @@
 .landing-hero-title span:last-child { color: var(--landing-action); }
 .landing-hero-intro { max-width: 560px; font-size: 17px; line-height: 1.6; color: var(--muted-foreground); }
 .landing-hero-media { width: 100%; }
-.landing-hero-photo { display: block; width: 100%; aspect-ratio: 21 / 9; object-fit: cover; object-position: center 40%; }
+.landing-hero-photo { display: block; width: 100%; height: auto; }
+@media (min-width: 1025px) {
+  .landing-hero-media { margin-right: calc((min(1280px, 100vw) - 100vw) / 2 - 32px); }
+}
 .landing-hero-foot { display: flex; flex-direction: column; gap: 20px; }
 .landing-hero-caption { font-size: 15px; font-weight: 500; color: var(--muted-foreground); }
 .landing-hero-buttons { display: grid; gap: 12px; width: 100%; }
