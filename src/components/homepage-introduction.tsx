@@ -83,7 +83,7 @@ export function HomepageIntroduction() {
   const icons = [Wrench, Presentation, Printer, Users];
   return (
     <section id="about-fablab" className="scroll-mt-24 bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:px-8 md:py-16">
+      <div className="mx-auto max-w-7xl px-4 pt-8 pb-12 sm:px-6 md:px-8 md:pt-10 md:pb-16">
         <div className="grid gap-8 border-b-2 border-foreground pb-10 lg:grid-cols-2 lg:gap-16">
           <div>
             <h2 className="text-3xl font-black uppercase leading-tight sm:text-4xl">{text.about}</h2>
