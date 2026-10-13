@@ -42,9 +42,9 @@ function LandingPage() {
         </div>
         <div className="landing-hero-scene">
           <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
+          <HomepageActions />
         </div>
       </section>
-      <HomepageActions />
       <HomepageIntroduction />
 
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
