@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Boxes, Box, CalendarCheck, Map, Package, Plus, Presentation, Wrench } from "lucide-react";
+import { Boxes, Box, CalendarCheck, Map, Plus, Presentation, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EquipmentInfoDialog } from "@/components/equipment-info-dialog";
-import { InventorySection } from "@/components/inventory-section";
 import { LabMap, type LabZone } from "@/components/lab-map";
 import { LabZoneDialog } from "@/components/lab-zone-dialog";
 import { useCurrentProfile } from "@/lib/auth";
@@ -18,7 +17,7 @@ function localized(obj: Record<string, unknown>, field: string, language: string
   return String(obj[key] || obj[field] || "");
 }
 
-const SECTION_IDS = ["map", "book", "equipment", "inventory"] as const;
+const SECTION_IDS = ["map", "book", "equipment"] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 
 function scrollToSection(id: SectionId) {
@@ -73,14 +72,12 @@ export function LabExperience() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const inventoryId = params.get("inventoryId");
     const equipmentId = params.get("equipmentId");
     const zoneId = params.get("zoneId");
     if (zoneId && !handledLinks.current.has(`zone:${zoneId}`)) {
       const zone = zones.find((entry) => entry.id === zoneId);
       if (zone) { handledLinks.current.add(`zone:${zoneId}`); setSelectedZone(zone); scrollToSection("book"); }
     }
-    if (inventoryId) scrollToSection("inventory");
     if (!equipmentId || handledLinks.current.has(`equipment:${equipmentId}`)) return;
     const item = equipment.find((entry) => entry.id === equipmentId);
     if (item) {
@@ -95,19 +92,18 @@ export function LabExperience() {
     { id: "map", label: t("booking.map.tabs.map"), icon: Map, index: "01" },
     { id: "book", label: t("booking.book.nav"), icon: CalendarCheck, index: "02" },
     { id: "equipment", label: t("booking.map.tabs.equipment"), icon: Wrench, index: "03" },
-    { id: "inventory", label: t("booking.map.tabs.inventory"), icon: Package, index: "04" },
   ];
 
   return (
     <div id="lab" className="mx-auto w-full max-w-7xl space-y-12 px-4 py-8 sm:px-6 md:space-y-16 md:px-8">
-      <nav aria-label={t("booking.map.title")} className="grid grid-cols-2 gap-0 rounded-none sm:grid-cols-4 border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
+      <nav aria-label={t("booking.map.title")} className="grid grid-cols-1 gap-0 rounded-none sm:grid-cols-3 border-2 border-foreground bg-card p-0 shadow-[4px_4px_0_var(--foreground)]">
         {sectionNav.map(({ id, label, icon: Icon }, i) => (
           <Button
             variant="ghost"
             key={id}
             type="button"
             onClick={() => scrollToSection(id)}
-            className={`flex h-auto min-h-14 items-center justify-center gap-2 whitespace-normal rounded-none px-3 text-sm font-bold uppercase hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 sm:text-sm ${i < sectionNav.length - 1 ? "border-r-2 border-foreground max-sm:[&:nth-child(2)]:border-r-0" : ""}`}
+            className={`flex h-auto min-h-14 items-center justify-center gap-2 whitespace-normal rounded-none px-3 text-sm font-bold uppercase hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 sm:text-sm ${i < sectionNav.length - 1 ? "border-b-2 border-foreground sm:border-b-0 sm:border-r-2" : ""}`}
           >
             <Icon className="h-4 w-4 shrink-0" />
             <span>{label}</span>
@@ -195,10 +191,6 @@ export function LabExperience() {
         )}
       </section>
 
-      <section id="booking-inventory" className="scroll-mt-24 space-y-5">
-        <div className="border-b-4 border-foreground pb-5"><p className="text-sm font-black uppercase tracking-normal text-primary">{t("booking.map.inventoryEyebrow")} // 04</p><h2 className="mt-1 text-3xl font-black uppercase tracking-normal sm:text-4xl">{t("booking.map.inventoryTitle")}</h2><p className="mt-2 max-w-2xl text-muted-foreground">{t("booking.map.inventoryText")}</p></div>
-        <InventorySection userId={profile?.id ?? null} profile={profile} active />
-      </section>
       <LabZoneDialog zone={selectedZone} userId={profile?.id ?? null} profile={profile} onClose={() => setSelectedZone(null)} />
       <EquipmentInfoDialog open={!!selectedEquipment} equipment={selectedEquipment} onClose={() => setSelectedEquipment(null)} />
     </div>
