@@ -33,6 +33,7 @@ function LandingPage() {
     <div className="relative min-h-screen bg-background font-sans overflow-hidden selection:bg-primary selection:text-primary-foreground">
       
       <section className="landing-hero">
+        <div className="landing-hero-container">
         <div className="landing-hero-heading">
           <div>
             <h1 className="landing-hero-title"><span>FABLAB</span><span>SATBAYEV</span></h1>
@@ -41,22 +42,20 @@ function LandingPage() {
         </div>
         <div className="landing-hero-scene">
           <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
-        </div>
         <div className="landing-hero-action">
-          <p className="text-base leading-relaxed text-muted-foreground">{t("landing.hero.ctaDesc")}</p>
-          <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:w-auto">
-            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-primary bg-primary px-5 text-sm font-black uppercase text-primary-foreground hover:bg-primary/90">
+          <p className="landing-hero-caption">{t("landing.hero.ctaDesc")}</p>
+          <div className="landing-hero-buttons">
+            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="landing-hero-button landing-hero-button-primary">
               {t("booking.book.workshopBtn")}<ChevronRight className="h-4 w-4 shrink-0" />
             </Button>
-            <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-foreground bg-background px-5 text-sm font-black uppercase text-foreground hover:bg-muted">
+            <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="landing-hero-button landing-hero-button-secondary">
               <Printer className="h-4 w-4 shrink-0" />{t("booking.book.printTitle")}
             </Button>
           </div>
         </div>
+        </div>
+        </div>
       </section>
-      <LabExperience />
-      <AtmosphereCarousel />
-
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
       <section className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative">
         <div className="grid grid-cols-1 gap-6">
@@ -110,6 +109,9 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
+      <LabExperience />
+      <AtmosphereCarousel />
 
       {/* --- 6. ПРЕИМУЩЕСТВА --- */}
       <section className="bg-card border-y-4 border-foreground py-12 md:py-16">
