@@ -56,9 +56,6 @@ function LandingPage() {
         </div>
         </div>
       </section>
-      <LabExperience />
-      <AtmosphereCarousel />
-
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
       <section className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative">
         <div className="grid grid-cols-1 gap-6">
@@ -112,6 +109,9 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
+      <LabExperience />
+      <AtmosphereCarousel />
 
       {/* --- 6. ПРЕИМУЩЕСТВА --- */}
       <section className="bg-card border-y-4 border-foreground py-12 md:py-16">
