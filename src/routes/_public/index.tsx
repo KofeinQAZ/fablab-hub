@@ -1,11 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  ChevronRight, Cpu, Wrench, Lightbulb, MapPin, 
-  Mail, Phone, Printer, Rocket, ShieldCheck, 
+import {
+  ChevronRight, Cpu, Wrench, Lightbulb, MapPin,
+  Mail, Phone, Printer, Rocket, ShieldCheck,
   Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
-  , ArrowDown, LayoutGrid
 } from "lucide-react";
 import mitLogo from "/fablab-mit-logo.png";
 import buildingPhoto from "@/assets/fablab-building.webp";
