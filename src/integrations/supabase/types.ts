@@ -578,6 +578,39 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_photos: {
+        Row: {
+          caption: string | null
+          caption_en: string | null
+          caption_kz: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_visible: boolean
+          sort_order: number
+        }
+        Insert: {
+          caption?: string | null
+          caption_en?: string | null
+          caption_kz?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_visible?: boolean
+          sort_order?: number
+        }
+        Update: {
+          caption?: string | null
+          caption_en?: string | null
+          caption_kz?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_visible?: boolean
+          sort_order?: number
+        }
+        Relationships: []
+      }
       inventory_checkouts: {
         Row: {
           checked_out_at: string
