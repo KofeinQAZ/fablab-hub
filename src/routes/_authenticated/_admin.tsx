@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/app-header";
 import { AdminRouteGuard } from "@/components/admin-route-guard";
-import { ClipboardList, Calendar, Newspaper, Rocket, Users, Menu, X, LayoutDashboard, Wrench, Map, Printer } from "lucide-react";
+import { ClipboardList, Newspaper, Rocket, Users, Menu, X, LayoutDashboard, Wrench, Map, Printer } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/_admin")({
