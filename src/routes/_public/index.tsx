@@ -5,6 +5,7 @@ import {
   ChevronRight, Cpu, Wrench, Lightbulb, MapPin, 
   Mail, Phone, Printer, Rocket, ShieldCheck, 
   Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
+  , ArrowDown, LayoutGrid
 } from "lucide-react";
 import mitLogo from "/fablab-mit-logo.png";
 import buildingPhoto from "@/assets/fablab-building.webp";
@@ -33,31 +34,28 @@ function LandingPage() {
     <div className="relative min-h-screen bg-background font-sans overflow-hidden selection:bg-primary selection:text-primary-foreground">
       
       <section className="landing-hero">
+        <div className="landing-hero-glow" aria-hidden="true" />
         <div className="landing-hero-container">
-        <div className="landing-hero-heading">
-          <div>
-            <h1 className="landing-hero-title"><span>FABLAB</span><span>SATBAYEV</span></h1>
+          <div className="landing-hero-text">
+            <span className="landing-hero-eyebrow hero-in" style={{ animationDelay: "0ms" }}>{t("landing.hero.eyebrow", "Открытая лаборатория · Satbayev University")}</span>
+            <h1 className="landing-hero-title hero-in" style={{ animationDelay: "80ms" }}><span>FABLAB</span><span>SATBAYEV</span></h1>
+            <p className="landing-hero-intro hero-in" style={{ animationDelay: "160ms" }}>{t("landing.hero.about", "FabLab — это открытая мастерская Satbayev University, где идея превращается в реальную вещь. Приходи с проектом или просто с любопытством: напечатаешь деталь, вырежешь заготовку, спаяешь плату и соберёшь прототип. Оборудование, наставники и практические воркшопы уже здесь, начинать можно с нуля.")}</p>
+            <div className="landing-hero-buttons hero-in" style={{ animationDelay: "240ms" }}>
+              <Button onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })} className="landing-hero-button landing-hero-button-primary">
+                {t("landing.hero.more", "Подробнее")}<ArrowDown className="h-4 w-4 shrink-0" />
+              </Button>
+              <Button variant="outline" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="landing-hero-button landing-hero-button-secondary">
+                <LayoutGrid className="h-4 w-4 shrink-0" />{t("landing.hero.features", "Функционал")}
+              </Button>
+            </div>
           </div>
-          <p className="landing-hero-intro">{t("booking.map.heroText")}</p>
         </div>
-        <div className="landing-hero-scene">
+        <div className="landing-hero-media">
           <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
-        <div className="landing-hero-action">
-          <p className="landing-hero-caption">{t("landing.hero.ctaDesc")}</p>
-          <div className="landing-hero-buttons">
-            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="landing-hero-button landing-hero-button-primary">
-              {t("booking.book.workshopBtn")}<ChevronRight className="h-4 w-4 shrink-0" />
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="landing-hero-button landing-hero-button-secondary">
-              <Printer className="h-4 w-4 shrink-0" />{t("booking.book.printTitle")}
-            </Button>
-          </div>
-        </div>
-        </div>
         </div>
       </section>
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
-      <section className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative">
+      <section id="about" className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative scroll-mt-24">
         <div className="grid grid-cols-1 gap-6">
           
           <div className="bg-landing-action text-landing-action-foreground border-y-2 border-foreground p-6 md:p-10 grid items-center gap-8 md:grid-cols-[1fr_280px]">
@@ -110,7 +108,7 @@ function LandingPage() {
         </div>
       </section>
 
-      <LabExperience />
+      <div id="features" className="scroll-mt-24"><LabExperience /></div>
       <AtmosphereCarousel />
 
       {/* --- 6. ПРЕИМУЩЕСТВА --- */}
