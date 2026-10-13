@@ -176,7 +176,7 @@
   .landing-hero-heading { flex-wrap: nowrap; padding: 24px 32px; gap: 32px; }
   .landing-hero-title { font-size: 72px; }
   .landing-hero-intro { max-width: 400px; font-size: 16px; }
-  .landing-hero-photo { max-height: clamp(160px, calc(100svh - 460px), 360px); }
+  .landing-hero-photo { height: clamp(160px, calc(100svh - 460px), 360px); min-height: 0; object-fit: contain; object-position: center; }
   .homepage-actions-inner { grid-template-columns: minmax(0, 1fr) auto; gap: 32px; padding-top: 24px; padding-bottom: 24px; }
   .homepage-actions-inner h2 { font-size: 24px; }
 }
