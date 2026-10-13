@@ -13,11 +13,11 @@ export function AtmosphereCarousel() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const photos = [
-    { src: buildingPhoto, label: "FabLab Satbayev" },
-    { src: workspace.url, label: t("landing.atmosphere.mainHall") },
-    { src: electronics.url, label: t("landing.tech.items.electronics") },
-    { src: teamwork.url, label: t("landing.atmosphere.teams") },
-    { src: workshop.url, label: t("landing.atmosphere.cncPark") },
+    { src: buildingPhoto, fallback: buildingPhoto, label: "FabLab Satbayev" },
+    { src: workspace.url, fallback: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1400&q=85", label: t("landing.atmosphere.mainHall") },
+    { src: electronics.url, fallback: "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1400&q=85", label: t("landing.tech.items.electronics") },
+    { src: teamwork.url, fallback: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=85", label: t("landing.atmosphere.teams") },
+    { src: workshop.url, fallback: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1400&q=85", label: t("landing.atmosphere.cncPark") },
   ];
   useEffect(() => {
     if (!api) return;
@@ -46,7 +46,7 @@ export function AtmosphereCarousel() {
             <CarouselItem key={photo.src} className="basis-[90%] md:basis-[80%]">
               <figure className="overflow-hidden border-2 border-foreground bg-card">
                 <div className="aspect-[4/3] overflow-hidden bg-muted sm:aspect-[16/9]">
-                  <img src={photo.src} alt={photo.label} loading="lazy" className="h-full w-full object-cover" />
+                  <img src={photo.src} alt={photo.label} loading="lazy" onError={(event) => { const image = event.currentTarget; if (image.dataset.fallback) return; image.dataset.fallback = "true"; image.src = photo.fallback; }} className="h-full w-full object-cover" />
                 </div>
                 <figcaption className="flex items-center justify-between gap-3 border-t-2 border-foreground px-4 py-4 text-base font-bold uppercase">
                   <span>{photo.label}</span><span className="font-mono text-sm text-primary">{String(index + 1).padStart(2, "0")}</span>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Boxes, Box, CalendarCheck, Map, Package, Plus, Presentation, Wrench } from "lucide-react";
@@ -22,13 +22,14 @@ const SECTION_IDS = ["map", "book", "equipment", "inventory"] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 
 function scrollToSection(id: SectionId) {
-  document.getElementById(`booking-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById(`booking-${id}`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
 }
 
 export function LabExperience() {
   const { t, i18n } = useTranslation();
   const [selectedZone, setSelectedZone] = useState<LabZone | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentDetails | null>(null);
+  const handledLinks = useRef(new Set<string>());
 
   const { data: authData } = useCurrentProfile();
   const profile = authData?.profile ?? null;
@@ -75,17 +76,17 @@ export function LabExperience() {
     const inventoryId = params.get("inventoryId");
     const equipmentId = params.get("equipmentId");
     const zoneId = params.get("zoneId");
-    if (zoneId) {
+    if (zoneId && !handledLinks.current.has(`zone:${zoneId}`)) {
       const zone = zones.find((entry) => entry.id === zoneId);
-      if (zone) { setSelectedZone(zone); scrollToSection("book"); }
+      if (zone) { handledLinks.current.add(`zone:${zoneId}`); setSelectedZone(zone); scrollToSection("book"); }
     }
     if (inventoryId) scrollToSection("inventory");
-    if (!equipmentId) return;
+    if (!equipmentId || handledLinks.current.has(`equipment:${equipmentId}`)) return;
     const item = equipment.find((entry) => entry.id === equipmentId);
     if (item) {
+      handledLinks.current.add(`equipment:${equipmentId}`);
       setSelectedEquipment(item);
       scrollToSection("equipment");
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [equipment, zones]);

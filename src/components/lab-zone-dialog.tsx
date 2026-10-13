@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { LabZone } from "@/components/lab-map";
 import type { UserProfile } from "@/lib/auth";
-import { ApprovalGate } from "@/components/approval-gate";
 
 const START_HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 const DURATIONS = [1, 2, 3, 4, 6, 8];
@@ -158,7 +157,7 @@ export function LabZoneDialog({ zone, userId, profile, onClose }: { zone: LabZon
                   <a href={`/login?returnTo=${encodeURIComponent(`/?zoneId=${zone.id}#booking-book`)}`}>{t("booking.access.authRequired")} · {t("auth.login")}</a>
                 </Button>
               ) : profile && (profile.is_banned || (profile.approval_status && profile.approval_status !== "approved")) ? (
-                profile.is_banned ? <p className="text-destructive">{t("inventory.errors.banned", "Ваш аккаунт заблокирован")}</p> : <ApprovalGate profile={profile}><span /></ApprovalGate>
+                <div role="status" className="border-2 border-foreground bg-muted p-4 text-base leading-relaxed">{profile.is_banned ? t("inventory.errors.banned", "Ваш аккаунт заблокирован") : t(profile.approval_status === "rejected" ? "approval.rejectedDesc" : "approval.pendingDesc")}</div>
               ) : !zone.booking_enabled ? (
                 <div className="border-2 border-destructive bg-destructive/10 p-4 font-bold">{t("booking.map.form.disabled")}</div>
               ) : (

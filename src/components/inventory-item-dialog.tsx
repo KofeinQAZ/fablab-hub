@@ -6,7 +6,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { UserProfile } from "@/lib/auth";
-import { ApprovalGate } from "@/components/approval-gate";
 
 export type InventoryItem = {
   id: string;
@@ -143,7 +142,7 @@ export function InventoryItemDialog({
             {!userId ? (
               <Button asChild className="h-auto min-h-12 w-full whitespace-normal rounded-none border-2 border-foreground font-bold"><a href={`/login?returnTo=${encodeURIComponent(`/?inventoryId=${item.id}#booking-inventory`)}`}>{t("booking.access.authRequired")} · {t("auth.login")}</a></Button>
             ) : profile && (profile.is_banned || (profile.approval_status && profile.approval_status !== "approved")) ? (
-              profile.is_banned ? <p className="text-destructive">{t("inventory.errors.banned", "Ваш аккаунт заблокирован")}</p> : <ApprovalGate profile={profile}><span /></ApprovalGate>
+              <div role="status" className="border-2 border-foreground bg-muted p-4 text-base leading-relaxed">{profile.is_banned ? t("inventory.errors.banned", "Ваш аккаунт заблокирован") : t(profile.approval_status === "rejected" ? "approval.rejectedDesc" : "approval.pendingDesc")}</div>
             ) : isMine ? (
               <Button
                 onClick={() => action.mutate("return")}

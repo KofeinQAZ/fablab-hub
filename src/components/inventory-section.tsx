@@ -36,7 +36,6 @@ export function InventorySection({ userId, profile, active }: { userId: string |
     const id = params.get("inventoryId");
     if (id) {
       setSelectedId(id);
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
@@ -77,7 +76,7 @@ export function InventorySection({ userId, profile, active }: { userId: string |
                 key={item.id}
                 className="border-2 border-foreground rounded-none bg-card shadow-[6px_6px_0_var(--foreground)] hover:shadow-[12px_12px_0_var(--primary)] hover:-translate-y-0.5 motion-reduce:transform-none transition-all duration-300 flex flex-col overflow-hidden"
               >
-                <div onClick={() => setSelectedId(item.id)} className="h-44 bg-muted border-b-4 border-foreground relative cursor-pointer flex items-center justify-center overflow-hidden">
+                <button type="button" aria-label={name} onClick={() => setSelectedId(item.id)} className="h-44 w-full bg-muted border-b-4 border-foreground relative cursor-pointer flex items-center justify-center overflow-hidden focus-visible:ring-4 focus-visible:ring-primary">
                   {item.image_url ? (
                     <img src={item.image_url} alt={name} className="w-full h-full object-cover" />
                   ) : (
@@ -98,7 +97,7 @@ export function InventorySection({ userId, profile, active }: { userId: string |
                         ? t("inventory.status.checkedOut", "На руках")
                         : t("inventory.status.maintenance", "Обслуживание")}
                   </span>
-                </div>
+                </button>
                 <CardContent className="p-6 flex flex-col flex-1 justify-between gap-4">
                   <div className="space-y-2">
                     <h3 className="font-black text-xl text-foreground uppercase tracking-normal leading-tight line-clamp-2">{name}</h3>
