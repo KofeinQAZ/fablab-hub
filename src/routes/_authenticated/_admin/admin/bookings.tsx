@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Ban, Clock, User, Activity, Calendar, CheckSquare, AlertCircle, Phone } from "lucide-react";
-import { format, isWithinInterval, isAfter, isBefore } from "date-fns";
+import { AlertCircle, Calendar, CheckSquare, Clock, Phone } from "lucide-react";
+import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useMemo, useState } from "react";
 
@@ -15,16 +15,7 @@ export const Route = createFileRoute("/_authenticated/_admin/admin/bookings")({
   component: AdminBookingsPage,
 });
 
-type Booking = {
-  id: string;
-  user_id: string;
-  start_time: string;
-  end_time: string;
-  status: "pending" | "active" | "cancelled" | "completed";
-  equipment: { id: string; name: string; category: string } | null;
-  profiles: { name: string; contact_phone?: string; photo_url?: string | null } | { name: string; contact_phone?: string; photo_url?: string | null }[] | null;
-};
-
+type Profile = { name: string; contact_phone?: string; photo_url?: string | null };
 type ZoneBooking = {
   id: string;
   user_id: string;
@@ -35,62 +26,17 @@ type ZoneBooking = {
   event_format: string | null;
   participant_count: number;
   lab_zones: { name: string } | null;
-  profiles: { name: string; contact_phone?: string; photo_url?: string | null } | { name: string; contact_phone?: string; photo_url?: string | null }[] | null;
+  profiles: Profile | Profile[] | null;
 };
 
-function formatTimeRange(start: string, end: string) {
-  const s = new Date(start);
-  const e = new Date(end);
-  const date = format(s, "d MMMM", { locale: ru });
-  const timeStart = format(s, "HH:mm");
-  const timeEnd = format(e, "HH:mm");
-  return { date, timeStart, timeEnd, fullRange: `${timeStart} — ${timeEnd}` };
-}
-
-function isSameDay(date1: Date, date2: Date) {
-  return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
-  );
-}
-
-function getLocalDateString(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+const range = (s: string, e: string) => `${format(new Date(s), "d MMMM", { locale: ru })}, ${format(new Date(s), "HH:mm")} — ${format(new Date(e), "HH:mm")}`;
 
 function AdminBookingsPage() {
   const qc = useQueryClient();
-  const now = new Date();
-  
-  const [dateFilter, setDateFilter] = useState<string>(() => getLocalDateString(now));
+  const [view, setView] = useState<"open" | "history">("open");
 
-  const { data: bookings, isLoading: bookingsLoading } = useQuery({
-    queryKey: ["admin-bookings"],
-    queryFn: async () => {
-      // ИСПРАВЛЕНИЕ: Явно указываем Foreign Key, чтобы избежать ошибки PGRST201
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(`
-          id,
-          user_id,
-          start_time,
-          end_time,
-          status,
-          equipment ( id, name, category ),
-          profiles!bookings_user_profile_fkey ( name, contact_phone, photo_url ) 
-        `)
-        .order("start_time", { ascending: true });
-
-      if (error) {
-        console.error("Ошибка загрузки бронирований:", error);
-        throw error;
-      }
-      return data as unknown as Booking[];
-    },
-  });
-
-  const { data: zoneBookings = [], isLoading: zoneBookingsLoading } = useQuery({
+  const { data: zoneBookings = [], isLoading } = useQuery({
     queryKey: ["admin-zone-bookings"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -102,79 +48,7 @@ function AdminBookingsPage() {
     },
   });
 
-  const stats = useMemo(() => {
-    const all = bookings ?? [];
-    let pending = 0;
-    let activeNow = 0;
-    let todayTotal = 0;
-    let completedToday = 0;
-
-    all.forEach(b => {
-      const start = new Date(b.start_time);
-      const end = new Date(b.end_time);
-      
-      if (b.status === "pending") pending++;
-      
-      if (isSameDay(start, now)) {
-        todayTotal++;
-        if (b.status === "completed") completedToday++;
-      }
-      
-      if (b.status === "active" && isWithinInterval(now, { start, end })) {
-        activeNow++;
-      }
-    });
-
-    return { pending, activeNow, todayTotal, completedToday };
-  }, [bookings, now]);
-
-  const updateBooking = useMutation({
-    mutationFn: async ({ booking, status }: { booking: Booking; status: Booking["status"] }) => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .update({ status })
-        .eq("id", booking.id)
-        .select();
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        throw new Error("У вас нет прав для этого действия");
-      }
-
-      let title = "";
-      let message = "";
-      const eqName = booking.equipment?.name || "станок";
-
-      if (status === "active") {
-        title = "✅ Бронь подтверждена";
-        message = `Ваша бронь на оборудование "${eqName}" успешно одобрена ментором. Ждем вас в выбранное время!`;
-      } else if (status === "cancelled") {
-        title = "❌ Бронь отменена";
-        message = `К сожалению, ваша бронь на оборудование "${eqName}" была отклонена или отменена администратором.`;
-      } else if (status === "completed") {
-        title = "👍 Бронирование завершено";
-        message = `Ваше время работы за станком "${eqName}" успешно завершено. Спасибо, что оставили рабочее место в чистоте!`;
-      }
-
-      if (title && message) {
-        await supabase.from("notifications").insert({
-          user_id: booking.user_id,
-          title,
-          message,
-          type: "booking"
-        });
-      }
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-bookings"] });
-      qc.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Статус обновлен, уведомление отправлено!");
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  const updateZoneBooking = useMutation({
+  const update = useMutation({
     mutationFn: async ({ booking, status }: { booking: ZoneBooking; status: ZoneBooking["status"] }) => {
       const { error } = await supabase.from("zone_bookings").update({ status }).eq("id", booking.id);
       if (error) throw error;
@@ -186,279 +60,82 @@ function AdminBookingsPage() {
         pending: ["Заявка ожидает", `Заявка на «${zoneName}» ожидает решения.`],
       } as const;
       const [title, message] = messages[status];
-      const { error: notificationError } = await supabase.from("notifications").insert({ user_id: booking.user_id, title, message, type: "zone_booking" });
-      if (notificationError) throw notificationError;
+      await supabase.from("notifications").insert({ user_id: booking.user_id, title, message, type: "zone_booking" });
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-zone-bookings"] }); qc.invalidateQueries({ queryKey: ["notifications"] }); toast.success("Статус заявки обновлён"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-zone-bookings"] }); toast.success("Статус заявки обновлён"); },
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const getStudentName = (booking: Booking) => {
-    if (Array.isArray(booking.profiles)) {
-      return booking.profiles[0]?.name ?? "Неизвестный";
-    }
-    return booking.profiles?.name ?? "Неизвестный";
-  };
+  const now = new Date();
+  const stats = useMemo(() => ({
+    pending: zoneBookings.filter((b) => b.status === "pending").length,
+    today: zoneBookings.filter((b) => b.status === "active" && sameDay(new Date(b.start_time), now)).length,
+    upcoming: zoneBookings.filter((b) => b.status === "active" && new Date(b.start_time) > now).length,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [zoneBookings]);
 
-  const getStudentPhoto = (booking: Booking) => {
-    if (Array.isArray(booking.profiles)) {
-      return booking.profiles[0]?.photo_url ?? null;
-    }
-    return booking.profiles?.photo_url ?? null;
-  };
+  const list = view === "open"
+    ? zoneBookings.filter((b) => b.status === "pending" || b.status === "active").sort((a, b) => (a.status === b.status ? 0 : a.status === "pending" ? -1 : 1))
+    : [...zoneBookings].filter((b) => b.status === "cancelled" || b.status === "completed").reverse();
 
-  const getStudentPhone = (booking: Booking) => {
-    if (Array.isArray(booking.profiles)) {
-      return booking.profiles[0]?.contact_phone ?? "Нет номера";
-    }
-    return booking.profiles?.contact_phone ?? "Нет номера";
-  };
-
-  const zoneProfile = (booking: ZoneBooking) => Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles;
-  const pendingZoneBookings = zoneBookings.filter((booking) => booking.status === "pending");
-  const activeZoneBookings = zoneBookings.filter((booking) => booking.status === "active");
-
-  const dayTabs = useMemo(() => {
-    const tabs = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      
-      let label = "";
-      if (i === 0) label = "СЕГОДНЯ";
-      else if (i === 1) label = "ЗАВТРА";
-      else label = format(d, "d MMM (EEEE)", { locale: ru }).toUpperCase();
-      
-      tabs.push({
-        id: getLocalDateString(d),
-        label,
-      });
-    }
-    return tabs;
-  }, []);
-
-  const pendingRequests = (bookings ?? []).filter((b) => b.status === "pending");
-  
-  const filteredAndSortedActiveBookings = useMemo(() => {
-    const active = (bookings ?? []).filter((b) => b.status === "active");
-
-    const filtered = active.filter(b => {
-      if (dateFilter === 'all') return true;
-      const start = new Date(b.start_time);
-      return getLocalDateString(start) === dateFilter;
-    });
-
-    return filtered.sort((a, b) => {
-      const startA = new Date(a.start_time);
-      const endA = new Date(a.end_time);
-      const startB = new Date(b.start_time);
-      const endB = new Date(b.end_time);
-
-      const isWorkingA = isWithinInterval(now, { start: startA, end: endA });
-      const isWorkingB = isWithinInterval(now, { start: startB, end: endB });
-
-      if (isWorkingA && !isWorkingB) return -1;
-      if (!isWorkingA && isWorkingB) return 1;
-
-      const isExpiredA = isAfter(now, endA);
-      const isExpiredB = isAfter(now, endB);
-
-      if (isExpiredA && !isExpiredB) return -1;
-      if (!isExpiredA && isExpiredB) return 1;
-
-      return startA.getTime() - startB.getTime();
-    });
-  }, [bookings, dateFilter, now]);
+  const statCard = (label: string, value: number, Icon: typeof Clock, accent = false) => (
+    <div className={`flex flex-col justify-between border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] ${accent ? "bg-blue-600 text-white" : "bg-white"}`}>
+      <div className="mb-2 flex items-start justify-between"><h4 className="text-[10px] font-black uppercase tracking-widest md:text-xs">{label}</h4><Icon className="h-5 w-5" /></div>
+      <div className="text-4xl font-black">{value}</div>
+    </div>
+  );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
-      
-      {/* HEADER SECTION */}
+    <div className="space-y-8 pb-12">
       <div className="border-b-4 border-slate-900 pb-6">
-        <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Управление бронями</h1>
-        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Оперативный контроль станков и заявок</p>
+        <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Бронирования</h1>
+        <p className="mt-2 text-xs font-bold uppercase tracking-widest text-slate-500">Заявки на воркшоп-зону. Расписание и часы работы — во вкладке «Карта лаборатории».</p>
       </div>
 
-      {/* DETAILED STATISTICS BLOCK */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-white border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-2">
-            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900">Заявок на одобрение</h4>
-            <AlertCircle className="w-5 h-5 text-amber-500" />
-          </div>
-          <div className="text-4xl font-black text-slate-900">{stats.pending}</div>
-        </div>
-
-        <div className="bg-blue-600 border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between text-white">
-          <div className="flex justify-between items-start mb-2">
-            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-blue-100">Станков в работе</h4>
-            <Activity className="w-5 h-5 text-white" />
-          </div>
-          <div className="text-4xl font-black text-white">{stats.activeNow}</div>
-        </div>
-
-        <div className="bg-white border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-2">
-            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900">Броней на сегодня</h4>
-            <Calendar className="w-5 h-5 text-blue-600" />
-          </div>
-          <div className="text-4xl font-black text-slate-900">{stats.todayTotal}</div>
-        </div>
-
-        <div className="bg-white border-4 border-slate-900 p-5 shadow-[4px_4px_0_#0f172a] flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-2">
-            <h4 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900">Завершено сегодня</h4>
-            <CheckSquare className="w-5 h-5 text-green-600" />
-          </div>
-          <div className="text-4xl font-black text-slate-900">{stats.completedToday}</div>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
+        {statCard("Ждут решения", stats.pending, AlertCircle)}
+        {statCard("Сегодня", stats.today, Calendar, true)}
+        {statCard("Предстоящие", stats.upcoming, CheckSquare)}
       </div>
 
       <div className="border-4 border-slate-900 bg-white shadow-[6px_6px_0_#0f172a]">
-        <div className="flex flex-col gap-2 border-b-4 border-slate-900 bg-amber-400 p-4 md:p-6">
+        <div className="flex flex-col gap-3 border-b-4 border-slate-900 bg-amber-400 p-4 sm:flex-row sm:items-center sm:justify-between md:p-6">
           <h2 className="text-xl font-black uppercase tracking-tight">Воркшопы и курсы</h2>
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-700">Новые заявки на пространство: {pendingZoneBookings.length}</p>
+          <div className="flex gap-2">
+            {(["open", "history"] as const).map((v) => (
+              <button key={v} type="button" onClick={() => setView(v)} className={`border-2 border-slate-900 px-3 py-1.5 text-xs font-black uppercase ${view === v ? "bg-slate-900 text-white" : "bg-white"}`}>{v === "open" ? "Актуальные" : "История"}</button>
+            ))}
+          </div>
         </div>
         <div className="space-y-4 p-4 md:p-6">
-          {zoneBookingsLoading ? <Skeleton className="h-24 w-full bg-slate-200" /> : [...pendingZoneBookings, ...activeZoneBookings].length === 0 ? (
-            <p className="py-6 text-center text-xs font-bold uppercase tracking-widest text-slate-400">Нет заявок на зону</p>
-          ) : [...pendingZoneBookings, ...activeZoneBookings].map((booking) => {
-            const profile = zoneProfile(booking);
-            const { date, fullRange } = formatTimeRange(booking.start_time, booking.end_time);
-            return <div key={booking.id} className="flex flex-col justify-between gap-4 border-2 border-slate-900 bg-slate-50 p-4 lg:flex-row lg:items-center">
-              <div className="space-y-2"><div className="flex flex-wrap items-center gap-2"><span className="text-lg font-black uppercase tracking-tight">{booking.topic}</span><Badge className={booking.status === "pending" ? "border-2 border-slate-900 bg-amber-400 text-slate-900" : "border-2 border-slate-900 bg-emerald-500 text-slate-900"}>{booking.status === "pending" ? "ОЖИДАЕТ" : "ОДОБРЕНО"}</Badge></div><div className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-slate-600"><span>{booking.lab_zones?.name}</span><span className="flex items-center gap-1"><Clock className="h-4 w-4" />{date}, {fullRange}</span><span className="flex items-center gap-1"><UserAvatar name={profile?.name} url={profile?.photo_url} className="h-6 w-6" />{profile?.name}</span><span>{booking.participant_count} участников</span></div>{booking.event_format && <p className="max-w-2xl text-sm text-slate-600">{booking.event_format}</p>}</div>
-              <div className="flex flex-wrap gap-2">{booking.status === "pending" && <Button onClick={() => updateZoneBooking.mutate({ booking, status: "active" })} className="border-2 border-slate-900 bg-emerald-500 font-black uppercase text-slate-900">Одобрить</Button>}<Button variant="outline" onClick={() => updateZoneBooking.mutate({ booking, status: booking.status === "active" ? "completed" : "cancelled" })} className="border-2 border-slate-900 font-black uppercase">{booking.status === "active" ? "Завершить" : "Отклонить"}</Button></div>
-            </div>;
+          {isLoading ? <Skeleton className="h-24 w-full bg-slate-200" /> : list.length === 0 ? (
+            <p className="py-6 text-center text-xs font-bold uppercase tracking-widest text-slate-400">Нет заявок</p>
+          ) : list.map((booking) => {
+            const profile = Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles;
+            const badge = { pending: ["ОЖИДАЕТ", "bg-amber-400"], active: ["ОДОБРЕНО", "bg-emerald-500"], completed: ["ЗАВЕРШЕНО", "bg-slate-200"], cancelled: ["ОТКЛОНЕНО", "bg-red-200"] }[booking.status];
+            return (
+              <div key={booking.id} className="flex flex-col justify-between gap-4 border-2 border-slate-900 bg-slate-50 p-4 lg:flex-row lg:items-center">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2"><span className="text-lg font-black uppercase tracking-tight">{booking.topic}</span><Badge className={`border-2 border-slate-900 text-slate-900 ${badge[1]}`}>{badge[0]}</Badge></div>
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-slate-600">
+                    <span>{booking.lab_zones?.name}</span>
+                    <span className="flex items-center gap-1"><Clock className="h-4 w-4" />{range(booking.start_time, booking.end_time)}</span>
+                    <span className="flex items-center gap-1"><UserAvatar name={profile?.name} url={profile?.photo_url} className="h-6 w-6" />{profile?.name}</span>
+                    {profile?.contact_phone && <span className="flex items-center gap-1"><Phone className="h-4 w-4" />{profile.contact_phone}</span>}
+                    <span>{booking.participant_count} участников</span>
+                  </div>
+                  {booking.event_format && <p className="max-w-2xl text-sm text-slate-600">{booking.event_format}</p>}
+                </div>
+                {view === "open" && (
+                  <div className="flex flex-wrap gap-2">
+                    {booking.status === "pending" && <Button onClick={() => update.mutate({ booking, status: "active" })} className="border-2 border-slate-900 bg-emerald-500 font-black uppercase text-slate-900 hover:bg-emerald-600">Одобрить</Button>}
+                    <Button variant="outline" onClick={() => update.mutate({ booking, status: booking.status === "active" ? "completed" : "cancelled" })} className="border-2 border-slate-900 font-black uppercase">{booking.status === "active" ? "Завершить" : "Отклонить"}</Button>
+                    {booking.status === "active" && <Button variant="ghost" onClick={() => update.mutate({ booking, status: "cancelled" })} className="font-black uppercase text-red-600">Отменить</Button>}
+                  </div>
+                )}
+              </div>
+            );
           })}
-        </div>
-      </div>
-
-      {/* ЗАПРОСЫ НА ПОДТВЕРЖДЕНИЕ */}
-      <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
-        <div className="bg-slate-900 text-white p-4 md:p-6 border-b-4 border-slate-900">
-          <h2 className="text-xl font-black uppercase tracking-tight">Новые запросы</h2>
-        </div>
-        <div className="p-4 md:p-6">
-          {bookingsLoading ? <Skeleton className="h-24 w-full bg-slate-200" /> : pendingRequests.length === 0 ? (
-            <p className="py-6 text-center font-bold uppercase tracking-widest text-xs text-slate-400">Нет новых запросов</p>
-          ) : (
-            <div className="grid gap-4">
-              {pendingRequests.map((b) => {
-                const { date, fullRange } = formatTimeRange(b.start_time, b.end_time);
-                return (
-                  <div key={b.id} className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-2 border-slate-900 p-4 bg-slate-50 hover:bg-blue-50 transition-colors">
-                    <div className="space-y-2">
-                      <div className="font-black text-lg text-slate-900 uppercase tracking-tight">{b.equipment?.name}</div>
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest text-slate-600">
-                        <span className="flex items-center gap-2"><UserAvatar name={getStudentName(b)} url={getStudentPhoto(b)} className="h-6 w-6" /> {getStudentName(b)}</span>
-                        <span className="flex items-center gap-2"><Phone className="h-4 w-4 text-emerald-600" /> {getStudentPhone(b)}</span>
-                        <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-600" /> {date}, {fullRange}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-3 mt-2 md:mt-0">
-                      <Button onClick={() => updateBooking.mutate({ booking: b, status: "active" })} className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-xs shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-                        Одобрить
-                      </Button>
-                      <Button variant="outline" onClick={() => updateBooking.mutate({ booking: b, status: "cancelled" })} className="border-2 border-slate-900 text-slate-900 hover:bg-red-50 hover:text-red-600 font-bold uppercase tracking-widest text-xs shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-                        Отклонить
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ОДОБРЕННЫЕ / АКТИВНЫЕ */}
-      <div className="bg-white border-4 border-slate-900 shadow-[6px_6px_0_#0f172a]">
-        <div className="bg-blue-600 text-white p-4 md:p-6 border-b-4 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-xl font-black uppercase tracking-tight">Управление станками</h2>
-        </div>
-        
-        {/* ФИЛЬТРЫ ДАТ (ВКЛАДКИ НА НЕДЕЛЮ) */}
-        <div className="flex overflow-x-auto gap-2 p-4 md:px-6 bg-slate-50 border-b-4 border-slate-900 no-scrollbar">
-          {dayTabs.map(tab => (
-            <button 
-              key={tab.id}
-              onClick={() => setDateFilter(tab.id)} 
-              className={`shrink-0 px-4 py-2 font-black uppercase tracking-widest text-[10px] md:text-xs border-2 transition-all ${dateFilter === tab.id ? 'bg-blue-600 text-white border-slate-900 shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]' : 'bg-white text-slate-900 border-slate-300 hover:border-slate-900'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <button 
-            onClick={() => setDateFilter('all')} 
-            className={`shrink-0 px-4 py-2 font-black uppercase tracking-widest text-[10px] md:text-xs border-2 transition-all ${dateFilter === 'all' ? 'bg-blue-600 text-white border-slate-900 shadow-[2px_2px_0_#0f172a] translate-y-[1px] translate-x-[1px]' : 'bg-white text-slate-900 border-slate-300 hover:border-slate-900'}`}
-          >
-            ВСЕ ДНИ
-          </button>
-        </div>
-
-        <div className="p-4 md:p-6">
-          {bookingsLoading ? <Skeleton className="h-24 w-full bg-slate-200" /> : filteredAndSortedActiveBookings.length === 0 ? (
-            <p className="py-6 text-center font-bold uppercase tracking-widest text-xs text-slate-400">Нет активных или запланированных броней на выбранный период</p>
-          ) : (
-            <div className="grid gap-4">
-              {filteredAndSortedActiveBookings.map((b) => {
-                const start = new Date(b.start_time);
-                const end = new Date(b.end_time);
-                const { date, fullRange } = formatTimeRange(b.start_time, b.end_time);
-                
-                const isCurrentlyWorking = isWithinInterval(now, { start, end });
-                const isExpired = isAfter(now, end);
-
-                return (
-                  <div key={b.id} className={`flex flex-col md:flex-row md:items-center justify-between gap-4 border-4 p-4 transition-all ${
-                    isExpired ? "border-red-600 bg-red-50" : isCurrentlyWorking ? "border-emerald-500 bg-emerald-50" : "border-slate-900 bg-white"
-                  }`}>
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className={`font-black text-lg uppercase tracking-tight ${isExpired ? 'text-red-900' : 'text-slate-900'}`}>{b.equipment?.name}</span>
-                        {isCurrentlyWorking ? (
-                          <Badge className="bg-emerald-500 hover:bg-emerald-500 text-slate-900 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] animate-pulse shadow-[2px_2px_0_#0f172a]">В РАБОТЕ</Badge>
-                        ) : isExpired ? (
-                          <Badge variant="destructive" className="bg-red-600 text-white border-2 border-red-900 font-black uppercase tracking-widest text-[10px] animate-bounce shadow-[2px_2px_0_#7f1d1d]">ВРЕМЯ ИСТЕКЛО</Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-white text-blue-600 border-2 border-slate-900 font-black uppercase tracking-widest text-[10px] shadow-[2px_2px_0_#0f172a]">ЗАБРОНИРОВАНО</Badge>
-                        )}
-                      </div>
-                      <div className={`flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-red-700' : 'text-slate-600'}`}>
-                        <span className="flex items-center gap-2"><UserAvatar name={getStudentName(b)} url={getStudentPhoto(b)} className="h-6 w-6" /> {getStudentName(b)}</span>
-                        <span className="flex items-center gap-2"><Phone className="h-4 w-4 opacity-70" /> {getStudentPhone(b)}</span>
-                        <span className="flex items-center gap-2"><Clock className="h-4 w-4 opacity-70" /> {date}: {fullRange}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-3 mt-2 md:mt-0">
-                      <Button 
-                        onClick={() => updateBooking.mutate({ booking: b, status: "completed" })}
-                        className={`border-2 font-black uppercase tracking-widest text-xs transition-all ${
-                          isExpired 
-                            ? "bg-red-600 hover:bg-red-700 text-white border-red-900 shadow-[4px_4px_0_#7f1d1d] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none animate-pulse" 
-                            : "bg-blue-600 hover:bg-blue-700 text-white border-slate-900 shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                        }`}
-                      >
-                        Завершить
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => updateBooking.mutate({ booking: b, status: "cancelled" })}
-                        className={`border-2 font-bold uppercase tracking-widest text-xs transition-all px-3 ${
-                          isExpired
-                            ? "border-red-300 text-red-700 hover:bg-red-100 hover:text-red-800"
-                            : "border-slate-900 text-slate-900 hover:bg-red-50 hover:text-red-600 shadow-[2px_2px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                        }`}
-                      >
-                        <Ban className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
     </div>
