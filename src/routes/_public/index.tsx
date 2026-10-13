@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ChevronRight, Cpu, Wrench, Lightbulb, MapPin,
-  Mail, Phone, Printer, Rocket, ShieldCheck,
+import { 
+  ChevronRight, Cpu, Wrench, Lightbulb, MapPin, 
+  Mail, Phone, Printer, Rocket, ShieldCheck, 
   Users, Zap, Target, Layers, ExternalLink, Code2, Send, X
 } from "lucide-react";
 import mitLogo from "/fablab-mit-logo.png";
@@ -33,29 +33,32 @@ function LandingPage() {
     <div className="relative min-h-screen bg-background font-sans overflow-hidden selection:bg-primary selection:text-primary-foreground">
       
       <section className="landing-hero">
-        <div className="landing-hero-container">
-          <div className="landing-hero-head">
-            <h1 className="landing-hero-title hero-in" style={{ animationDelay: "0ms" }}><span>FABLAB</span><span>SATBAYEV</span></h1>
-            <p className="landing-hero-intro hero-in" style={{ animationDelay: "100ms" }}>{t("landing.hero.about", "FabLab — это открытая мастерская Satbayev University, где идея превращается в реальную вещь. Приходи с проектом или просто с любопытством: напечатаешь деталь, вырежешь заготовку, спаяешь плату и соберёшь прототип. Оборудование, наставники и практические воркшопы уже здесь, начинать можно с нуля.")}</p>
+        <div className="landing-hero-heading">
+          <div>
+            <h1 className="landing-hero-title"><span>FABLAB</span><span>SATBAYEV</span></h1>
           </div>
-          <div className="landing-hero-media hero-in" style={{ animationDelay: "180ms" }}>
-            <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
-          </div>
-          <div className="landing-hero-foot hero-in" style={{ animationDelay: "260ms" }}>
-            <p className="landing-hero-caption">{t("landing.hero.caption", "3D-печать, ЧПУ станки, слесарная зона, пайка и электроника")}</p>
-            <div className="landing-hero-buttons">
-              <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: "smooth" })} className="landing-hero-button landing-hero-button-primary">
-                {t("landing.hero.apply", "Подать заявку")}<ChevronRight className="h-4 w-4 shrink-0" />
-              </Button>
-              <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="landing-hero-button landing-hero-button-secondary">
-                <Printer className="h-4 w-4 shrink-0" />{t("landing.hero.print3d", "3D-печать")}
-              </Button>
-            </div>
+          <p className="landing-hero-intro">{t("booking.map.heroText")}</p>
+        </div>
+        <div className="landing-hero-scene">
+          <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
+        </div>
+        <div className="landing-hero-action">
+          <p className="text-base leading-relaxed text-muted-foreground">{t("landing.hero.ctaDesc")}</p>
+          <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:w-auto">
+            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-primary bg-primary px-5 text-sm font-black uppercase text-primary-foreground hover:bg-primary/90">
+              {t("booking.book.workshopBtn")}<ChevronRight className="h-4 w-4 shrink-0" />
+            </Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/print-3d" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-foreground bg-background px-5 text-sm font-black uppercase text-foreground hover:bg-muted">
+              <Printer className="h-4 w-4 shrink-0" />{t("booking.book.printTitle")}
+            </Button>
           </div>
         </div>
       </section>
+      <LabExperience />
+      <AtmosphereCarousel />
+
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
-      <section id="about" className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative scroll-mt-24">
+      <section className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative">
         <div className="grid grid-cols-1 gap-6">
           
           <div className="bg-landing-action text-landing-action-foreground border-y-2 border-foreground p-6 md:p-10 grid items-center gap-8 md:grid-cols-[1fr_280px]">
@@ -107,9 +110,6 @@ function LandingPage() {
           </div>
         </div>
       </section>
-
-      <div id="features" className="scroll-mt-24"><LabExperience /></div>
-      <AtmosphereCarousel />
 
       {/* --- 6. ПРЕИМУЩЕСТВА --- */}
       <section className="bg-card border-y-4 border-foreground py-12 md:py-16">
