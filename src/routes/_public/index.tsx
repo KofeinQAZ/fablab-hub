@@ -9,6 +9,8 @@ import {
 import mitLogo from "/fablab-mit-logo.png";
 import buildingPhoto from "@/assets/fablab-building.webp";
 import { Button } from "@/components/ui/button";
+import { LabExperience } from "@/components/lab-experience";
+import { AtmosphereCarousel } from "@/components/atmosphere-carousel";
 
 export const Route = createFileRoute("/_public/")({
   component: LandingPage,
@@ -28,90 +30,45 @@ function LandingPage() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#FAFAFA] font-sans overflow-hidden selection:bg-blue-600 selection:text-white">
+    <div className="relative min-h-screen bg-background font-sans overflow-hidden selection:bg-primary selection:text-primary-foreground">
       
-      {/* --- 1. АРХИТЕКТУРНАЯ HERO СЕКЦИЯ --- */}
       <section className="landing-hero">
-        <h1 className="landing-hero-title">
-          <span>FABLAB</span>
-          <span>SATBAYEV</span>
-        </h1>
+        <div className="landing-hero-heading">
+          <div>
+            <p className="mb-3 font-mono text-sm font-bold uppercase text-primary">SATBAYEV UNIVERSITY // FABLAB</p>
+            <h1 className="landing-hero-title"><span>FABLAB</span><span>SATBAYEV</span></h1>
+          </div>
+          <p className="landing-hero-intro">{t("booking.map.heroText")}</p>
+        </div>
         <div className="landing-hero-scene">
-            <img
-              src={buildingPhoto}
-              alt="FabLab Satbayev"
-              width={1920}
-              height={439}
-              fetchPriority="high"
-              className="landing-hero-photo"
-            />
-            <div className="landing-hero-action">
-              <p className="font-bold text-sm uppercase leading-relaxed mb-4">
-                {t('landing.hero.ctaDesc', '3D-ПЕЧАТЬ, ЧПУ СТАНКИ, СЛЕСАРНАЯ ЗОНА')}
-              </p>
-              <h2 className="text-2xl font-extrabold mb-5 leading-tight uppercase">
-                {t('landing.hero.ctaTitle', 'БРОНИРУЙТЕ ОБОРУДОВАНИЕ ОНЛАЙН')}
-              </h2>
-              <Button
-                variant="ghost"
-                onClick={() => navigate({ to: "/booking" })}
-                className="landing-hero-link group"
-              >
-                <span>{t('landing.hero.ctaBtn', 'ПЕРЕЙТИ К БРОНИРОВАНИЮ')}</span><ChevronRight className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none" />
-              </Button>
-            </div>
+          <img src={buildingPhoto} alt="FabLab Satbayev" width={1920} height={439} fetchPriority="high" className="landing-hero-photo" />
+        </div>
+        <div className="landing-hero-action">
+          <p className="text-base font-bold leading-relaxed">{t("landing.hero.ctaDesc")}</p>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => document.getElementById("booking-book")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-current bg-card px-5 text-sm font-black uppercase text-foreground hover:bg-muted">
+              {t("booking.book.workshopBtn")}<ChevronRight className="h-4 w-4 shrink-0" />
+            </Button>
+            <Button variant="ghost" onClick={() => navigate({ to: "/print-3d" })} className="h-auto min-h-12 whitespace-normal rounded-none border-2 border-current px-5 text-sm font-black uppercase text-landing-action-foreground hover:bg-landing-action-foreground/10 hover:text-landing-action-foreground">
+              <Printer className="h-4 w-4 shrink-0" />{t("booking.book.printTitle")}
+            </Button>
+          </div>
         </div>
       </section>
-
-      {/* --- 2. ТЕХНОЛОГИИ (Брутальная сетка) --- */}
-      <section className="max-w-7xl mx-auto px-6 pt-8 md:pt-12 pb-24 z-10 relative">
-        <div className="border-t-4 border-slate-900 pt-12 flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
-            {t('landing.tech.title', 'НАШИ ВОЗМОЖНОСТИ')}
-          </h2>
-          <p className="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-500 uppercase md:text-right max-w-sm leading-relaxed">
-            {t('landing.tech.subtitle', 'ВЕСЬ СПЕКТР ИНСТРУМЕНТОВ ДЛЯ ВОПЛОЩЕНИЯ ИДЕЙ')}
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
-          {[
-            { name: t('landing.tech.items.print', '3D Печать'), icon: Printer },
-            { name: t('landing.tech.items.electronics', 'Электроника'), icon: Cpu },
-            { name: t('landing.tech.items.lock', 'Слесарная'), icon: Wrench },
-            { name: t('landing.tech.items.solder', 'Пайка'), icon: Zap },
-            { name: t('landing.tech.items.cnc', 'ЧПУ Станки'), icon: Layers },
-          ].map((Tool, i) => (
-            <div key={i} className="group bg-white border-4 border-slate-900 flex flex-col items-center justify-center aspect-square shadow-[6px_6px_0_#2563eb] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0_#2563eb] transition-all cursor-default">
-              <Tool.icon className="w-10 h-10 text-slate-900 mb-3 group-hover:text-blue-600 transition-colors" />
-              <span className="font-bold text-xs tracking-widest uppercase text-slate-900 text-center">{Tool.name}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <LabExperience />
+      <AtmosphereCarousel />
 
       {/* --- 3. BENTO GRID (Журнальные карточки) --- */}
-      <section className="max-w-7xl mx-auto px-6 pb-24 z-10 relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      <section className="max-w-7xl mx-auto px-6 pb-12 md:pb-16 z-10 relative">
+        <div className="grid grid-cols-1 gap-6">
           
-          <div className="bg-white border-4 border-slate-900 p-8 md:p-12 shadow-[8px_8px_0_theme(colors.slate.900)] flex flex-col justify-between group">
+          <div className="bg-landing-action text-landing-action-foreground border-y-2 border-foreground p-6 md:p-10 grid items-center gap-8 md:grid-cols-[1fr_280px]">
             <div>
-              <Badge text={t('landing.bento.equipBadge', 'ПАРК ОБОРУДОВАНИЯ')} />
-              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 mt-6 mb-4 leading-none">{t('landing.bento.equipTitle1', 'ТЫСЯЧИ ДЕТАЛЕЙ.')}<br/>{t('landing.bento.equipTitle2', 'ОДИН ПРИНТЕР.')}</h3>
-              <p className="text-slate-600 text-base md:text-lg mb-8 font-medium">{t('landing.bento.equipDesc', 'Получи доступ к парку современных 3D-принтеров. От базового PLA до сложных инженерных пластиков — всё бронируется онлайн.')}</p>
+              <div className="inline-block border-2 border-foreground px-3 py-1 font-bold text-xs tracking-normal uppercase bg-foreground text-primary-foreground shadow-[4px_4px_0_var(--foreground)]">{t('landing.bento.mitBadge', 'СОТРУДНИЧЕСТВО')}</div>
+              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-normal text-primary-foreground mt-6 mb-4 leading-none">{t('landing.bento.mitTitle1', 'ПРИ ПОДДЕРЖКЕ')}<br/>{t('landing.bento.mitTitle2', 'MIT')}</h3>
+              <p className="text-landing-action-foreground text-base md:text-lg font-medium">{t('landing.bento.mitDesc', 'FabLab Satbayev — часть глобальной сети fabrication laboratories, работающей при поддержке и в сотрудничестве с MIT.')}</p>
             </div>
-            <div className="relative h-64 bg-slate-100 border-4 border-slate-900 overflow-hidden">
-               <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80" alt="3D Printing" className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-            </div>
-          </div>
-
-          <div className="bg-blue-600 border-4 border-slate-900 p-8 md:p-12 shadow-[8px_8px_0_theme(colors.slate.900)] flex flex-col justify-between">
-            <div>
-              <div className="inline-block border-2 border-slate-900 px-3 py-1 font-bold text-xs tracking-widest uppercase bg-slate-900 text-white shadow-[4px_4px_0_#ffffff]">{t('landing.bento.mitBadge', 'СОТРУДНИЧЕСТВО')}</div>
-              <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white mt-6 mb-4 leading-none">{t('landing.bento.mitTitle1', 'ПРИ ПОДДЕРЖКЕ')}<br/>{t('landing.bento.mitTitle2', 'MIT')}</h3>
-              <p className="text-blue-100 text-base md:text-lg mb-8 font-medium">{t('landing.bento.mitDesc', 'FabLab Satbayev — часть глобальной сети fabrication laboratories, работающей при поддержке и в сотрудничестве с MIT.')}</p>
-            </div>
-            <div className="relative h-64 bg-white border-4 border-slate-900 flex items-center justify-center p-6 md:p-8">
+            <div className="relative h-48 bg-card flex items-center justify-center p-6">
                <img src={mitLogo} alt={t('landing.bento.mitLogoAlt', 'Fab Lab MIT')} className="w-full h-full max-h-[180px] object-contain" />
             </div>
           </div>
@@ -120,17 +77,17 @@ function LandingPage() {
       </section>
 
       {/* --- НОВЫЙ БЛОК: ПАРТНЕРЫ (Бегущая строка) --- */}
-      <section className="bg-white border-y-4 border-slate-900 py-16 overflow-hidden relative">
+      <section className="bg-card border-y-4 border-foreground py-16 overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-6 mb-10 flex flex-col md:flex-row justify-between items-end gap-4">
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-normal text-foreground">
             {t('landing.partners.title', 'НАШИ ПАРТНЕРЫ')}
           </h2>
-          <p className="text-xs font-bold tracking-[0.2em] text-slate-500 uppercase">
+          <p className="text-xs font-bold tracking-normal text-muted-foreground uppercase">
             {t('landing.partners.subtitle', 'КОМПАНИИ, КОТОРЫЕ НАМ ДОВЕРЯЮТ')}
           </p>
         </div>
 
-        <div className="relative w-full flex overflow-hidden border-y-4 border-slate-900 bg-slate-50">
+        <div className="relative w-full flex overflow-hidden border-y-4 border-foreground bg-background">
           <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none" />
 
@@ -141,77 +98,26 @@ function LandingPage() {
                 href={partner.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="group relative flex items-center justify-center w-48 md:w-64 h-32 px-8 border-r-4 border-slate-900 transition-all hover:bg-slate-100"
+                className="group relative flex items-center justify-center w-48 md:w-64 h-32 px-8 border-r-4 border-foreground transition-all hover:bg-muted"
               >
                 <img 
                   src={partner.logo} 
                   alt={partner.name} 
                   className="max-w-full max-h-16 object-contain opacity-85 group-hover:opacity-100 transition-all duration-300"
                 />
-                <ExternalLink className="absolute top-3 right-3 w-4 h-4 text-slate-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all" />
+                <ExternalLink className="absolute top-3 right-3 w-4 h-4 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all" />
               </a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* --- 4. МАССИВНЫЙ БЛОК CTA --- */}
-      <section className="bg-slate-900 border-b-4 border-slate-900 py-24 md:py-32 overflow-hidden relative">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center mix-blend-luminosity" />
-        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-5xl md:text-8xl font-black uppercase text-white tracking-tighter mb-8 leading-none">{t('landing.cta.title1', 'СДЕЛАЙ СВОЙ')}<br/><span className="text-blue-500">{t('landing.cta.title2', 'ПЕРВЫЙ ШАГ')}</span></h2>
-          <p className="text-lg md:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium">
-            {t('landing.cta.desc', 'Присоединяйся к сообществу мейкеров, находи команду и создавай проекты, которые изменят мир.')}
-          </p>
-          <button 
-            onClick={() => navigate({ to: "/clubs" })}
-            className="bg-blue-600 text-white border-4 border-blue-600 px-8 py-5 font-black uppercase tracking-[0.2em] hover:bg-white hover:text-blue-600 hover:border-white transition-colors text-sm md:text-base shadow-[8px_8px_0_#ffffff] hover:shadow-[4px_4px_0_#2563eb] hover:translate-y-1 hover:translate-x-1"
-          >
-            {t('landing.cta.btn', 'ИСКАТЬ ПРОЕКТЫ')}
-          </button>
-        </div>
-      </section>
-
-      {/* --- 5. ФОТОГАЛЕРЕЯ (Жесткие рамки) --- */}
-      <section className="max-w-7xl mx-auto px-6 py-24 z-10 relative">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-12 border-b-4 border-slate-900 pb-12">
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
-            {t('landing.atmosphere.title', 'АТМОСФЕРА')}
-          </h2>
-          <p className="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-500 uppercase md:text-right max-w-sm leading-relaxed">
-            {t('landing.atmosphere.subtitle', 'ТВОРИ. ОШИБАЙСЯ. СОЗДАВАЙ ЗАНОВО.')}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 relative h-[400px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80" alt="FabLab Working Area" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-blue-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.atmosphere.mainHall', 'Главный зал')}</div>
-          </div>
-
-          <div className="relative h-[400px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80" alt="3D Printing Zone" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-slate-900 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.tech.items.print', '3D Печать')}</div>
-          </div>
-
-          <div className="relative h-[320px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80" alt="Teamwork" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-slate-900 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.atmosphere.teams', 'Командная работа')}</div>
-          </div>
-
-          <div className="md:col-span-2 relative h-[320px] border-4 border-slate-900 shadow-[8px_8px_0_#2563eb] group overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80" alt="High-tech equipment" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-            <div className="absolute bottom-0 left-0 bg-blue-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs border-t-4 border-r-4 border-slate-900">{t('landing.atmosphere.cncPark', 'Парк ЧПУ станков')}</div>
-          </div>
-        </div>
-      </section>
-
       {/* --- 6. ПРЕИМУЩЕСТВА --- */}
-      <section className="bg-white border-y-4 border-slate-900 py-24">
+      <section className="bg-card border-y-4 border-foreground py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-16">
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900 mb-6">{t('landing.whyUs.title', 'ПОЧЕМУ МЫ?')}</h2>
-            <div className="h-2 w-32 bg-blue-600" />
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-normal text-foreground mb-6">{t('landing.whyUs.title', 'ПОЧЕМУ МЫ?')}</h2>
+            <div className="h-2 w-32 bg-landing-action" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
@@ -250,60 +156,60 @@ function LandingPage() {
       </section>
 
       {/* --- 7. ЦУР / SUSTAINABLE DEVELOPMENT GOALS --- */}
-      <section className="bg-slate-50 border-b-4 border-slate-900 py-24">
+      <section className="bg-background border-b-4 border-foreground py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-16">
             <div>
-              <span className="text-blue-600 font-black tracking-widest text-xs uppercase block mb-2">
+              <span className="text-primary font-black tracking-normal text-xs uppercase block mb-2">
                 {t('landing.sdg.miniTitle', 'Sustainable Development Goals')}
               </span>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-normal text-foreground">
                 {t('landing.sdg.title', 'Цели устойчивого развития (ЦУР)')}
               </h2>
             </div>
-            <p className="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-500 uppercase md:text-right max-w-md leading-relaxed">
+            <p className="text-sm md:text-base font-bold tracking-normal text-muted-foreground uppercase md:text-right max-w-md leading-relaxed">
               {t('landing.sdg.subtitle', 'FabLab Satbayev активно поддерживает глобальную стратегию университета в рамках инициатив ООН')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* СDG 4 */}
-            <div className="bg-white border-4 border-slate-900 p-6 md:p-8 shadow-[6px_6px_0_#0f172a] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_#0f172a] transition-all">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-[#C5192D] text-white flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-slate-900 shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.15)]">
+            <div className="bg-card border-4 border-foreground p-6 md:p-8 shadow-[6px_6px_0_var(--foreground)] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_var(--foreground)] transition-all">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-destructive text-primary-foreground flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-foreground shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.15)]">
                 4
               </div>
               <div className="pr-14">
-                <span className="text-[#C5192D] font-black text-[10px] uppercase tracking-widest block mb-1">{t('landing.sdg.goal4.badge', 'Качественное образование')}</span>
-                <h4 className="text-xl md:text-2xl font-black uppercase tracking-tight text-slate-900 mb-4">{t('landing.sdg.goal4.title', 'Quality Education')}</h4>
-                <p className="text-slate-600 font-medium text-xs md:text-sm leading-relaxed">
+                <span className="text-destructive font-black text-xs uppercase tracking-normal block mb-1">{t('landing.sdg.goal4.badge', 'Качественное образование')}</span>
+                <h4 className="text-xl md:text-2xl font-black uppercase tracking-normal text-foreground mb-4">{t('landing.sdg.goal4.title', 'Quality Education')}</h4>
+                <p className="text-muted-foreground font-medium text-sm md:text-base leading-relaxed">
                   {t('landing.sdg.goal4.desc', 'Обеспечиваем открытый доступ к цифровому производству. Обучаем студентов практической инженерии, прототипированию и работе на промышленном оборудовании.')}
                 </p>
               </div>
             </div>
 
             {/* SDG 7 */}
-            <div className="bg-white border-4 border-slate-900 p-6 md:p-8 shadow-[6px_6px_0_#0f172a] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_#0f172a] transition-all">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-[#FFB314] text-slate-900 flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-slate-900 shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.1)]">
+            <div className="bg-card border-4 border-foreground p-6 md:p-8 shadow-[6px_6px_0_var(--foreground)] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_var(--foreground)] transition-all">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-zone-yellow text-foreground flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-foreground shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.1)]">
                 7
               </div>
               <div className="pr-14">
-                <span className="text-[#D49000] font-black text-[10px] uppercase tracking-widest block mb-1">{t('landing.sdg.goal7.badge', 'Чистая энергия')}</span>
-                <h4 className="text-xl md:text-2xl font-black uppercase tracking-tight text-slate-900 mb-4">{t('landing.sdg.goal7.title', 'Affordable & Clean Energy')}</h4>
-                <p className="text-slate-600 font-medium text-xs md:text-sm leading-relaxed">
+                <span className="text-foreground font-black text-xs uppercase tracking-normal block mb-1">{t('landing.sdg.goal7.badge', 'Чистая энергия')}</span>
+                <h4 className="text-xl md:text-2xl font-black uppercase tracking-normal text-foreground mb-4">{t('landing.sdg.goal7.title', 'Affordable & Clean Energy')}</h4>
+                <p className="text-muted-foreground font-medium text-sm md:text-base leading-relaxed">
                   {t('landing.sdg.goal7.desc', 'Стимулируем разработку студенческих проектов в сфере GreenTech. Помогаем собирать прототипы энергоэффективных систем и возобновляемых источников.')}
                 </p>
               </div>
             </div>
 
             {/* SDG 9 */}
-            <div className="bg-white border-4 border-slate-900 p-6 md:p-8 shadow-[6px_6px_0_#0f172a] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_#0f172a] transition-all">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-[#F26A2E] text-white flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-slate-900 shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.15)]">
+            <div className="bg-card border-4 border-foreground p-6 md:p-8 shadow-[6px_6px_0_var(--foreground)] relative overflow-hidden group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0_var(--foreground)] transition-all">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-zone-yellow text-primary-foreground flex items-center justify-center font-black text-3xl border-l-4 border-b-4 border-foreground shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.15)]">
                 9
               </div>
               <div className="pr-14">
-                <span className="text-[#F26A2E] font-black text-[10px] uppercase tracking-widest block mb-1">{t('landing.sdg.goal9.badge', 'Инновации и инфраструктура')}</span>
-                <h4 className="text-xl md:text-2xl font-black uppercase tracking-tight text-slate-900 mb-4">{t('landing.sdg.goal9.title', 'Industry & Innovation')}</h4>
-                <p className="text-slate-600 font-medium text-xs md:text-sm leading-relaxed">
+                <span className="text-[#F26A2E] font-black text-xs uppercase tracking-normal block mb-1">{t('landing.sdg.goal9.badge', 'Инновации и инфраструктура')}</span>
+                <h4 className="text-xl md:text-2xl font-black uppercase tracking-normal text-foreground mb-4">{t('landing.sdg.goal9.title', 'Industry & Innovation')}</h4>
+                <p className="text-muted-foreground font-medium text-sm md:text-base leading-relaxed">
                   {t('landing.sdg.goal9.desc', 'Развиваем надежную hardware-инфраструктуру для стартапов. Помогаем трансформировать теоретические идеи в готовые к рынку технологические продукты.')}
                 </p>
               </div>
@@ -313,49 +219,49 @@ function LandingPage() {
       </section>
 
       {/* --- НОВЫЙ БЛОК 8: ASIR TEAM (О РАЗРАБОТЧИКАХ) --- */}
-      <section className="bg-slate-100 border-b-4 border-slate-900 py-24 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#0f172a_2px,transparent_2px)] [background-size:32px_32px] pointer-events-none" />
+      <section className="bg-muted border-b-4 border-foreground py-12 md:py-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(var(--foreground)_2px,transparent_2px)] [background-size:32px_32px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="bg-white border-4 border-slate-900 shadow-[12px_12px_0_#2563eb] flex flex-col md:flex-row items-stretch">
+          <div className="bg-card border-4 border-foreground shadow-[12px_12px_0_var(--primary)] flex flex-col md:flex-row items-stretch">
             
-            <div className="w-full md:w-2/5 border-b-4 md:border-b-0 md:border-r-4 border-slate-900 relative bg-slate-200 group p-6 flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px]">
+            <div className="w-full md:w-2/5 border-b-4 md:border-b-0 md:border-r-4 border-foreground relative bg-muted group p-6 flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px]">
               
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
                  <Users className="w-16 h-16 mb-4 opacity-50" />
-                 <span className="font-black uppercase tracking-widest text-xs border-2 border-slate-400 border-dashed px-4 py-2 bg-white/50 backdrop-blur-sm">
+                 <span className="font-black uppercase tracking-normal text-xs border-2 border-border border-dashed px-4 py-2 bg-card/50 backdrop-blur-sm">
                    {t('creators.photoPlaceholder', 'МЕСТО ДЛЯ ВАШЕГО ФОТО')}
                  </span>
               </div>
               
               {<img src="/asir-team.png" alt="ASIR Team" className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 z-10" />}
 
-              <div className="absolute bottom-6 right-6 z-20 bg-amber-400 border-4 border-slate-900 px-4 py-2 shadow-[4px_4px_0_#0f172a] transform rotate-[-3deg]">
-                <span className="font-black text-slate-900 uppercase tracking-tighter text-lg sm:text-xl">ASIR TEAM</span>
+              <div className="absolute bottom-6 right-6 z-20 bg-zone-yellow border-4 border-foreground px-4 py-2 shadow-[4px_4px_0_var(--foreground)] transform rotate-[-3deg]">
+                <span className="font-black text-foreground uppercase tracking-normal text-lg sm:text-xl">ASIR TEAM</span>
               </div>
             </div>
 
             <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
               <div className="mb-6">
-                <span className="inline-block bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest px-3 py-1 border-2 border-slate-900 shadow-[2px_2px_0_#3b82f6] mb-4">
+                <span className="inline-block bg-foreground text-primary-foreground font-black text-xs uppercase tracking-normal px-3 py-1 border-2 border-foreground shadow-[2px_2px_0_var(--primary)] mb-4">
                   {t('creators.btnPre', 'РАЗРАБОТКА ПЛАТФОРМЫ')}
                 </span>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-slate-900 leading-[0.9]">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-normal text-foreground leading-[0.9]">
                   {t('creators.needSystem1', 'НУЖНА ТАКАЯ ЖЕ')} <br/> 
-                  <span className="text-blue-600">{t('creators.needSystem2', 'СИСТЕМА?')}</span>
+                  <span className="text-primary">{t('creators.needSystem2', 'СИСТЕМА?')}</span>
                 </h2>
               </div>
               
-              <p className="text-slate-600 font-medium text-base md:text-lg leading-relaxed mb-8">
+              <p className="text-muted-foreground font-medium text-base md:text-lg leading-relaxed mb-8">
                 {t('creators.p2', 'Наша цель — разрабатывать удобные системы бронирования и цифровые решения для самых разных сфер. Мы проектируем и запускаем мощные цифровые продукты, делая процессы простыми и понятными.')}
               </p>
 
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="group flex items-center justify-center gap-4 bg-slate-900 text-white border-4 border-slate-900 px-8 py-4 hover:bg-blue-600 transition-colors shadow-[6px_6px_0_#3b82f6] hover:shadow-[2px_2px_0_#0f172a] hover:translate-y-1 hover:translate-x-1 w-full sm:w-max"
+                className="group flex items-center justify-center gap-4 bg-foreground text-primary-foreground border-4 border-foreground px-8 py-4 hover:bg-landing-action transition-colors shadow-[6px_6px_0_var(--primary)] hover:shadow-[2px_2px_0_var(--foreground)] hover:translate-y-1 hover:translate-x-1 w-full sm:w-max"
               >
                 <Code2 className="w-5 h-5" />
-                <span className="font-black uppercase tracking-widest text-xs sm:text-sm">
+                <span className="font-black uppercase tracking-normal text-xs sm:text-sm">
                   {t('creators.contacts', 'СВЯЗАТЬСЯ С НАМИ')}
                 </span>
               </button>
@@ -368,68 +274,68 @@ function LandingPage() {
       {/* МОДАЛЬНОЕ ОКНО РАЗРАБОТЧИКОВ (ПЕРЕНЕСЛИ СЮДА ИЗ ФУТЕРА) */}
       {/* ========================================= */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-foreground/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
           
-          <div className="bg-white border-4 border-slate-900 shadow-[12px_12px_0_#2563eb] max-w-3xl w-full relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div className="bg-card border-4 border-foreground shadow-[12px_12px_0_var(--primary)] max-w-3xl w-full relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             
-            <div className="flex justify-between items-center p-5 md:p-6 border-b-4 border-slate-900 bg-[#FAFAFA] shrink-0">
+            <div className="flex justify-between items-center p-5 md:p-6 border-b-4 border-foreground bg-background shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                  <Code2 className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-landing-action flex items-center justify-center border-2 border-foreground shadow-[2px_2px_0_var(--foreground)]">
+                  <Code2 className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <h3 className="font-black text-xl md:text-2xl uppercase tracking-tighter text-slate-900 leading-none mt-1">
+                <h3 className="font-black text-xl md:text-2xl uppercase tracking-normal text-foreground leading-none mt-1">
                   {t('creators.modalTitle', 'О создателях')}
                 </h3>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)} 
-                className="w-10 h-10 flex items-center justify-center border-2 border-transparent hover:border-slate-900 hover:bg-slate-100 transition-all text-slate-500 hover:text-slate-900"
+                className="w-10 h-10 flex items-center justify-center border-2 border-transparent hover:border-foreground hover:bg-muted transition-all text-muted-foreground hover:text-foreground"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-4 sm:p-6 md:p-10 overflow-y-auto bg-white">
-              <div className="border-4 border-slate-900 p-5 sm:p-6 md:p-10 bg-[#FAFAFA] shadow-[4px_4px_0_#2563eb] sm:shadow-[6px_6px_0_#2563eb] relative">
+            <div className="p-4 sm:p-6 md:p-10 overflow-y-auto bg-card">
+              <div className="border-4 border-foreground p-5 sm:p-6 md:p-10 bg-background shadow-[4px_4px_0_var(--primary)] sm:shadow-[6px_6px_0_var(--primary)] relative">
                 
-                <div className="absolute -top-6 -left-6 w-12 h-12 md:w-14 md:h-14 bg-blue-600 border-4 border-slate-900 flex items-center justify-center shadow-[4px_4px_0_#0f172a] hidden sm:flex">
-                  <Users className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                <div className="absolute -top-6 -left-6 w-12 h-12 md:w-14 md:h-14 bg-landing-action border-4 border-foreground flex items-center justify-center shadow-[4px_4px_0_var(--foreground)] hidden sm:flex">
+                  <Users className="w-6 h-6 md:w-7 md:h-7 text-primary-foreground" />
                 </div>
 
-                <h4 className="font-black text-2xl sm:text-3xl md:text-4xl uppercase tracking-tighter text-slate-900 mb-6 sm:mb-8 mt-1 sm:mt-2">
+                <h4 className="font-black text-2xl sm:text-3xl md:text-4xl uppercase tracking-normal text-foreground mb-6 sm:mb-8 mt-1 sm:mt-2">
                   {t('creators.heading', 'Мы — Амира и Расул')}
                 </h4>
                 
-                <div className="space-y-6 text-lg sm:text-xl font-medium text-slate-900 leading-[1.6] sm:leading-[1.7]">
+                <div className="space-y-6 text-lg sm:text-xl font-medium text-foreground leading-[1.6] sm:leading-[1.7]">
                   <p>
-                    {t('creators.p1', 'Создатели')} <span className="font-black text-blue-600 uppercase tracking-wide">«ASIR»</span>.
+                    {t('creators.p1', 'Создатели')} <span className="font-black text-primary uppercase tracking-normal">«ASIR»</span>.
                   </p>
                   <p>
                     {t('creators.p2', 'Наша цель — разрабатывать удобные системы бронирования и цифровые решения для самых разных сфер. Мы изучаем, как пользователи взаимодействуют с сервисами, и создаём инструменты, которые делают процесс простым, быстрым и понятным.')}
                   </p>
                   <p>
-                    {t('creators.p3_start', 'Система бронирования')} <span className="font-bold border-b-2 border-blue-600">Satbayev FabLab</span> {t('creators.p3_middle', 'является одним из примеров нашей работы. Проект появился как студенческая инициатива во время обучения в')} <span className="font-black">inVision U</span> {t('creators.p3_end', 'и со временем превратился в полноценный продукт.')}
+                    {t('creators.p3_start', 'Система бронирования')} <span className="font-bold border-b-2 border-primary">Satbayev FabLab</span> {t('creators.p3_middle', 'является одним из примеров нашей работы. Проект появился как студенческая инициатива во время обучения в')} <span className="font-black">inVision U</span> {t('creators.p3_end', 'и со временем превратился в полноценный продукт.')}
                   </p>
                   <p>
-                    <span className="font-black text-blue-600 uppercase tracking-wide">«ASIR»</span> {t('creators.p4', '— независимый проект, который был полностью придуман и разработан нашей командой.')}
+                    <span className="font-black text-primary uppercase tracking-normal">«ASIR»</span> {t('creators.p4', '— независимый проект, который был полностью придуман и разработан нашей командой.')}
                   </p>
                 </div>
 
-                <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t-4 border-slate-900">
-                  <h5 className="font-black text-sm sm:text-base uppercase tracking-widest text-slate-900 mb-5 sm:mb-6 text-center sm:text-left">
+                <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t-4 border-foreground">
+                  <h5 className="font-black text-sm sm:text-base uppercase tracking-normal text-foreground mb-5 sm:mb-6 text-center sm:text-left">
                     {t('creators.contacts', 'Связаться с нами')}
                   </h5>
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                    <a href="https://t.me/iamkofein" target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2.5 bg-blue-600 text-white border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-900 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                    <a href="https://t.me/iamkofein" target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2.5 bg-landing-action text-primary-foreground border-2 border-foreground py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-normal uppercase hover:bg-foreground transition-all shadow-[4px_4px_0_var(--foreground)] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
                       <Send className="w-4 h-4 sm:w-5 sm:h-5" /> Telegram
                     </a>
                     
-                    <a href="mailto:rasul.kapash@invisionu.education" className="flex-1 flex items-center justify-center gap-2.5 bg-white text-slate-900 border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                    <a href="mailto:rasul.kapash@invisionu.education" className="flex-1 flex items-center justify-center gap-2.5 bg-card text-foreground border-2 border-foreground py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-normal uppercase hover:bg-muted transition-all shadow-[4px_4px_0_var(--foreground)] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
                       <Mail className="w-4 h-4 sm:w-5 sm:h-5" /> Email
                     </a>
 
-                    <a href="tel:+77080781410" className="flex-1 flex items-center justify-center gap-2.5 bg-white text-slate-900 border-2 border-slate-900 py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-slate-100 transition-all shadow-[4px_4px_0_#0f172a] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
+                    <a href="tel:+77080781410" className="flex-1 flex items-center justify-center gap-2.5 bg-card text-foreground border-2 border-foreground py-4 sm:py-3.5 font-bold text-xs sm:text-sm tracking-normal uppercase hover:bg-muted transition-all shadow-[4px_4px_0_var(--foreground)] hover:shadow-none hover:translate-y-1 hover:translate-x-1">
                       <Phone className="w-4 h-4 sm:w-5 sm:h-5" /> Phone
                     </a>
                   </div>
@@ -447,7 +353,7 @@ function LandingPage() {
 
 function Badge({ text }: { text: string }) {
   return (
-    <div className="inline-block border-2 border-slate-900 px-3 py-1 font-bold text-xs tracking-widest uppercase bg-blue-600 text-white shadow-[4px_4px_0_#0f172a]">
+    <div className="inline-block border-2 border-foreground px-3 py-1 font-bold text-xs tracking-normal uppercase bg-landing-action text-primary-foreground shadow-[4px_4px_0_var(--foreground)]">
       {text}
     </div>
   );
@@ -456,11 +362,11 @@ function Badge({ text }: { text: string }) {
 function PerkCard({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
     <div className="flex flex-col">
-      <div className="w-16 h-16 bg-[#FAFAFA] border-4 border-slate-900 flex items-center justify-center mb-6 shadow-[4px_4px_0_#2563eb]">
-        <Icon className="w-8 h-8 text-blue-600" />
+      <div className="w-16 h-16 bg-background border-4 border-foreground flex items-center justify-center mb-6 shadow-[4px_4px_0_var(--primary)]">
+        <Icon className="w-8 h-8 text-primary" />
       </div>
-      <h4 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-3">{title}</h4>
-      <p className="text-slate-600 font-medium leading-relaxed">{desc}</p>
+      <h4 className="text-2xl font-black uppercase tracking-normal text-foreground mb-3">{title}</h4>
+      <p className="text-muted-foreground font-medium leading-relaxed">{desc}</p>
     </div>
   );
 }

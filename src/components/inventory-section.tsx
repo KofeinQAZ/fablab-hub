@@ -50,9 +50,9 @@ export function InventorySection({ userId, profile, active }: { userId: string |
 
   return (
     <>
-      <div className="border-4 border-slate-900 bg-emerald-400 p-5 flex items-center gap-3 shadow-[6px_6px_0_#0f172a]">
-        <QrCode className="h-8 w-8 shrink-0 text-slate-900" />
-        <p className="font-black uppercase tracking-widest text-[11px] sm:text-xs text-slate-900 leading-relaxed">
+      <div className="border-4 border-foreground bg-muted p-5 flex items-center gap-3 shadow-[6px_6px_0_var(--foreground)]">
+        <QrCode className="h-8 w-8 shrink-0 text-foreground" />
+        <p className="font-black uppercase tracking-normal text-sm text-foreground leading-relaxed">
           {t("inventory.hint", "Отсканируйте QR-код на инструменте камерой телефона — откроется его карточка, где можно закрепить предмет за собой.")}
         </p>
       </div>
@@ -60,11 +60,11 @@ export function InventorySection({ userId, profile, active }: { userId: string |
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-80 border-4 border-slate-900 bg-slate-200 animate-pulse" />
+            <div key={i} className="h-80 border-4 border-foreground bg-muted animate-pulse" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="border-4 border-dashed border-slate-300 p-12 text-center font-black uppercase tracking-widest text-slate-400 text-xs">
+        <div className="border-4 border-dashed border-border p-12 text-center font-black uppercase tracking-normal text-muted-foreground text-xs">
           {t("inventory.empty", "Инвентарь пока пуст")}
         </div>
       ) : (
@@ -75,21 +75,21 @@ export function InventorySection({ userId, profile, active }: { userId: string |
             return (
               <Card
                 key={item.id}
-                className="border-4 border-slate-900 rounded-none bg-white shadow-[6px_6px_0_#0f172a] hover:shadow-[12px_12px_0_#059669] hover:-translate-y-2 hover:-translate-x-2 transition-all duration-300 flex flex-col overflow-hidden"
+                className="border-2 border-foreground rounded-none bg-card shadow-[6px_6px_0_var(--foreground)] hover:shadow-[12px_12px_0_var(--primary)] hover:-translate-y-0.5 motion-reduce:transform-none transition-all duration-300 flex flex-col overflow-hidden"
               >
-                <div onClick={() => setSelectedId(item.id)} className="h-44 bg-slate-100 border-b-4 border-slate-900 relative cursor-pointer flex items-center justify-center overflow-hidden">
+                <div onClick={() => setSelectedId(item.id)} className="h-44 bg-muted border-b-4 border-foreground relative cursor-pointer flex items-center justify-center overflow-hidden">
                   {item.image_url ? (
                     <img src={item.image_url} alt={name} className="w-full h-full object-cover" />
                   ) : (
-                    <Package className="h-14 w-14 text-slate-300" />
+                    <Package className="h-14 w-14 text-muted-foreground" />
                   )}
                   <span
-                    className={`absolute top-3 right-3 font-black uppercase tracking-widest text-[9px] border-2 border-slate-900 px-2 py-1 shadow-[2px_2px_0_#0f172a] ${
+                    className={`absolute top-3 right-3 font-black uppercase tracking-normal text-xs border-2 border-foreground px-2 py-1 shadow-[2px_2px_0_var(--foreground)] ${
                       item.status === "available"
-                        ? "bg-emerald-400 text-slate-900"
+                        ? "bg-accent text-foreground"
                         : item.status === "checked_out"
-                          ? "bg-amber-400 text-slate-900"
-                          : "bg-rose-500 text-white"
+                          ? "bg-zone-yellow text-foreground"
+                          : "bg-destructive text-primary-foreground"
                     }`}
                   >
                     {item.status === "available"
@@ -101,17 +101,17 @@ export function InventorySection({ userId, profile, active }: { userId: string |
                 </div>
                 <CardContent className="p-6 flex flex-col flex-1 justify-between gap-4">
                   <div className="space-y-2">
-                    <h3 className="font-black text-xl text-slate-900 uppercase tracking-tight leading-tight line-clamp-2">{name}</h3>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">#{item.inventory_number}</p>
+                    <h3 className="font-black text-xl text-foreground uppercase tracking-normal leading-tight line-clamp-2">{name}</h3>
+                    <p className="text-xs font-bold uppercase tracking-normal text-muted-foreground">#{item.inventory_number}</p>
                     {isMine && (
-                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">
+                      <p className="text-xs font-black uppercase tracking-normal text-primary">
                         {t("inventory.status.mine", "Закреплён за вами")}
                       </p>
                     )}
                   </div>
                   <Button
                     onClick={() => setSelectedId(item.id)}
-                    className="w-full h-14 rounded-none border-2 border-slate-900 bg-slate-900 hover:bg-slate-800 text-white font-black uppercase tracking-widest text-xs shadow-[4px_4px_0_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                    className="w-full h-14 rounded-none border-2 border-foreground bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-normal text-xs shadow-[4px_4px_0_var(--foreground)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
                   >
                     {isMine ? t("inventory.btn.return", "Вернуть на склад") : t("inventory.btn.open", "Открыть карточку")}
                   </Button>

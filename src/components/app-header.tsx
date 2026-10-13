@@ -118,9 +118,8 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
           </Link>
           
           {/* ЧИСТАЯ НАВИГАЦИЯ ДЛЯ DESKTOP СО СЛОВАРЕМ */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             <Link to="/" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.home')}</Link>
-            <Link to="/booking" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.booking')}</Link>
             <Link to="/news" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.media')}</Link>
             <Link to="/clubs" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.clubs', 'Клубы')}</Link>
             <Link to="/team" className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all [&.active]:bg-blue-50 [&.active]:text-blue-700">{t('nav.team', 'Команда')}</Link>
@@ -178,7 +177,7 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
                 </Popover>
 
                 {/* МЕНЮ ДЛЯ DESKTOP */}
-                <div className="hidden md:flex items-center gap-3 ml-1">
+                <div className="hidden lg:flex items-center gap-3 ml-1">
                   {profile.safety_briefing_passed ? (
                     <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
                       <ShieldCheck className="h-3 w-3" /> {t('header.user.tbPassed', 'ТБ Сдан')}
@@ -237,7 +236,8 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
             <Button 
               variant="ghost" 
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden relative h-8 w-8 p-0 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 transition-all shrink-0 ml-1"
+              aria-label={t("header.mobile.menu")}
+              className="lg:hidden relative h-8 w-8 p-0 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 transition-all shrink-0 ml-1"
             >
               <Menu className="h-4 w-4" />
             </Button>
@@ -273,9 +273,6 @@ export function AppHeader({ profile }: { profile: UserProfile | null }) {
             <div className="flex flex-col gap-3">
               <Link to="/" onClick={closeMenu} className="flex items-center gap-4 text-lg font-bold uppercase tracking-tight p-4 rounded-2xl bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                 {t('nav.home')}
-              </Link>
-              <Link to="/booking" onClick={closeMenu} className="flex items-center gap-4 text-lg font-bold uppercase tracking-tight p-4 rounded-2xl bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                <Calendar className="w-6 h-6" /> {t('nav.booking')}
               </Link>
               <Link to="/news" onClick={closeMenu} className="flex items-center gap-4 text-lg font-bold uppercase tracking-tight p-4 rounded-2xl bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                 <Newspaper className="w-6 h-6" /> {t('nav.media')}
