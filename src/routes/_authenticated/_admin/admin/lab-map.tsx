@@ -13,13 +13,15 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { LabZone } from "@/components/lab-map";
+import { WeeklyHoursEditor, ZoneEventsCalendar } from "@/components/zone-schedule-editor";
+import { parseHours, type DayHours } from "@/lib/zone-schedule";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/lab-map")({ component: AdminLabMapPage });
 
 const emptyForm = {
   name: "", name_kz: "", name_en: "", description: "", description_kz: "", description_en: "",
   action_type: "info" as LabZone["action_type"], external_url: "", image_url: "", gallery_urls: [] as string[],
-  booking_enabled: false, is_active: true,
+  booking_enabled: false, is_active: true, weekly_hours: [] as DayHours[],
 };
 
 function AdminLabMapPage() {
@@ -43,6 +45,7 @@ function AdminLabMapPage() {
       description: zone.description || "", description_kz: zone.description_kz || "", description_en: zone.description_en || "",
       action_type: zone.action_type, external_url: zone.external_url || "", image_url: zone.image_url || "",
       gallery_urls: zone.gallery_urls, booking_enabled: zone.booking_enabled, is_active: zone.is_active,
+      weekly_hours: parseHours(zone.weekly_hours),
     });
   };
   const save = useMutation({
@@ -54,7 +57,7 @@ function AdminLabMapPage() {
         description_en: form.description_en.trim() || null, action_type: form.action_type,
         external_url: form.action_type === "external" ? form.external_url.trim() || null : null,
         image_url: form.image_url || null, gallery_urls: form.gallery_urls,
-        booking_enabled: form.action_type === "bookable" && form.booking_enabled, is_active: form.is_active,
+        booking_enabled: form.action_type === "bookable" && form.booking_enabled, is_active: form.is_active, weekly_hours: form.weekly_hours,
       }).eq("id", editing.id);
       if (error) throw error;
     },
@@ -75,7 +78,7 @@ function AdminLabMapPage() {
       )}
 
       <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent className="max-h-[92vh] w-[calc(100%-1.5rem)] max-w-3xl overflow-y-auto rounded-none border-4 border-foreground p-0 shadow-[8px_8px_0_var(--foreground)]">
+        <DialogContent className="max-h-[92vh] w-[calc(100%-1.5rem)] max-w-5xl overflow-y-auto rounded-none border-4 border-foreground p-0 shadow-[8px_8px_0_var(--foreground)]">
           <div className="border-b-4 border-foreground bg-primary p-6 pr-14 text-primary-foreground"><DialogTitle className="text-2xl font-black uppercase tracking-normal">Редактирование зоны</DialogTitle><DialogDescription className="mt-1 text-primary-foreground/80">{editing?.slug}</DialogDescription></div>
           <div className="space-y-6 p-5 sm:p-7">
             <Tabs defaultValue="ru"><TabsList className="grid h-12 grid-cols-3 rounded-none border-2"><TabsTrigger value="ru" className="rounded-none font-black">RU</TabsTrigger><TabsTrigger value="kz" className="rounded-none font-black">KZ</TabsTrigger><TabsTrigger value="en" className="rounded-none font-black">EN</TabsTrigger></TabsList>
@@ -88,6 +91,7 @@ function AdminLabMapPage() {
             <div className="grid gap-5 sm:grid-cols-2"><ImageUpload label="Обложка" bucket="equipment-images" folder={uploadFolder} value={form.image_url || null} onChange={(url) => setForm({ ...form, image_url: url || "" })} /><ImageUploadMultiple label="Галерея (до 6)" bucket="equipment-images" folder={uploadFolder} values={form.gallery_urls} onChange={(gallery_urls) => setForm({ ...form, gallery_urls })} max={6} /></div>
             <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Действие по нажатию</Label><select value={form.action_type} onChange={(e) => setForm({ ...form, action_type: e.target.value as LabZone["action_type"] })} className="h-12 w-full rounded-none border-2 border-input bg-background px-3"><option value="info">Информация</option><option value="bookable">Заявка на бронирование</option><option value="external">Внешний сайт</option></select></div>{form.action_type === "external" && <div className="space-y-2"><Label>Внешняя ссылка</Label><Input type="url" value={form.external_url} onChange={(e) => setForm({ ...form, external_url: e.target.value })} className="h-12 rounded-none border-2" /></div>}</div>
             <div className="grid gap-3 sm:grid-cols-2"><label className="flex min-h-14 items-center justify-between gap-4 border-2 border-foreground p-3 font-black uppercase"><span>Показывать зону</span><Switch checked={form.is_active} onCheckedChange={(is_active) => setForm({ ...form, is_active })} /></label>{form.action_type === "bookable" && <label className="flex min-h-14 items-center justify-between gap-4 border-2 border-foreground p-3 font-black uppercase"><span>Принимать заявки</span><Switch checked={form.booking_enabled} onCheckedChange={(booking_enabled) => setForm({ ...form, booking_enabled })} /></label>}</div>
+            {form.action_type === "bookable" && editing && <div className="grid gap-6 border-t-4 border-foreground pt-6 lg:grid-cols-2"><WeeklyHoursEditor value={form.weekly_hours} onChange={(weekly_hours) => setForm({ ...form, weekly_hours })} /><ZoneEventsCalendar zoneId={editing.id} /></div>}
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><Button variant="outline" onClick={() => setEditing(null)} className="h-12 rounded-none border-2 font-black uppercase">Отмена</Button><Button onClick={() => save.mutate()} disabled={save.isPending || !uploadFolder} className="h-12 rounded-none border-2 border-foreground font-black uppercase shadow-[3px_3px_0_var(--foreground)]">Сохранить</Button></div>
           </div>
         </DialogContent>

@@ -712,6 +712,7 @@ export type Database = {
           slug: string
           sort_order: number
           updated_at: string
+          weekly_hours: Json
         }
         Insert: {
           action_type?: Database["public"]["Enums"]["lab_zone_action"]
@@ -731,6 +732,7 @@ export type Database = {
           slug: string
           sort_order?: number
           updated_at?: string
+          weekly_hours?: Json
         }
         Update: {
           action_type?: Database["public"]["Enums"]["lab_zone_action"]
@@ -750,6 +752,7 @@ export type Database = {
           slug?: string
           sort_order?: number
           updated_at?: string
+          weekly_hours?: Json
         }
         Relationships: []
       }
@@ -1409,6 +1412,59 @@ export type Database = {
           },
           {
             foreignKeyName: "zone_bookings_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "lab_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zone_events: {
+        Row: {
+          created_at: string
+          day_of_week: number | null
+          end_clock: string
+          event_date: string | null
+          id: string
+          is_recurring: boolean
+          kind: string
+          repeat_until: string | null
+          start_clock: string
+          title: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week?: number | null
+          end_clock: string
+          event_date?: string | null
+          id?: string
+          is_recurring?: boolean
+          kind?: string
+          repeat_until?: string | null
+          start_clock: string
+          title: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number | null
+          end_clock?: string
+          event_date?: string | null
+          id?: string
+          is_recurring?: boolean
+          kind?: string
+          repeat_until?: string | null
+          start_clock?: string
+          title?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_events_zone_id_fkey"
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "lab_zones"
