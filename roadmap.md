@@ -1,6 +1,6 @@
 # Unified homepage
 
-- [ ] Move the MIT collaboration and partners blocks directly after the hero, before the map and booking sections; verify order.
+- [x] Move the MIT collaboration and partners blocks directly after the hero, before the map and booking sections; verify order.
 
 - [x] Recompose only the homepage hero with a facade background, clearer spacing and responsive actions; verify 360/768/1280/1920px.
   Verified also at 862px: photo loads, no page overflow, request button scrolls to booking, and printing button opens /print-3d.
