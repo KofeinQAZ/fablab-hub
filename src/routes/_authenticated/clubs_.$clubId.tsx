@@ -13,6 +13,7 @@ import { ImageUploadMultiple } from "@/components/image-upload";
 import { ClubFormDialog } from "@/components/club-form-dialog";
 import { ClubProjectDialog } from "@/components/club-project-dialog";
 import { getLocalized } from "@/components/projects-section";
+import { exportProjectPdf } from "@/lib/project-pdf";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
