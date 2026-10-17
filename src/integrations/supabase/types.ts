@@ -789,6 +789,231 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_events: {
+        Row: {
+          capacity: number
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          description_en: string | null
+          description_kz: string | null
+          end_time: string
+          host_name: string | null
+          id: string
+          is_published: boolean
+          kind: string
+          location: string | null
+          skill_id: string | null
+          start_time: string
+          title: string
+          title_en: string | null
+          title_kz: string | null
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          end_time: string
+          host_name?: string | null
+          id?: string
+          is_published?: boolean
+          kind?: string
+          location?: string | null
+          skill_id?: string | null
+          start_time: string
+          title: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          end_time?: string
+          host_name?: string | null
+          id?: string
+          is_published?: boolean
+          kind?: string
+          location?: string | null
+          skill_id?: string | null
+          start_time?: string
+          title?: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_events_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "learning_skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_guides: {
+        Row: {
+          content: string | null
+          content_en: string | null
+          content_kz: string | null
+          cover_url: string | null
+          created_at: string
+          id: string
+          is_published: boolean
+          pdf_path: string | null
+          sort_order: number
+          summary: string | null
+          summary_en: string | null
+          summary_kz: string | null
+          title: string
+          title_en: string | null
+          title_kz: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          content?: string | null
+          content_en?: string | null
+          content_kz?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          pdf_path?: string | null
+          sort_order?: number
+          summary?: string | null
+          summary_en?: string | null
+          summary_kz?: string | null
+          title: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          content?: string | null
+          content_en?: string | null
+          content_kz?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          pdf_path?: string | null
+          sort_order?: number
+          summary?: string | null
+          summary_en?: string | null
+          summary_kz?: string | null
+          title?: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      learning_registrations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          ticket_code: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          ticket_code: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          ticket_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "learning_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_registrations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_registrations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_skills: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_en: string | null
+          description_kz: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          mentor_ids: string[]
+          sort_order: number
+          title: string
+          title_en: string | null
+          title_kz: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          mentor_ids?: string[]
+          sort_order?: number
+          title: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          description_kz?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          mentor_ids?: string[]
+          sort_order?: number
+          title?: string
+          title_en?: string | null
+          title_kz?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mentor_schedule: {
         Row: {
           created_at: string
@@ -1566,6 +1791,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_learning_seats: {
+        Args: never
+        Returns: {
+          event_id: string
+          taken: number
+        }[]
+      }
       get_team_members: {
         Args: never
         Returns: {
@@ -1616,6 +1848,22 @@ export type Database = {
           printing: number
           waiting: number
         }[]
+      }
+      register_for_learning_event: {
+        Args: { _event_id: string }
+        Returns: {
+          created_at: string
+          event_id: string
+          id: string
+          ticket_code: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "learning_registrations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       return_inventory_item: {
         Args: { _item_id: string }
